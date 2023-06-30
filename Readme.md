@@ -4,6 +4,9 @@
 * 仿照 .net core dependency injection 的使用方法
 * 簡單的注入依賴，適用於舊專案.NET4 Framework
 * 目標也只是讓一些很古老的專案在不升級的原則下能導入注入依賴
+* 套件下載位置 [NUGET](https://www.nuget.org/packages/EasyInjector/)
+
+
 
 ## Singleton 範例
 ``` C#
