@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>EasyInjector</id>
+    <version>1.1.0.0</version>
+    <title>EasyInjector</title>
+    <authors>Shengwen</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <!-- <icon>icon.png</icon> -->
+    <!--<projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>-->
+    <description>簡單的模仿 .net core 注入依賴庫 適用於舊專案.net4.0的場合</description>
+    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <copyright>copyright</copyright>
+    <readme>docs\Readme.md</readme>
+    <!--<tags>Tag1 Tag2</tags>-->
+  </metadata>
+
+  <files>
+    <file src="..\..\Readme.md" target="docs\" />
+
+    <file src="bin\Release\EasyInjector.dll" target="lib\net40\EasyInjector.dll" />
+    <file src="bin\Release\EasyInjector.xml" target="lib\net40\EasyInjector.xml" />
+    
+    <!--<file src="icon.png" target="" />-->
+  </files>
+</package>
