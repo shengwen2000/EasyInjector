@@ -348,6 +348,9 @@ namespace EasyInjectors
             if (disposed)
                 return;
 
+            // 先說已經disposed 避免底下可能呼叫到內含自身服務的Dispose()形成無限迴圈
+            disposed = true;
+
             //正常Dispose，所有子項目一併施放
             if (disposing)
             {
@@ -388,8 +391,7 @@ namespace EasyInjectors
             //不正常Dispose只要確保自身資源釋放即可
             else
             {
-            }
-            disposed = true;
+            }           
         }
 
         IEnumerable<ServiceRegister> GetEnumerator1()

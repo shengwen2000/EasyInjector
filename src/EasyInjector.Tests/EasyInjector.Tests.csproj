@@ -84,6 +84,7 @@
     <Compile Include="OptionalTest.cs" />
     <Compile Include="RegisterTest.cs" />
     <Compile Include="NamedTest.cs" />
+    <Compile Include="DisposeTest.cs" />
     <Compile Include="TransientTest.cs" />
     <Compile Include="SingletonTest.cs" />
     <Compile Include="ScopeTest.cs" />
