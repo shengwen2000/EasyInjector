@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseTest.cs" />
+    <Compile Include="TryAddTest.cs" />
     <Compile Include="OptionalTest.cs" />
     <Compile Include="RegisterTest.cs" />
     <Compile Include="NamedTest.cs" />

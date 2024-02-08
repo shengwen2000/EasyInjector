@@ -65,15 +65,12 @@ namespace EasyInjectors
         /// </summary>
         public EasyInjector AddGenericService(SimpleLifetimes lifetimes, Type serviceType, Func<IServiceProvider, Type[], object> createGenericFunc)
         {
-            lock (_serviceRegisters_lock)
-            {
-                var register = new ServiceRegister();
-                register.IsGeneric = true;
-                register.ServiceTypes = new[] { serviceType };
-                register.Lifetimes = lifetimes;
-                register.CreateGenericFunc = createGenericFunc;
-                _serviceRegisters[serviceType] = register;
-            }
+            var register = new ServiceRegister();
+            register.IsGeneric = true;
+            register.ServiceTypes = new[] { serviceType };
+            register.Lifetimes = lifetimes;
+            register.CreateGenericFunc = createGenericFunc;
+            AddServiceInternal(register);
             return this;
         }
 
@@ -82,16 +79,12 @@ namespace EasyInjectors
         /// </summary>
         public EasyInjector AddTypedService<TService>(SimpleLifetimes lifetimes, IEnumerable<Type> serviceTypes, Func<IServiceProvider, TService> createFunc)
         {
-            lock (_serviceRegisters_lock)
-            {
-                var register = new ServiceRegister();
-                register.IsGeneric = false;
-                register.ServiceTypes = serviceTypes;
-                register.Lifetimes = lifetimes;
-                register.CreateFunc = (sp) => createFunc(sp);
-                foreach (var srvType in serviceTypes)
-                    _serviceRegisters[srvType] = register;
-            }
+            var register = new ServiceRegister();
+            register.IsGeneric = false;
+            register.ServiceTypes = serviceTypes;
+            register.Lifetimes = lifetimes;
+            register.CreateFunc = (sp) => createFunc(sp);
+            AddServiceInternal(register);
             return this;
         }
 
@@ -100,18 +93,35 @@ namespace EasyInjectors
         /// </summary>
         public EasyInjector AddService(SimpleLifetimes lifetimes, IEnumerable<Type> serviceTypes, Func<IServiceProvider, Object> createFunc)
         {
-            lock (_serviceRegisters_lock)
-            {
-                var register = new ServiceRegister();
-                register.IsGeneric = false;
-                register.ServiceTypes = serviceTypes;
-                register.Lifetimes = lifetimes;
-                register.CreateFunc = (sp) => createFunc(sp);
-                foreach (var srvType in serviceTypes)
-                    _serviceRegisters[srvType] = register;
-            }
+            var register = new ServiceRegister();
+            register.IsGeneric = false;
+            register.ServiceTypes = serviceTypes;
+            register.Lifetimes = lifetimes;
+            register.CreateFunc = (sp) => createFunc(sp);
+            AddServiceInternal(register);
             return this;
         }
+
+        /// <summary>
+        /// 內部統一註冊點
+        /// </summary>
+        internal protected virtual void AddServiceInternal(ServiceRegister register, bool isTry = false) {
+            lock (_serviceRegisters_lock)
+            {
+                foreach (var srvType in register.ServiceTypes)
+                {
+                    // 不存在才註冊
+                    if (isTry)
+                    {
+                        if (_serviceRegisters.ContainsKey(srvType) == false)
+                            _serviceRegisters[srvType] = register;
+                    }
+                    // 直接覆蓋
+                    else
+                        _serviceRegisters[srvType] = register;
+                }
+            }
+        }       
 
         /// <summary>
         /// 匯入註冊
@@ -126,7 +136,7 @@ namespace EasyInjectors
                     AddGenericService(register.Lifetimes, register.ServiceTypes.First(), register.CreateGenericFunc);
             }
             return this;
-        }
+        }      
 
         /// <summary>
         /// 註冊單一實例服務
@@ -186,6 +196,124 @@ namespace EasyInjectors
         public EasyInjector AddScoped<TBase, TService>(Func<IServiceProvider, TService> createFunc) where TService : TBase
         {
             AddTypedService(SimpleLifetimes.Scoped, new Type[] { typeof(TBase), typeof(TService) }, createFunc);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試增加泛型服務例如 IFactory (沒有註冊過才註冊)
+        /// </summary>
+        public EasyInjector TryAddGenericService(SimpleLifetimes lifetimes, Type serviceType, Func<IServiceProvider, Type[], object> createGenericFunc)
+        {
+            var register = new ServiceRegister();
+            register.IsGeneric = true;
+            register.ServiceTypes = new[] { serviceType };
+            register.Lifetimes = lifetimes;
+            register.CreateGenericFunc = createGenericFunc;
+            AddServiceInternal(register, isTry: true);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試註冊服務(沒有註冊過才註冊)
+        /// </summary>
+        public EasyInjector TryAddTypedService<TService>(SimpleLifetimes lifetimes, IEnumerable<Type> serviceTypes, Func<IServiceProvider, TService> createFunc)
+        {
+            var register = new ServiceRegister();
+            register.IsGeneric = false;
+            register.ServiceTypes = serviceTypes;
+            register.Lifetimes = lifetimes;
+            register.CreateFunc = (sp) => createFunc(sp);
+            AddServiceInternal(register, isTry: true);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試註冊服務(沒有註冊過才註冊)
+        /// </summary>
+        public EasyInjector TryAddService(SimpleLifetimes lifetimes, IEnumerable<Type> serviceTypes, Func<IServiceProvider, Object> createFunc)
+        {
+            var register = new ServiceRegister();
+            register.IsGeneric = false;
+            register.ServiceTypes = serviceTypes;
+            register.Lifetimes = lifetimes;
+            register.CreateFunc = (sp) => createFunc(sp);
+            AddServiceInternal(register, isTry: true);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試匯入註冊 (沒有註冊過才註冊)
+        /// </summary>
+        public EasyInjector TryImportServices(IEnumerable<ServiceRegister> registers)
+        {
+            foreach (var register in registers)
+            {
+                if (register.IsGeneric == false)
+                    TryAddService(register.Lifetimes, register.ServiceTypes, register.CreateFunc);
+                else
+                    TryAddGenericService(register.Lifetimes, register.ServiceTypes.First(), register.CreateGenericFunc);
+            }
+            return this;
+        }
+
+
+        /// <summary>
+        /// 嘗試註冊單一實例服務 (沒有註冊過才註冊)
+        /// </summary>        
+        /// <param name="createFunc">建構服務實例的方法，其依賴服務必須由 IServiceProvider取得</param>        
+        public EasyInjector TryAddSingleton<T>(Func<IServiceProvider, T> createFunc)
+        {
+            TryAddTypedService(SimpleLifetimes.Singleton, new Type[] { typeof(T) }, createFunc);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試註冊單一實例服務 (沒有註冊過才註冊)
+        /// </summary>        
+        /// <param name="createFunc">建構服務實例的方法，其依賴服務必須由 IServiceProvider取得</param>        
+        public EasyInjector TryAddSingleton<TBase, TService>(Func<IServiceProvider, TService> createFunc) where TService : TBase
+        {
+            TryAddTypedService(SimpleLifetimes.Singleton, new Type[] { typeof(TBase), typeof(TService) }, createFunc);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試註冊每次都生成一個的服務 (沒有註冊過才註冊)
+        /// </summary>        
+        /// <param name="createFunc">建構服務實例的方法，其依賴服務必須由 IServiceProvider取得</param>        
+        public EasyInjector TryAddTransient<T>(Func<IServiceProvider, T> createFunc)
+        {
+            TryAddTypedService(SimpleLifetimes.Transient, new Type[] { typeof(T) }, createFunc);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試註冊每次都生成一個的服務 (沒有註冊過才註冊)
+        /// </summary>        
+        /// <param name="createFunc">建構服務實例的方法，其依賴服務必須由 IServiceProvider取得</param>      
+        public EasyInjector TryAddTransient<TBase, TService>(Func<IServiceProvider, TService> createFunc) where TService : TBase
+        {
+            TryAddTypedService(SimpleLifetimes.Transient, new Type[] { typeof(TBase), typeof(TService) }, createFunc);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試註冊ScopeService (沒有註冊過才註冊)
+        /// </summary>        
+        /// <param name="createFunc">建構服務實例的方法，其依賴服務必須由 IServiceProvider取得</param>        
+        public EasyInjector TryAddScoped<T>(Func<IServiceProvider, T> createFunc)
+        {
+            TryAddTypedService(SimpleLifetimes.Scoped, new Type[] { typeof(T) }, createFunc);
+            return this;
+        }
+
+        /// <summary>
+        /// 嘗試註冊ScopeService (沒有註冊過才註冊)
+        /// </summary>        
+        /// <param name="createFunc">建構服務實例的方法，其依賴服務必須由 IServiceProvider取得</param>        
+        public EasyInjector TryAddScoped<TBase, TService>(Func<IServiceProvider, TService> createFunc) where TService : TBase
+        {
+            TryAddTypedService(SimpleLifetimes.Scoped, new Type[] { typeof(TBase), typeof(TService) }, createFunc);
             return this;
         }
 

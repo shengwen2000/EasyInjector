@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>EasyInjector</id>
-    <version>1.1.0.2</version>
+    <version>1.2.0.0</version>
     <title>EasyInjector</title>
     <authors>Shengwen</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -13,6 +13,9 @@
     <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>copyright</copyright>
     <readme>docs\Readme.md</readme>
+    <dependencies>
+      <group targetFramework=".NETFramework4.0" />
+    </dependencies>
     <!--<tags>Tag1 Tag2</tags>-->
   </metadata>
 
