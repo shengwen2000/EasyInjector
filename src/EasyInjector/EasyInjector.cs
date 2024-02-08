@@ -116,9 +116,20 @@ namespace EasyInjectors
                         if (_serviceRegisters.ContainsKey(srvType) == false)
                             _serviceRegisters[srvType] = register;
                     }
-                    // 直接覆蓋
+                    // 直接覆蓋 會檢查Lifetime 必須一致
                     else
+                    {
+                        ServiceRegister previous = null;
+                        var has = _serviceRegisters.TryGetValue(srvType, out previous);
+
+                        if (has && previous.Lifetimes != register.Lifetimes)
+                            throw new ApplicationException(string.Format("EasyInjctor 複寫服務{0}時 發現其Lifetime不一致 目前{1} != 複寫{2} ", 
+                                srvType.FullName,
+                                previous.Lifetimes, 
+                                register.Lifetimes));
+
                         _serviceRegisters[srvType] = register;
+                    }
                 }
             }
         }       

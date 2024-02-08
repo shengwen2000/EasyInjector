@@ -120,3 +120,22 @@ using (var injector = new EasyInjector())
 	var srv1 = injector.Get<ISecurityBusiness>();
 
 ```
+
+## 嘗試註冊 如果已經存在的話就不註冊
+
+``` C#
+	var injetor = new EasyInjector();
+
+	//嘗試註冊服務 (這個會成功註冊，因為不存在)
+	injector.TryAddSingleton<IApi>(sp => new Api1());
+
+	//嘗試註冊服務 (這個因為已經存在過，所以忽略)
+	injector.TryAddSingleton<IApi>(sp => new Api2());
+
+	//註冊服務 這個會成功，因為是直接覆蓋掉
+	injector.AddSingleton<IApi>(sp => new Api3());
+
+	//註冊服務 這個會發送異常，因為服務生命週期與之前不相同
+	injector.AddScope<IApi>(sp => new Api4());
+
+```

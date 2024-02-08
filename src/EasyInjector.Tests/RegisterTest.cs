@@ -26,22 +26,19 @@ namespace Tests
 
                 // 後面註冊會蓋掉前面的
                 injector.AddSingleton<IFtpAdminService>(sp => new FtpAdminService(sp.GetRequiredService<IFtpClient>()));
-                injector.AddTransient<IFtpAdminService>(sp => new FtpAdminService(sp.GetRequiredService<IFtpClient>()));
-                injector.AddScoped<IFtpAdminService>(sp => new FtpAdminService(sp.GetRequiredService<IFtpClient>()));
+                injector.AddSingleton<IFtpAdminService>(sp => new MockAdminService());
+                Assert.True(injector.GetRequiredService<IFtpAdminService>().GetType() == typeof(MockAdminService));
+
+                // 複寫LifeTime不相同會引發異常
+                Assert.Throws<ApplicationException>(() => injector.AddScoped<IFtpAdminService>(sp => new FtpAdminService(sp.GetRequiredService<IFtpClient>())));
 
                 Assert.True(injector.OfType<ServiceRegister>().Count(x => x.ServiceTypes.Any(y => y == typeof(IFtpAdminService))) == 1);
-                               
-                // 沒有Scope會失敗
-                Assert.Throws<ApplicationException>(() => injector.GetRequiredService<IFtpAdminService>());               
             }
 
             //可以匯入其他Inject所有服務
             var injector2 = new EasyInjector();
             injector2.ImportServices(injector);
-
-            using(var scope = injector2.CreateScope()) {
-                scope.ServiceProvider.GetRequiredService<IFtpAdminService>();
-            }            
+            Assert.NotNull(injector2.GetRequiredService<IFtpAdminService>());
         }
 
         [Test]
@@ -65,6 +62,25 @@ namespace Tests
                     Assert.AreEqual(srv1, srv2);
                 }
             }
+        }
+
+        [Test]
+        public void Register003()
+        {
+            using (var injector = new EasyInjector())
+            {
+                injector.AddScoped<IFtpAdminService>(sp => new MockAdminService());
+
+                // 沒有Scope會失敗
+                Assert.Throws<ApplicationException>(() => injector.GetRequiredService<IFtpAdminService>());
+
+                using (var scope = injector.GetRequiredService<IServiceScopeFactory>().CreateScope())
+                {
+                    var v1 = scope.ServiceProvider.GetRequiredService<IFtpAdminService>();
+                    Assert.NotNull(v1);
+                }
+            }
+            
         }
 
         public interface IFtpClient
@@ -106,6 +122,11 @@ namespace Tests
             {
                 DisposeCounter++;
             }
+        }
+
+        public class MockAdminService : IFtpAdminService
+        {
+
         }
     }
 }
