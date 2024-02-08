@@ -80,7 +80,7 @@ namespace EasyInjectors
         {
             if (disposed)
                 return;
-
+            disposed = true;
             //正常Dispose，所有子項目一併施放
             if (disposing)
             {
@@ -102,7 +102,6 @@ namespace EasyInjectors
             else
             {
             }
-            disposed = true;
         }        
     }
    
