@@ -69,6 +69,52 @@ namespace Tests
             }
         }
 
+        [Test]
+        public void Impl004()
+        {
+            using (var injector = new EasyInjector())
+            {
+                injector.AddSingleton(typeof(IApi1), typeof(Api1));
+                injector.AddSingleton(typeof(IApi2), typeof(Api2));
+
+                var api1 = injector.GetRequiredService<IApi1>();
+                Assert.NotNull(api1);
+                var api2 = injector.GetRequiredService<IApi2>() as Api2;
+                Assert.NotNull(api2);
+                Assert.NotNull(api2.Api1);
+            }
+
+            using (var injector = new EasyInjector())
+            {
+                injector.AddTransient(typeof(IApi1), typeof(Api1));
+                injector.AddTransient(typeof(IApi2), typeof(Api2));
+
+                var api1 = injector.GetRequiredService<IApi1>();
+                Assert.NotNull(api1);
+                var api1_1 = injector.GetRequiredService<IApi1>();
+                Assert.NotNull(api1_1);
+                Assert.True(api1 != api1_1);
+
+                var api2 = injector.GetRequiredService<IApi2>();
+                Assert.NotNull(api2);
+            }
+
+            using (var injector = new EasyInjector())
+            {
+                injector.AddScoped(typeof(IApi1), typeof(Api1));
+                injector.AddScoped(typeof(IApi2), typeof(Api2));
+
+                using (var scope = injector.GetRequiredService<IServiceScopeFactory>().CreateScope())
+                {
+                    var api1 = scope.ServiceProvider.GetRequiredService<IApi1>();
+                    Assert.NotNull(api1);
+                    var api2 = scope.ServiceProvider.GetRequiredService<IApi2>() as Api2;
+                    Assert.NotNull(api2);
+                    Assert.NotNull(api2.Api1);
+                }
+            }
+        }
+
         public interface IApi1
         {
 
