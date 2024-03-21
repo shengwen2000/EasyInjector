@@ -59,18 +59,18 @@ using (var injector = new EasyInjector())
 }
 ```
 
-## 額外提供 IOptional 選擇性服務
+## 額外提供 IProvider 特定服務的提供者 常用於Scope場合。
 ``` C#
 
 	// 某服務的應用情境展示
 	public class SomeService {
 
-		readonly IOptional<IFtp> _ftpf;
+		readonly IProvider<IFtp> _ftpf;
 		readonly IServiceScopeFactory _scopef;
 
 		// 建構式有清楚的描述本服務 有依賴IFtp的關係
 		public SomeService(
-			IOptional<IFtp> ftpf,
+			IProvider<IFtp> ftpf,
 			IServiceScopeFactory scopef)
 		{
 			_ftpf = ftpf;
@@ -81,7 +81,7 @@ using (var injector = new EasyInjector())
 		public void DoSomething() {
 			using(var scope = _scopef.CreateScope()) {
 				// 這時候才真的產生這個服務
-				var ftp = _ftpf.Get(scope.ServiceProvider);
+				var ftp = _ftpf.Get(scope);
 
 				ftp.DoSomething();
 			}

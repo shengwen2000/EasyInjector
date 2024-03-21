@@ -31,13 +31,13 @@ namespace EasyInjectors
         /// </summary>
         internal Dictionary<ServiceRegister, Dictionary<Type, object>> _instances_generic = new Dictionary<ServiceRegister, Dictionary<Type, object>>();
 
-        private EasyInjector _simpleService;
+        private EasyInjector _injector;
 
         private bool disposed = false;
 
-        public CScope(EasyInjector simpleService)
+        public CScope(EasyInjector injector)
         {
-            _simpleService = simpleService;           
+            _injector = injector;           
         }
 
         ~CScope()
@@ -47,7 +47,7 @@ namespace EasyInjectors
 
         public object GetService(Type serviceType)
         {
-            return _simpleService.GetService(serviceType, this);
+            return _injector.GetService(serviceType, this);
         }
 
         public IServiceProvider ServiceProvider
@@ -64,6 +64,9 @@ namespace EasyInjectors
         {
             if (disposed)
                 return;
+
+            // 先說已經disposed 避免底下可能呼叫到內含自身服務的Dispose()形成無限迴圈
+            disposed = true;
 
             //正常Dispose，所有子項目一併施放
             if (disposing)
@@ -100,7 +103,6 @@ namespace EasyInjectors
             else
             {
             }
-            disposed = true;
         }
     }
 }

@@ -34,15 +34,17 @@ namespace EasyInjectors
 
         public EasyInjector()
         {
-            //內建 IServiceProvider IServiceScopeFactory
-
-            // add IFactory 服務
+            
 #pragma warning disable 0618
+            // add IFactory 服務
             AddGenericService(SimpleLifetimes.Singleton, typeof(IFactory<>), typeof(CFactory<>));
-#pragma warning restore 0618
 
             // add IOptional 服務
             AddGenericService(SimpleLifetimes.Transient, typeof(IOptional<>), typeof(OptionalService<>));
+#pragma warning restore 0618
+
+            // add IProvider 服務
+            AddGenericService(SimpleLifetimes.Transient, typeof(IProvider<>), typeof(ProviderService<>));
         }
 
         ~EasyInjector()
@@ -55,47 +57,8 @@ namespace EasyInjectors
         /// </summary>
         T CreateInstance<T>(IServiceProvider provider, Type implType)
         {
-            var srv = CreateInstance(provider, implType);
+            var srv = provider.CreateInstance(implType);
             return (T)srv;
-        }
-
-        /// <summary>
-        /// 建立實例 by ImplementType 內部使用
-        /// </summary>
-        object CreateInstance(IServiceProvider provider, Type srvType)
-        {
-            var ctor1 = srvType.GetConstructors()
-                .Where(x => x.IsPublic)                     
-                .FirstOrDefault();
-
-            if (ctor1 == null)
-                throw new ApplicationException(string.Format("類別{0}沒有公開建構子，無法生成實例", srvType.FullName));
-
-            var pp = ctor1.GetParameters();
-            if (pp.Length == 0)
-            {
-                var inst = Activator.CreateInstance(srvType);
-                if (inst == null)
-                    throw new ApplicationException(string.Format("類別{0} 無法生成實例", srvType.FullName));
-                return inst;
-            }
-
-            var vv = new object[pp.Length];
-
-            for (var i = 0; i < pp.Length; i++)
-            {
-                var p1 = pp[i];
-                var srv1 = provider.GetService(p1.ParameterType);
-                if (srv1 == null)
-                    throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", srvType.FullName, p1.ParameterType.FullName));
-                vv[i] = srv1;
-            }
-            {
-                var inst = Activator.CreateInstance(srvType, vv);
-                if (inst == null)
-                    throw new ApplicationException(string.Format("類別{0} 無法生成實例", srvType.FullName));
-                return inst;
-            }
         }
 
         /// <summary>
@@ -127,7 +90,7 @@ namespace EasyInjectors
             register.CreateGenericFunc = (sp, typs) =>
             {
                 var type1 = implType.MakeGenericType(typs);
-                var srv1 = CreateInstance(sp, type1);
+                var srv1 = sp.CreateInstance(type1);
                 return srv1;
             };
             AddServiceInternal(register);
@@ -275,9 +238,6 @@ namespace EasyInjectors
             return this;
         }
 
-        
-
-
         /// <summary>
         /// 註冊每次都生成一個的服務
         /// </summary>                
@@ -356,7 +316,7 @@ namespace EasyInjectors
             if (!srvType.IsAssignableFrom(implType))
                 throw new ApplicationException(string.Format("{0} 不能符合 {1}", implType, srvType));           
 
-            AddTypedService(SimpleLifetimes.Singleton, new Type[] { srvType }, sp => CreateInstance(sp, implType));
+            AddTypedService(SimpleLifetimes.Singleton, new Type[] { srvType }, sp => sp.CreateInstance(implType));
             return this;
         }
         /// <summary>
@@ -366,7 +326,7 @@ namespace EasyInjectors
         {
             if (!srvType.IsAssignableFrom(implType))
                 throw new ApplicationException(string.Format("{0} 不能符合 {1}", implType, srvType));
-            AddTypedService(SimpleLifetimes.Transient, new Type[] { srvType }, sp => CreateInstance(sp, implType));
+            AddTypedService(SimpleLifetimes.Transient, new Type[] { srvType }, sp => sp.CreateInstance(implType));
             return this;
         }
 
@@ -377,7 +337,7 @@ namespace EasyInjectors
         {
             if (!srvType.IsAssignableFrom(implType))
                 throw new ApplicationException(string.Format("{0} 不能符合 {1}", implType, srvType));
-            AddTypedService(SimpleLifetimes.Scoped, new Type[] { srvType }, sp => CreateInstance(sp, implType));
+            AddTypedService(SimpleLifetimes.Scoped, new Type[] { srvType }, sp => sp.CreateInstance(implType));
             return this;
         }
 
@@ -388,7 +348,7 @@ namespace EasyInjectors
         {
             if (!srvType.IsAssignableFrom(implType))
                 throw new ApplicationException(string.Format("{0} 不能符合 {1}", implType, srvType));
-            TryAddTypedService(SimpleLifetimes.Singleton, new Type[] { srvType }, sp => CreateInstance(sp, implType));
+            TryAddTypedService(SimpleLifetimes.Singleton, new Type[] { srvType }, sp => sp.CreateInstance(implType));
             return this;
         }
         /// <summary>
@@ -398,7 +358,7 @@ namespace EasyInjectors
         {
             if (!srvType.IsAssignableFrom(implType))
                 throw new ApplicationException(string.Format("{0} 不能符合 {1}", implType, srvType));
-            TryAddTypedService(SimpleLifetimes.Transient, new Type[] { srvType }, sp => CreateInstance(sp, implType));
+            TryAddTypedService(SimpleLifetimes.Transient, new Type[] { srvType }, sp => sp.CreateInstance(implType));
             return this;
         }
 
@@ -409,7 +369,7 @@ namespace EasyInjectors
         {
             if (!srvType.IsAssignableFrom(implType))
                 throw new ApplicationException(string.Format("{0} 不能符合 {1}", implType, srvType));
-            TryAddTypedService(SimpleLifetimes.Scoped, new Type[] { srvType }, sp => CreateInstance(sp, implType));
+            TryAddTypedService(SimpleLifetimes.Scoped, new Type[] { srvType }, sp => sp.CreateInstance(implType));
             return this;
         }
 
@@ -541,22 +501,9 @@ namespace EasyInjectors
 
             lock (_serviceRegisters_lock)
             {
-                ServiceRegister register;
-
-                // 註冊項目找出
-                if (!_serviceRegisters.TryGetValue(serviceType, out register))
-                {
-
-                    // 沒找到的話，看有沒有泛型註冊
-                    if (serviceType.IsGenericType)
-                    {
-                        var genericType = serviceType.GetGenericTypeDefinition();
-                        if (!_serviceRegisters.TryGetValue(genericType, out register))
-                            return null;
-                    }
-                    else
-                        return null;
-                }
+                // 找出服務註冊項目
+                var register = FindRegister(serviceType);
+                if (register == null) return null;                
 
                 // 取得服務 singleton
                 if (register.Lifetimes == SimpleLifetimes.Singleton)
@@ -659,6 +606,38 @@ namespace EasyInjectors
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 找出服務註冊項目
+        /// </summary>
+        /// <param name="serviceType">服務類型</param>
+        public ServiceRegister FindRegister(Type serviceType)
+        {
+            ServiceRegister register;
+
+            // 註冊項目找出
+            if (!_serviceRegisters.TryGetValue(serviceType, out register))
+            {
+                // 沒找到的話，看有沒有泛型註冊
+                if (serviceType.IsGenericType)
+                {
+                    var genericType = serviceType.GetGenericTypeDefinition();
+                    if (!_serviceRegisters.TryGetValue(genericType, out register))
+                        return null;
+                }
+                else
+                    return null;
+            }
+            return register;
+        }
+
+        /// <summary>
+        /// 找出服務註冊項目
+        /// </summary>        
+        public ServiceRegister FindRegister<TServiceType>()
+        {
+            return FindRegister(typeof(TServiceType));
         }
 
         public IServiceScope CreateScope()

@@ -7,7 +7,7 @@ namespace EasyInjectors
 {
 #pragma warning disable 1591,0618
 
-    [Obsolete("廢棄請改用 IOptional")]
+    [Obsolete("廢棄請改用 IProvider")]
     public interface IFactory<TService>
     {
         TService Create();

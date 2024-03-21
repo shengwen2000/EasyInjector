@@ -28,7 +28,7 @@ namespace Tests
                 using (var scope = injector.CreateScope())
                 {
                     // 由Scope取得預設Provider為Scope
-                    var srvf = scope.ServiceProvider.GetRequiredService<IOptional<IFtpAdminService>>();
+                    var srvf = scope.ServiceProvider.GetRequiredService<IProvider<IFtpAdminService>>();
                     Assert.True(FtpAdminService.NewCounter == 0);
 
                     var srv1 = srvf.Get();
@@ -37,14 +37,14 @@ namespace Tests
                 }
 
                 // 由injector取得預設Provider為injector
-                var srvf2 = injector.GetRequiredService<IOptional<IFtpAdminService>>();
+                var srvf2 = injector.GetRequiredService<IProvider<IFtpAdminService>>();
                 using (var scope = injector.CreateScope())
                 {
                     // Root 沒有Scope無法取得預設
                     Assert.Throws<ApplicationException>(() => srvf2.Get());
 
                     // 指定Scope就可順利取得
-                    var srv2 = srvf2.Get(scope.ServiceProvider);
+                    var srv2 = srvf2.Get(scope);
                     Assert.True(FtpAdminService.NewCounter == 2);
                     Assert.NotNull(srv2);
                 }

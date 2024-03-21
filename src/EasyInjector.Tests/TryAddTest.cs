@@ -13,7 +13,7 @@ namespace Tests
     {
         [SetUp]
         public void Init()
-        {   
+        {
         }
 
         [Test]
@@ -22,7 +22,7 @@ namespace Tests
             using (var injector = new EasyInjector())
             {
                 injector.AddSingleton<IApi>(sp => new Api1());
-                injector.AddSingleton<IApi>(sp => new Api2());               
+                injector.AddSingleton<IApi>(sp => new Api2());
                 Assert.True(injector.GetRequiredService<IApi>().GerVersion() == 2);
                 injector.AddSingleton<IApi>(sp => new Api1());
                 Assert.True(injector.GetRequiredService<IApi>().GerVersion() == 1);
@@ -52,7 +52,7 @@ namespace Tests
                 injector.TryAddScoped<IApi>(sp => new Api2());
                 Assert.True(scope.ServiceProvider.GetRequiredService<IApi>().GerVersion() == 1);
             }
-        }        
+        }
 
         [Test]
         public void TryAdd002()
@@ -81,42 +81,42 @@ namespace Tests
                 }
                 {
                     injector.IsTry = null;
-                    injector.AddScoped<IApi>(sp => new Api2());
-                    Assert.True(injector.IsTry.Value == false);
+                    Assert.Throws<ApplicationException>(() => injector.AddScoped<IApi>(sp => new Api2()));
                 }
                 {
                     injector.IsTry = null;
-                    injector.AddTransient<IApi>(sp => new Api2());
-                    Assert.True(injector.IsTry.Value == false);
+                    Assert.Throws<ApplicationException>(() => injector.AddTransient<IApi>(sp => new Api2()));
                 }
-
-                {
-                    var inject1 = new EasyInjector();
-                    inject1.AddSingleton<IApi>(sp => new Api1());
-
-                    injector.IsTry = null;
-                    injector.TryImportServices(inject1);
-                    Assert.True(injector.IsTry.Value == true);
-
-                    injector.IsTry = null;
-                    injector.ImportServices(inject1);
-                    Assert.True(injector.IsTry.Value == false);                    
-                }
-
-                {
-                    injector.IsTry = null;
-                    injector.AddGenericService(SimpleLifetimes.Singleton, typeof(IOptional<>), (a, b) => new object());
-                    Assert.True(injector.IsTry.Value == false);
-
-                    injector.IsTry = null;
-                    injector.TryAddGenericService(SimpleLifetimes.Singleton, typeof(IOptional<>), (a, b) => new object());
-                    Assert.True(injector.IsTry.Value == true);    
-
-                }
-
             }
 
+            using (var injector = new MyInjector())
+            {
+                var inject1 = new EasyInjector();
+                inject1.AddSingleton<IApi>(sp => new Api1());
+
+                injector.IsTry = null;
+                injector.TryImportServices(inject1);
+                Assert.True(injector.IsTry.Value == true);
+
+                injector.IsTry = null;
+                injector.ImportServices(inject1);
+                Assert.True(injector.IsTry.Value == false);
+            }
+
+            using (var injector = new MyInjector())
+            {
+                injector.IsTry = null;
+                injector.AddGenericService(SimpleLifetimes.Transient, typeof(IProvider<>), (a, b) => new object());
+                Assert.True(injector.IsTry.Value == false);
+
+                injector.IsTry = null;
+                injector.TryAddGenericService(SimpleLifetimes.Transient, typeof(IProvider<>), (a, b) => new object());
+                Assert.True(injector.IsTry.Value == true);
+            }
         }
+
+
+
     }
 
     public class MyInjector : EasyInjector

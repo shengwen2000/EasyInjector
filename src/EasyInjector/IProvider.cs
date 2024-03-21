@@ -4,21 +4,24 @@ using System;
 namespace EasyInjectors
 {
     /// <summary>
-    /// (Transient) 選擇性取得的服務。於必要時才取得服務。
+    /// (Transient) 
+    /// 特定服務的提供者。也可看成是弱相依。
+    /// 如果服務為 Singleton 則取的唯一的那一個
+    /// 如果服務為 Transient 每次都取的新一個
+    /// 如果服務為 Scope 取得必須提供 Scope
     /// </summary>   
-    [Obsolete("廢棄請改用 IProvider")]
-    public interface IOptional<TService>
+    public interface IProvider<TService>
     {
         /// <summary>
         /// 由指定Provider取得服務
         /// </summary>
-        TService Get(IServiceProvider provider);
+        TService Get(IServiceScope scope);
 
         /// <summary>
-        /// 由指定Provider取得服務
+        /// 由指定Scope取得服務
         /// (服務必須要有註冊否則異常)
         /// </summary>
-        TService GetRequired(IServiceProvider provider);
+        TService GetRequired(IServiceScope scope);
 
         /// <summary>
         /// 由預設Provider取得服務 所謂預設Provider就是取得此Optional的Provider
@@ -32,25 +35,23 @@ namespace EasyInjectors
         TService GetRequired();
     }
 
-#pragma warning disable 0618
-
-    class OptionalService<TService> : IOptional<TService> where TService : class
+    class ProviderService<TService> : IProvider<TService> where TService : class
     {
         private IServiceProvider _defaultProvider;
 
-        public OptionalService(IServiceProvider defaultProvider)
+        public ProviderService(IServiceProvider defaultProvider)
         {
             _defaultProvider = defaultProvider;
         }
 
-        public TService Get(IServiceProvider provider)
+        public TService Get(IServiceScope scope)
         {
-            return provider.GetService<TService>();
+            return scope.ServiceProvider.GetService<TService>();
         }
 
-        public TService GetRequired(IServiceProvider provider)
+        public TService GetRequired(IServiceScope scope)
         {
-            return provider.GetRequiredService<TService>();
+            return scope.ServiceProvider.GetRequiredService<TService>();
         }
 
         public TService Get()
@@ -63,5 +64,4 @@ namespace EasyInjectors
             return _defaultProvider.GetRequiredService<TService>();
         }
     }
-#pragma warning restore 0618
 }
