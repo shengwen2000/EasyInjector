@@ -61,7 +61,7 @@ namespace EasyInjectors
                 vv[i] = srv1;
             }
             {
-                var inst = Activator.CreateInstance(srvType, vv);
+                var inst = ctor1.Invoke(vv);
                 if (inst == null)
                     throw new ApplicationException(string.Format("類別{0} 無法生成實例", srvType.FullName));
                 return inst;
