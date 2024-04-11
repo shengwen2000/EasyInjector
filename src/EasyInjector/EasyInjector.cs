@@ -499,6 +499,9 @@ namespace EasyInjectors
             if (serviceType == typeof(IServiceScopeFactory))
                 return this;
 
+            if (serviceType == typeof(IServiceScope))
+                return scope;
+
             lock (_serviceRegisters_lock)
             {
                 // 找出服務註冊項目
