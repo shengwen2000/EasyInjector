@@ -2,6 +2,7 @@ using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using HawkNet;
 using NUnit.Framework;
+using System;
 using System.Threading.Tasks;
 
 
@@ -11,6 +12,10 @@ namespace Tests
 	[TestFixture]
     public class ApiProxyTest : BaseTest
 	{
+        /// <summary>
+        /// 一般的API 測試
+        /// </summary>
+        /// <returns></returns>
 		[Test]
 		public async Task ApiProxy001()
 		{
@@ -67,12 +72,28 @@ namespace Tests
                 var api = new ApiProxyBuilder()
                     // Server 啟用Hawk驗證
                     .UseDemoApiServerMock(credential)
-                    .UseDefaultApiProtocol("http://localhost:8081/api/Demo", "api1")
+                    .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
                     .Build<IDemoApi>();
 
                 var ex = Assert.Catch<ApiCodeException>(() => api.GetServerInfo());
                 Assert.True(ex.Code == "HAWK_FAIL");
             }            
+        }
+
+        /// <summary>
+        /// 指定 Mehtod 與 Timeout
+        /// </summary>
+        /// <returns></returns>
+        [Test]
+        public async Task ApiProxy003()
+        {
+            var api = new ApiProxyBuilder()
+                .UseDemoApiServerMock()
+                .UseDefaultApiProtocol("http://localhost:8081/api/Demo", 3)
+                .Build<IDemoApi>();
+
+            var msg1 = await api.RunProc(new ProcInfo { ProcSeconds = 2 });
+            Assert.AreEqual("OK 2", msg1);
         }
 	}
 }

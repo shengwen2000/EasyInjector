@@ -13,11 +13,6 @@ namespace EasyApiProxys
     public class ApiProxyOptions
     {
         /// <summary>
-        /// Http Client Cached Name (default is Default)
-        /// </summary>
-        public string ClientName { get; set; }
-
-        /// <summary>
         /// 執行逾時 Default 15秒
         /// </summary>
         public TimeSpan DefaultTimeout { get; set; }
@@ -61,7 +56,6 @@ namespace EasyApiProxys
 
         public ApiProxyOptions()
         {
-            ClientName = "Default";
             DefaultTimeout = TimeSpan.FromSeconds(15);
             GetHttpMessageHandler = () => null;           
             GetJsonSerializer = () => _serializer;            

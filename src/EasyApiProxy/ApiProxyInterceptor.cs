@@ -1,5 +1,6 @@
 ﻿using Castle.DynamicProxy;
 using EasyApiProxys.Options;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -33,6 +34,7 @@ namespace EasyApiProxys
                 _http = new HttpClient(handler);
             else
                 _http = new HttpClient();
+            _http.Timeout = _options.DefaultTimeout;
         }
 
         /// <summary>
@@ -102,9 +104,16 @@ namespace EasyApiProxys
 
             // 呼叫哪個Api
             var apiMethod = invocation.Method;
+            var apiAttr = apiMethod.GetCustomAttribute<ApiMethodAttribute>();
 
             using (var req = new HttpRequestMessage())
             {
+                // API Url e.g. http://demo/demoapi
+                if (apiAttr != null && !string.IsNullOrEmpty(apiAttr.Name))
+                    req.RequestUri = new Uri(string.Concat(_options.BaseUrl, "/", apiAttr.Name));
+                else
+                    req.RequestUri = new Uri(string.Concat(_options.BaseUrl, "/", apiMethod.Name));                
+
                 if (_options.Step2 != null)
                     await _options.Step2(new Step2_BeforeHttpSend
                     {
@@ -114,11 +123,14 @@ namespace EasyApiProxys
                     });
 
                 // API逾時設定
-                var cts = new CancellationTokenSource();
-                cts.CancelAfter(_options.DefaultTimeout);
+                //var cts = new CancellationTokenSource();
+                //if (apiAttr != null && apiAttr.TimeoutSeconds > 0)
+                //    cts.CancelAfter(TimeSpan.FromSeconds(apiAttr.TimeoutSeconds));
+                //else
+                //    cts.CancelAfter(_options.DefaultTimeout);
 
                 // 進行呼叫
-                using (var resp = await _http.SendAsync(req, cts.Token))
+                using (var resp = await _http.SendAsync(req))
                 {
                     var step3 = new Step3_AfterHttpResponse
                     {

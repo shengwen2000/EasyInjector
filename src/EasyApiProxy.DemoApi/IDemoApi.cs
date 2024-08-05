@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using EasyApiProxys;
 
 
 namespace EasyApiProxys.DemoApis
@@ -12,7 +13,10 @@ namespace EasyApiProxys.DemoApis
 
         Task<string> GetEmail(TokenInfo req);
 
-        string GetServerInfo();        
+        string GetServerInfo();
+
+        [ApiMethod(Name = "RunProc_001")]
+        Task<string> RunProc(ProcInfo info);
     }
 
     public class Login
@@ -34,6 +38,11 @@ namespace EasyApiProxys.DemoApis
     public class TokenInfo
     {
         public string Token { get; set; }
+    }
+
+    public class ProcInfo
+    {
+        public int ProcSeconds { get; set; }        
     }
 
    

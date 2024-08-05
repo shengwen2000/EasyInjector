@@ -38,16 +38,15 @@ namespace EasyApiProxys
         /// </summary>
         /// <param name="clientName">共用的HttpClient KeyName</param>
         /// <param name="builder"></param>
-        static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, string clientName="Default")
+        static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
-            var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);
-            if (clientName != null)
-                builder.Options.ClientName = clientName;
+            var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);           
 
             builder.Options.GetJsonSerializer = () => DefaultJsonSerializer;
             builder.Options.Step2 = hander.Step2;
             builder.Options.Step3 = hander.Step3;
             builder.Options.BaseUrl = baseUrl;
+            builder.Options.DefaultTimeout = TimeSpan.FromSeconds(defaltTimeoutSeconds);
             return builder;
         }
 
@@ -73,9 +72,7 @@ namespace EasyApiProxys
                 var apiMethod = step.Invocation.Method;
                 var req = step.Request;
                 var _options = step.Options;
-
-                // API Url e.g. http://demo/demoapi
-                req.RequestUri = new Uri(string.Concat(_options.BaseUrl, "/", apiMethod.Name));
+             
                 req.Method = HttpMethod.Post;
 
                 // 方法的第一個參數 會當成Json內容進行傳送

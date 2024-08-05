@@ -53,6 +53,13 @@ namespace Tests
                 resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
                 return resp;
             }
+            else if (request.RequestUri.Segments.Last().Equals("RunProc_001", StringComparison.OrdinalIgnoreCase))
+            {
+                var ret = await RunProc_001(request);
+                var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
+                return resp;
+            }
             else
             {
                 throw new ApplicationException("Not Found");
@@ -91,10 +98,20 @@ namespace Tests
             throw new ApplicationException("The Token Not exits");
         }
 
+        public async Task<string> RunProc_001(HttpRequestMessage request)
+        {
+            //await Task.Delay(1000);
+            var req = await GetContent<ProcInfo>(request);
+            if (req.ProcSeconds > 0)
+                await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds));
+
+            return string.Format("OK {0}", req.ProcSeconds);
+        }
+
         public string GetServerInfo()
         {
             return "Demo Server";
-        }
+        }       
 
         async Task<T> GetContent<T>(HttpRequestMessage request)
         {

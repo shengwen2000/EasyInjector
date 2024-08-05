@@ -42,6 +42,12 @@
     <Compile Include="IDemoApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EasyApiProxy\EasyApiProxy.csproj">
+      <Project>{d9a14b19-f407-4312-b7e8-7ed6371b93bd}</Project>
+      <Name>EasyApiProxy</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
