@@ -45,7 +45,6 @@ namespace EasyApiProxys
                 builder.Options.ClientName = clientName;
 
             builder.Options.GetJsonSerializer = () => DefaultJsonSerializer;
-
             builder.Options.Step2 = hander.Step2;
             builder.Options.Step3 = hander.Step3;
             builder.Options.BaseUrl = baseUrl;

@@ -3,12 +3,15 @@ using HawkNet.WebApi;
 using System;
 using System.Net.Http;
 
-namespace EasyApiProxys.HawkAuths
+namespace EasyApiProxys
 {
+    /// <summary>
+    /// 用戶端啟用Hawk驗證
+    /// </summary>
     public static class HawkAuthExtension
     {
         /// <summary>
-        /// 用戶端使用Hawk驗證
+        /// 用戶端啟用Hawk驗證
         /// </summary>
         /// <param name="builder"></param>
         static public ApiProxyBuilder UseHawkAuthorize(this ApiProxyBuilder builder, HawkCredential credential)

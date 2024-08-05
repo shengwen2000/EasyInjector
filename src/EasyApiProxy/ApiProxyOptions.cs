@@ -25,12 +25,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 基礎連結位置
         /// </summary>
-        public string BaseUrl { get; set; }        
-
-        /// <summary>
-        /// Http Client 快取服務 (有預設實作)
-        /// </summary>
-        public IHttpClientCacheService HttpClientCache { get; set; }
+        public string BaseUrl { get; set; }              
 
         /// <summary>
         /// 取得Message Handler (default null)
@@ -68,8 +63,7 @@ namespace EasyApiProxys
         {
             ClientName = "Default";
             DefaultTimeout = TimeSpan.FromSeconds(15);
-            GetHttpMessageHandler = () => null;
-            HttpClientCache = HttpClientCacheService.Shared;
+            GetHttpMessageHandler = () => null;           
             GetJsonSerializer = () => _serializer;            
         }
     }

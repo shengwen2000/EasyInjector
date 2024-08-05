@@ -1,7 +1,9 @@
 using EasyApiProxys;
 using EasyApiProxys.DemoApis;
+using HawkNet;
 using NUnit.Framework;
 using System.Threading.Tasks;
+
 
 namespace Tests
 {
@@ -34,14 +36,43 @@ namespace Tests
 
 		}
 
+        /// <summary>
+        /// Hawk 驗證
+        /// </summary>
+        /// <returns></returns>
         [Test]
         public void ApiProxy002()
         {
-            var a = new DefaultApiResult<string>();
-            a.Data = "123";
+            var credential = new HawkCredential
+            {
+                Id = "123",
+                Key = "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn",
+                Algorithm = "sha256",
+                User = "Admin",
+            };
 
-            var b = a as DefaultApiResult;
-            Assert.True(b.Data.Equals("123"));
+            {
+                var api = new ApiProxyBuilder()
+                    // Server 啟用Hawk驗證
+                    .UseDemoApiServerMock(credential)
+                    .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
+                    .UseHawkAuthorize(credential)
+                    .Build<IDemoApi>();
+
+                var srvInfo = api.GetServerInfo();
+                Assert.AreEqual("Demo Server", srvInfo);
+            }
+
+            {
+                var api = new ApiProxyBuilder()
+                    // Server 啟用Hawk驗證
+                    .UseDemoApiServerMock(credential)
+                    .UseDefaultApiProtocol("http://localhost:8081/api/Demo", "api1")
+                    .Build<IDemoApi>();
+
+                var ex = Assert.Catch<ApiCodeException>(() => api.GetServerInfo());
+                Assert.True(ex.Code == "HAWK_FAIL");
+            }            
         }
 	}
 }

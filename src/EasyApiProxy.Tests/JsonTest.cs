@@ -13,7 +13,7 @@ namespace Tests
     public class JsonTest : BaseTest
 	{
         [Test]
-        public async Task Json001()
+        public void Json001()
         {
             var setting = new JsonSerializerSettings
             {

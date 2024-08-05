@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace EasyApiProxys
-{  
+{
     /// <summary>
     /// 負責實際呼叫Api的實作
     /// </summary>
@@ -17,12 +17,22 @@ namespace EasyApiProxys
         private readonly ApiProxyOptions _options;
 
         /// <summary>
+        /// 共用的 httpClient
+        /// </summary>
+        private readonly HttpClient _http;
+
+        /// <summary>
         /// 負責實際呼叫Api的實作
         /// </summary>
         /// <param name="options">代理選項</param>
         public ApiProxyInterceptor(ApiProxyOptions options)
         {
             _options = options;
+            var handler = _options.GetHttpMessageHandler();
+            if (handler != null)
+                _http = new HttpClient(handler);
+            else
+                _http = new HttpClient();
         }
 
         /// <summary>
@@ -84,9 +94,11 @@ namespace EasyApiProxys
         {
             // step1
             if (_options.Step1 != null)
-                await _options.Step1(new Step1_BeforeCreateRequest { 
-                    Invocation = invocation, 
-                    Options = _options });
+                await _options.Step1(new Step1_BeforeCreateRequest
+                {
+                    Invocation = invocation,
+                    Options = _options
+                });
 
             // 呼叫哪個Api
             var apiMethod = invocation.Method;
@@ -94,26 +106,19 @@ namespace EasyApiProxys
             using (var req = new HttpRequestMessage())
             {
                 if (_options.Step2 != null)
-                    await _options.Step2(new Step2_BeforeHttpSend { 
+                    await _options.Step2(new Step2_BeforeHttpSend
+                    {
                         Invocation = invocation,
                         Options = _options,
                         Request = req
-                    });             
+                    });
 
                 // API逾時設定
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(_options.DefaultTimeout);
 
-                var http = _options.HttpClientCache.GetOrCreateHttpClient(_options.ClientName, () => {
-                    var handler = _options.GetHttpMessageHandler();
-                    if (handler != null)
-                        return new HttpClient(handler);
-                    else
-                        return new HttpClient();                
-                });              
-
                 // 進行呼叫
-                using (var resp = await http.SendAsync(req, cts.Token))
+                using (var resp = await _http.SendAsync(req, cts.Token))
                 {
                     var step3 = new Step3_AfterHttpResponse
                     {
@@ -123,7 +128,7 @@ namespace EasyApiProxys
                     };
 
                     if (_options.Step3 != null)
-                        await _options.Step3(step3);                  
+                        await _options.Step3(step3);
 
                     if (_options.Step4 == null)
                         return step3.Result;
@@ -139,5 +144,5 @@ namespace EasyApiProxys
                 }
             }
         }
-    }	
+    }
 }

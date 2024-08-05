@@ -1,4 +1,5 @@
 using EasyApiProxys;
+using HawkNet;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -14,14 +15,20 @@ namespace Tests
     /// </summary>
     public class DefaultApiResultHandler : DelegatingHandler
     {
-        public DefaultApiResultHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+        private readonly HawkCredential _hawkCredential;
+
+        public DefaultApiResultHandler(HttpMessageHandler innerHandler, HawkCredential credential)
+            : base(innerHandler)
         {
+            _hawkCredential = credential;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {            
             try
             {
+                ValidateHawk(request, _hawkCredential);
+
                 var ret = await base.SendAsync(request, cancellationToken);
 
                 // 有內容
@@ -88,6 +95,21 @@ namespace Tests
                 }
             }
             
+        }
+
+        private void ValidateHawk(HttpRequestMessage request, HawkCredential hawkCredential)
+        {
+            if (hawkCredential == null) return;          
+            if (request.Headers.Authorization == null || request.Headers.Authorization.Parameter == null)
+                throw new ApiCodeException("HAWK_FAIL", "HAWK 驗證失敗");    
+            var authoriztion = request.Headers.Authorization.Parameter;
+            var p = Hawk.Authenticate(authoriztion,
+                request.RequestUri.Host,
+                request.Method.ToString(),
+                request.RequestUri,
+                (id) => hawkCredential);
+            if (p == null || p.Identity.IsAuthenticated == false)
+                throw new ApiCodeException("HAWK_FAIL", "HAWK 驗證失敗");           
         }
     }
 }
