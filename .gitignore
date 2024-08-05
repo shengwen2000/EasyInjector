@@ -2,3 +2,4 @@ bin/
 obj/
 packages/
 *.suo
+/src/EasyInjector/EasyInjector.csproj.user
