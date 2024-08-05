@@ -1,12 +1,11 @@
 ﻿using Castle.DynamicProxy;
-using EasyApiProxys;
-using KmuApps.ApiProxys.Filters;
+using EasyApiProxys.Filters;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace KmuApps.ApiProxys
+namespace EasyApiProxys
 {
     public class ApiProxyOptions
     {

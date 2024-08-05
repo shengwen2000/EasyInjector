@@ -1,5 +1,5 @@
-using KmuApps.ApiProxys;
-using KmuApps.ApiProxys.Demos;
+using EasyApiProxys;
+using EasyApiProxys.DemoApis;
 using NUnit.Framework;
 using System.Threading.Tasks;
 
@@ -20,7 +20,7 @@ namespace Tests
             var srvInfo = api.GetServerInfo();
             Assert.AreEqual("Demo Server", srvInfo);            
 
-            var ret = await api.Login(new KmuApps.ApiProxys.Demos.Login { Account = "david", Password = "123" });
+            var ret = await api.Login(new Login { Account = "david", Password = "123" });
             Assert.True(ret.Account == "david");
 
             var email = await api.GetEmail(new TokenInfo { Token = ret.Token });

@@ -1,15 +1,9 @@
 ﻿using HawkNet;
-using KmuApps.ApiProxys.Filters;
-using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-
 using HawkNet.WebApi;
-namespace KmuApps.ApiProxys
+using System;
+using System.Net.Http;
+
+namespace EasyApiProxys.HawkAuths
 {
     public static class HawkAuthExtension
     {

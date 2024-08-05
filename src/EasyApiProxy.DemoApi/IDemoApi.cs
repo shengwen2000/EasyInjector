@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 
 
-namespace KmuApps.ApiProxys.Demos
+namespace EasyApiProxys.DemoApis
 {
     public interface IDemoApi
     {

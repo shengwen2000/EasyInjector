@@ -1,5 +1,5 @@
 ﻿
-namespace KmuApps.ApiProxys
+namespace EasyApiProxys
 {
     public class DefaultApiResult
     {

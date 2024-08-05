@@ -1,4 +1,4 @@
-﻿using KmuApps.ApiProxys.Filters;
+﻿using EasyApiProxys.Filters;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KmuApps.ApiProxys
+namespace EasyApiProxys
 {
     public static class DefaultApiExtension
     {

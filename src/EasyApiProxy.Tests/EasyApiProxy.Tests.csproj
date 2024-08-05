@@ -64,10 +64,6 @@
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SimpleInjector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.5.0.0\lib\net45\SimpleInjector.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -109,6 +105,10 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EasyApiProxy.DemoApi\EasyApiProxy.DemoApi.csproj">
+      <Project>{3569d02f-2be3-4468-a266-19d8806fb126}</Project>
+      <Name>EasyApiProxy.DemoApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EasyApiProxy.HawkAuth\EasyApiProxy.HawkAuth.csproj">
       <Project>{9e024e8f-3aa1-44e1-82b2-b2a63b475551}</Project>
       <Name>EasyApiProxy.HawkAuth</Name>

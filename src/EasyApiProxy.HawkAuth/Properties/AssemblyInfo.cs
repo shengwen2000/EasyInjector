@@ -1,14 +1,13 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("EasyApiProxy.HawkAuth")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("HttpClient 呼叫時使用 Hawk驗證")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Shengwen")]
 [assembly: AssemblyProduct("EasyApiProxy.HawkAuth")]
 [assembly: AssemblyCopyright("Copyright ©  2024")]
 [assembly: AssemblyTrademark("")]

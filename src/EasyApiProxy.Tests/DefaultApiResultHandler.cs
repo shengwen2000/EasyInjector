@@ -1,4 +1,4 @@
-using KmuApps.ApiProxys;
+using EasyApiProxys;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -28,7 +28,7 @@ namespace Tests
                 if (ret.Content is ObjectContent)
                 {
                     var robj = ret.Content as ObjectContent;
-                    ret.Content = new ObjectContent<KmuApps.ApiProxys.DefaultApiResult<object>>(new KmuApps.ApiProxys.DefaultApiResult<object>
+                    ret.Content = new ObjectContent<DefaultApiResult<object>>(new DefaultApiResult<object>
                     {
                         Result = "OK",
                         Message = "Success",
@@ -40,7 +40,7 @@ namespace Tests
                 else if (ret.Content == null)
                 {
                     ret.StatusCode = System.Net.HttpStatusCode.OK;
-                    ret.Content = new ObjectContent<KmuApps.ApiProxys.DefaultApiResult>(new KmuApps.ApiProxys.DefaultApiResult
+                    ret.Content = new ObjectContent<DefaultApiResult>(new DefaultApiResult
                     {
                         Result = "OK",
                         Message = "Success"
@@ -55,7 +55,7 @@ namespace Tests
                 {
                     var e1 = ex as ValidationException;
                     var a = new JsonMediaTypeFormatter();
-                    var c = new ObjectContent<KmuApps.ApiProxys.DefaultApiResult>(new KmuApps.ApiProxys.DefaultApiResult
+                    var c = new ObjectContent<DefaultApiResult>(new DefaultApiResult
                     {
                         Result = "IM",
                         Message = e1.Message
@@ -69,7 +69,7 @@ namespace Tests
                 {
                     var e2 = ex as DefaultApiCodeError;
                     var resp = new HttpResponseMessage(HttpStatusCode.OK);
-                    resp.Content = new ObjectContent<KmuApps.ApiProxys.DefaultApiResult>(new KmuApps.ApiProxys.DefaultApiResult
+                    resp.Content = new ObjectContent<DefaultApiResult>(new DefaultApiResult
                     {
                         Result = e2.Code,
                         Message = e2.Message
@@ -79,7 +79,7 @@ namespace Tests
                 else
                 {
                     var resp = new HttpResponseMessage(HttpStatusCode.OK);
-                    resp.Content = new ObjectContent<KmuApps.ApiProxys.DefaultApiResult>(new KmuApps.ApiProxys.DefaultApiResult
+                    resp.Content = new ObjectContent<DefaultApiResult>(new DefaultApiResult
                     {
                         Result = "EX",
                         Message = ex.Message

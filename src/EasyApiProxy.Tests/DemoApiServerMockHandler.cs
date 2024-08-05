@@ -1,4 +1,4 @@
-﻿using KmuApps.ApiProxys.Demos;
+﻿using EasyApiProxys.DemoApis;
 using Newtonsoft.Json;
 using System;
 using System.IO;

@@ -1,12 +1,12 @@
 ﻿using Castle.DynamicProxy;
-using KmuApps.ApiProxys.Filters;
+using EasyApiProxys.Filters;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KmuApps.ApiProxys
+namespace EasyApiProxys
 {
   
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using Castle.DynamicProxy;
 
-namespace KmuApps.ApiProxys
+namespace EasyApiProxys
 {
     public class ApiProxyBuilder
     {
