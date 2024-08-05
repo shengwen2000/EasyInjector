@@ -86,6 +86,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JsonTest.cs" />
+    <Compile Include="NewTest.cs" />
     <Compile Include="ApiProxyTest.cs" />
     <Compile Include="BaseTest.cs" />
     <Compile Include="DefaultApiResultHandler.cs" />

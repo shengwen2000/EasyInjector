@@ -65,9 +65,9 @@ namespace Tests
                     resp.Content = c;
                     return resp;
                 }
-                else if (ex is DefaultApiCodeError)
+                else if (ex is ApiCodeException)
                 {
-                    var e2 = ex as DefaultApiCodeError;
+                    var e2 = ex as ApiCodeException;
                     var resp = new HttpResponseMessage(HttpStatusCode.OK);
                     resp.Content = new ObjectContent<DefaultApiResult>(new DefaultApiResult
                     {

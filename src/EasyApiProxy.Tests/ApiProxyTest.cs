@@ -29,7 +29,7 @@ namespace Tests
 
             await api.Logout(new TokenInfo { Token = ret.Token });
 
-            var ex = Assert.Catch<DefaultApiCodeError>(() => api.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
+            var ex = Assert.Catch<ApiCodeException>(() => api.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
             Assert.AreEqual("EX", ex.Code);
 
 		}

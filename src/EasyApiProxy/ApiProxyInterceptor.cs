@@ -1,5 +1,5 @@
 ﻿using Castle.DynamicProxy;
-using EasyApiProxys.Filters;
+using EasyApiProxys.Options;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -7,13 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace EasyApiProxys
-{
-  
+{  
     /// <summary>
     /// 負責實際呼叫Api的實作
     /// </summary>
     /// <typeparam name="TAPI"></typeparam>
-    public class ApiProxyInterceptor<TAPI> : IInterceptor
+    internal class ApiProxyInterceptor<TAPI> : IInterceptor
     {
         private readonly ApiProxyOptions _options;
 

@@ -40,9 +40,9 @@ namespace EasyApiProxys.WebApis
 
                     context.Response.Content = c;
                 }
-                else if (ex is DefaultApiCodeError)
+                else if (ex is ApiCodeException)
                 {
-                    var e2 = ex as DefaultApiCodeError;
+                    var e2 = ex as ApiCodeException;
                     context.Response.Content = new ObjectContent<DefaultApiResult>(new DefaultApiResult{
                         Result = e2.Code,
                         Message = e2.Message

@@ -1,5 +1,6 @@
-﻿using EasyApiProxys.Filters;
+﻿using EasyApiProxys.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
 using System.Linq;
@@ -9,22 +10,49 @@ using System.Threading.Tasks;
 
 namespace EasyApiProxys
 {
+    /// <summary>
+    /// 預設的API 協定
+    /// </summary>
     public static class DefaultApiExtension
     {
         /// <summary>
+        /// Default Api 預設 Json Serializer
+        /// </summary>
+        public static JsonSerializer DefaultJsonSerializer { get; private set; }
+
+        static DefaultApiExtension()
+        {
+            var setting = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat,
+                DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Unspecified,
+                //ContractResolver = new DefaultContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            DefaultJsonSerializer = JsonSerializer.Create(setting);
+        }
+
+        /// <summary>
         /// 使用標準Api通訊方法
         /// </summary>
+        /// <param name="clientName">共用的HttpClient KeyName</param>
         /// <param name="builder"></param>
-        static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl)
+        static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, string clientName="Default")
         {
             var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);
+            if (clientName != null)
+                builder.Options.ClientName = clientName;
+
+            builder.Options.GetJsonSerializer = () => DefaultJsonSerializer;
+
             builder.Options.Step2 = hander.Step2;
             builder.Options.Step3 = hander.Step3;
             builder.Options.BaseUrl = baseUrl;
             return builder;
         }
 
-        public class DefaultApiHandler
+        internal class DefaultApiHandler
         {
             Func<Step2_BeforeHttpSend,Task> _step2;
             Func<Step3_AfterHttpResponse,Task> _step3;
@@ -73,7 +101,7 @@ namespace EasyApiProxys
 
                 // 必須是 HTTP 200 回應
                 if (resp.StatusCode != System.Net.HttpStatusCode.OK)
-                    throw new DefaultApiCodeError("HTTP_NOT_OK", string.Format("HTTP連線狀態錯誤 StatusCode={0}", resp.StatusCode));
+                    throw new ApiCodeException("HTTP_NOT_OK", string.Format("HTTP連線狀態錯誤 StatusCode={0}", resp.StatusCode));
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync();
@@ -85,7 +113,7 @@ namespace EasyApiProxys
                     {
                         var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult>(jsonTextReader);
                         if (ret.Result != "OK")
-                            throw new DefaultApiCodeError(ret.Result, ret.Message);
+                            throw new ApiCodeException(ret.Result, ret.Message);
                     }
                     // 方法有回傳值Task<T>
                     else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
@@ -96,7 +124,7 @@ namespace EasyApiProxys
 
                         var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, resultT1) as DefaultApiResult;
                         if (ret.Result != "OK")
-                            throw new DefaultApiCodeError(ret.Result, ret.Message);
+                            throw new ApiCodeException(ret.Result, ret.Message);
 
                         var data = ret.Data;
                         step.Result = data;
@@ -110,7 +138,7 @@ namespace EasyApiProxys
 
                         var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, resultT1) as DefaultApiResult;
                         if (ret.Result != "OK")
-                            throw new DefaultApiCodeError(ret.Result, ret.Message);
+                            throw new ApiCodeException(ret.Result, ret.Message);
 
                         var data = ret.Data;
                         step.Result = data;

@@ -1,11 +1,17 @@
 ﻿
 namespace EasyApiProxys
 {
-    public class DefaultApiCodeError : System.Exception
+    /// <summary>
+    /// API 發生的異常
+    /// </summary>
+    public class ApiCodeException : System.Exception
     {
+        /// <summary>
+        /// OK 是正常 其他為異常
+        /// </summary>
         public string Code { get; set; }
 
-        public DefaultApiCodeError(string code, string message)
+        public ApiCodeException(string code, string message)
             : base(message)
         {
             Code = code;

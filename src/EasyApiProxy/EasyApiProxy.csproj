@@ -49,7 +49,7 @@
     <Compile Include="ApiProxyInterceptor.cs" />
     <Compile Include="DefaultApiResult.cs" />
     <Compile Include="ApiProxyOptions.cs" />
-    <Compile Include="DefaultApiCodeError.cs" />
+    <Compile Include="ApiCodeException.cs" />
     <Compile Include="IHttpClientCacheService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

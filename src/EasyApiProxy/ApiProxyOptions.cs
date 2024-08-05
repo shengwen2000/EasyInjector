@@ -1,5 +1,5 @@
 ﻿using Castle.DynamicProxy;
-using EasyApiProxys.Filters;
+using EasyApiProxys.Options;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace EasyApiProxys
 {
+    /// <summary>
+    /// Api Proxy 選項
+    /// </summary>
     public class ApiProxyOptions
     {
         /// <summary>
@@ -35,7 +38,7 @@ namespace EasyApiProxys
         public Func<HttpMessageHandler> GetHttpMessageHandler { get; set; }
 
         /// <summary>
-        /// Json Serializer
+        /// 取得Json Serializer
         /// </summary>
         public Func<JsonSerializer> GetJsonSerializer { get; set; }
 
@@ -71,7 +74,7 @@ namespace EasyApiProxys
         }
     }
 
-    namespace Filters
+    namespace Options
     {
         public class BaseStep
         {
