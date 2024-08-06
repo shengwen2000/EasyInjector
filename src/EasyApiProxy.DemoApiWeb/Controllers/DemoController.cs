@@ -55,8 +55,14 @@ namespace KmuApps.Controllers
             return "Demo Server";
         }
 
-        [Route("RunProc_001"), HttpPost]
-        public async Task<string> RunProc(ProcInfo req)
+        [HttpPost]
+        public Task<string> RunProc(ProcInfo req)
+        {
+            return RunProc_001(req);
+        }
+
+        [HttpPost]
+        public async Task<string> RunProc_001(ProcInfo req)
         {
             if (req.ProcSeconds > 0)
                 await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds));

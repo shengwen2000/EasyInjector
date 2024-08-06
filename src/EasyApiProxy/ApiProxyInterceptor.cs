@@ -123,14 +123,14 @@ namespace EasyApiProxys
                     });
 
                 // API逾時設定
-                //var cts = new CancellationTokenSource();
-                //if (apiAttr != null && apiAttr.TimeoutSeconds > 0)
-                //    cts.CancelAfter(TimeSpan.FromSeconds(apiAttr.TimeoutSeconds));
-                //else
-                //    cts.CancelAfter(_options.DefaultTimeout);
+                var cts = new CancellationTokenSource();
+                if (apiAttr != null && apiAttr.TimeoutSeconds > 0)
+                    cts.CancelAfter(TimeSpan.FromSeconds(apiAttr.TimeoutSeconds));
+                else
+                    cts.CancelAfter(_options.DefaultTimeout);
 
                 // 進行呼叫
-                using (var resp = await _http.SendAsync(req))
+                using (var resp = await _http.SendAsync(req, cts.Token))
                 {
                     var step3 = new Step3_AfterHttpResponse
                     {

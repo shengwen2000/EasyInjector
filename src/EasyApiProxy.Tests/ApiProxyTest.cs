@@ -20,7 +20,7 @@ namespace Tests
 		public async Task ApiProxy001()
 		{
             var api = new ApiProxyBuilder()
-                //.UseDemoApiServerMock()
+                .UseDemoApiServerMock()
                 .UseDefaultApiProtocol("http://localhost:8081/api/Demo")                
                 .Build<IDemoApi>();                                
 
@@ -89,11 +89,13 @@ namespace Tests
         {
             var api = new ApiProxyBuilder()
                 .UseDemoApiServerMock()
-                .UseDefaultApiProtocol("http://localhost:8081/api/Demo", 3)
+                .UseDefaultApiProtocol("http://localhost:8081/api/Demo", 20)
                 .Build<IDemoApi>();
 
             var msg1 = await api.RunProc(new ProcInfo { ProcSeconds = 2 });
             Assert.AreEqual("OK 2", msg1);
+
+            Assert.Catch<Exception>(() => api.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
         }
 
 

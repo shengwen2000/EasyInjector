@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using EasyApiProxys;
 
-
 namespace EasyApiProxys.DemoApis
 {
     public interface IDemoApi
@@ -15,7 +14,7 @@ namespace EasyApiProxys.DemoApis
 
         string GetServerInfo();
 
-        [ApiMethod(Name = "RunProc_001")]
+        [ApiMethod(Name = "RunProc_001", TimeoutSeconds=5)]
         Task<string> RunProc(ProcInfo info);
     }
 

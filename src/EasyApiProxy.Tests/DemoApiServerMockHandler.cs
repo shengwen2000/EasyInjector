@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -22,48 +23,52 @@ namespace Tests
             _jsonSerailizer = jsonSerailizer.Invoke();
         }
 
-        protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            var ret1 = await Task.Run(async () => {
+                if (request.RequestUri.Segments.Last().Equals("Login", StringComparison.OrdinalIgnoreCase))
+                {
+                    var ret = await Login(request);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                    resp.Content = new ObjectContent<AccountInfo>(ret, new JsonMediaTypeFormatter());
+                    return resp;
+                }
+                else if (request.RequestUri.Segments.Last().Equals("Logout", StringComparison.OrdinalIgnoreCase))
+                {
+                    await Logout(request);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                    return resp;
+                }
+                else if (request.RequestUri.Segments.Last().Equals("GetEmail", StringComparison.OrdinalIgnoreCase))
+                {
+                    var ret = await GetEmail(request);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                    resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
+                    return resp;
+                }
 
-            if (request.RequestUri.Segments.Last().Equals("Login", StringComparison.OrdinalIgnoreCase))
-            {
-                var ret = await Login(request);               
-                var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                resp.Content = new ObjectContent<AccountInfo>(ret, new JsonMediaTypeFormatter());
-                return resp;
-            }
-            else if (request.RequestUri.Segments.Last().Equals("Logout", StringComparison.OrdinalIgnoreCase))
-            {
-                await Logout(request);
-                var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);                
-                return resp;
-            }
-            else if (request.RequestUri.Segments.Last().Equals("GetEmail", StringComparison.OrdinalIgnoreCase))
-            {
-                var ret = await GetEmail(request);
-                var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
-                return resp;
-            }
+                else if (request.RequestUri.Segments.Last().Equals("GetServerInfo", StringComparison.OrdinalIgnoreCase))
+                {
+                    var ret = GetServerInfo();
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                    resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
+                    return resp;
+                }
+                else if (request.RequestUri.Segments.Last().Equals("RunProc_001", StringComparison.OrdinalIgnoreCase))
+                {
+                    var ret = await RunProc_001(request, cancellationToken);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                    resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
+                    return resp;
+                }
+                else
+                {
+                    throw new ApplicationException("Not Found");
+                }
+            
+            }, cancellationToken);
 
-            else if (request.RequestUri.Segments.Last().Equals("GetServerInfo", StringComparison.OrdinalIgnoreCase))
-            {
-                var ret = GetServerInfo();
-                var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
-                return resp;
-            }
-            else if (request.RequestUri.Segments.Last().Equals("RunProc_001", StringComparison.OrdinalIgnoreCase))
-            {
-                var ret = await RunProc_001(request);
-                var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
-                return resp;
-            }
-            else
-            {
-                throw new ApplicationException("Not Found");
-            }
+            return ret1;            
         }       
 
         public async Task<AccountInfo> Login(HttpRequestMessage request)
@@ -98,12 +103,12 @@ namespace Tests
             throw new ApplicationException("The Token Not exits");
         }
 
-        public async Task<string> RunProc_001(HttpRequestMessage request)
+        public async Task<string> RunProc_001(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             //await Task.Delay(1000);
             var req = await GetContent<ProcInfo>(request);
             if (req.ProcSeconds > 0)
-                await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds));
+                await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds), cancellationToken);
 
             return string.Format("OK {0}", req.ProcSeconds);
         }

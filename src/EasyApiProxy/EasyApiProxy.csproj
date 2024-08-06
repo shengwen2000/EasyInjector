@@ -72,6 +72,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>if '$(Configuration)'=='Release'  nuget pack $(ProjectDir)Nuget.nuspec -OutputDirectory $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>if '$(Configuration)'=='Release'  nuget pack $(ProjectDir)Nuget.nuspec -OutputDirectory $(SolutionDir)..\nugets</PostBuildEvent>
   </PropertyGroup>
 </Project>

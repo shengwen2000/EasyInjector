@@ -4,3 +4,4 @@ packages/
 *.suo
 /src/EasyInjector/EasyInjector.csproj.user
 *.user
+/nugets
