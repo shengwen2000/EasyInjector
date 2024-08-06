@@ -52,11 +52,11 @@
     <Compile Include="EasyInjector.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="EasyInjector.nuspec" />
+    <None Include="Nuget.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>nuget pack $(ProjectDir)EasyInjector.nuspec -OutputDirectory $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>if '$(Configuration)'=='Release'  nuget pack $(ProjectDir)Nuget.nuspec -OutputDirectory $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

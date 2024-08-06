@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace EasyApiProxys
 {
     /// <summary>
-    /// Api Proxy 選項
+    /// Api Proxy 建立選項
     /// </summary>
     public class ApiProxyOptions
     {
@@ -54,6 +54,9 @@ namespace EasyApiProxys
 
         JsonSerializer _serializer = new JsonSerializer();
 
+        /// <summary>
+        /// Api Proxy 建立選項
+        /// </summary>
         public ApiProxyOptions()
         {
             DefaultTimeout = TimeSpan.FromSeconds(15);
@@ -64,6 +67,9 @@ namespace EasyApiProxys
 
     namespace Options
     {
+        /// <summary>
+        /// 基本步驟
+        /// </summary>
         public class BaseStep
         {
             /// <summary>
@@ -71,6 +77,9 @@ namespace EasyApiProxys
             /// </summary>
             public IInvocation Invocation { get; set; }
 
+            /// <summary>
+            /// ApiProxy建立選項
+            /// </summary>
             public ApiProxyOptions Options { get; set; }
         }
 

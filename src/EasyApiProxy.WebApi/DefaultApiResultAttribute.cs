@@ -13,11 +13,10 @@ namespace EasyApiProxys.WebApis
     /// </summary>
     public class DefaultApiResultAttribute : ActionFilterAttribute
     {
-        public override void OnActionExecuting(HttpActionContext context)
-        {
-            base.OnActionExecuting(context);
-        }
-
+        /// <summary>
+        /// Action執行完成 封裝格式
+        /// </summary>
+        /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
            // 執行過程有異常 回傳格式處理

@@ -13,7 +13,8 @@ namespace EasyApiProxys
         /// <summary>
         /// 用戶端啟用Hawk驗證
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="builder">ProxyBuilder</param>
+        /// <param name="credential">Hawk憑證</param>
         static public ApiProxyBuilder UseHawkAuthorize(this ApiProxyBuilder builder, HawkCredential credential)
         {
             var hander = new MethodHandler(credential, builder.Options.GetHttpMessageHandler);
@@ -21,7 +22,7 @@ namespace EasyApiProxys
             return builder;
         }
 
-        public class MethodHandler
+        internal class MethodHandler
         {
             readonly private Func<HttpMessageHandler> _current;
             readonly private HawkCredential _credential;            

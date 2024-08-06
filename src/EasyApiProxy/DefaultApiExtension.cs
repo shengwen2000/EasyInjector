@@ -36,8 +36,9 @@ namespace EasyApiProxys
         /// <summary>
         /// 使用標準Api通訊方法
         /// </summary>
-        /// <param name="clientName">共用的HttpClient KeyName</param>
-        /// <param name="builder"></param>
+        /// <param name="baseUrl">共用的HttpClient KeyName</param>
+        /// <param name="builder">builder</param>
+        /// <param name="defaltTimeoutSeconds">預設逾時秒數</param>
         static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
             var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);           

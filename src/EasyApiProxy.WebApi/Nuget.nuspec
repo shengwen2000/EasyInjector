@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>EasyApiProxy.WebApi</id>
+    <version>1.0.0.0</version>
+    <title>EasyApiProxy.WebApi</title>
+    <authors>Shengwen</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <!-- <icon>icon.png</icon> -->
+    <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
+    <description>WebApi Server端 WebApi for DefaultApi Protocol</description>
+    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <copyright>copyright</copyright>
+    <readme>docs\EasyApiProxy.md</readme>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1" >
+        <dependency id="EasyApiProxy" version="1.0.0.0" />
+        <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.7" />
+      </group>
+    </dependencies>
+    <tags>WebAPI</tags>
+  </metadata>
+
+  <files>
+    <file src="..\..\EasyApiProxy.md" target="docs\" />
+    <file src="bin\Release\EasyApiProxy.WebApi.dll" target="lib\net451\EasyApiProxy.WebApi.dll" />
+    <file src="bin\Release\EasyApiProxy.WebApi.xml" target="lib\net451\EasyApiProxy.WebApi.xml" />
+    <!--<file src="icon.png" target="" />-->
+  </files>
+</package>

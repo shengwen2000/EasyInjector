@@ -3,10 +3,19 @@ using System;
 
 namespace EasyApiProxys
 {
+    /// <summary>
+    /// The Builder 建立 Api Proxy 
+    /// </summary>
     public class ApiProxyBuilder
     {
+        /// <summary>
+        /// Proxy建立選項
+        /// </summary>
         public ApiProxyOptions Options { get; set; }
 
+        /// <summary>
+        /// The Builder 建立 Api Proxy 
+        /// </summary>
         public ApiProxyBuilder()
         {
             Options = new ApiProxyOptions();
