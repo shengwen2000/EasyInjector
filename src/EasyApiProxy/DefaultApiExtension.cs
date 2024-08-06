@@ -20,17 +20,30 @@ namespace EasyApiProxys
         /// </summary>
         public static JsonSerializer DefaultJsonSerializer { get; private set; }
 
+        /// <summary>
+        /// Default Api 預設 JsonSerializerSettings
+        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 
+        /// </summary>
+        public static JsonSerializerSettings DefaultJsonSerializerSettings { get; private set; }
+
         static DefaultApiExtension()
         {
-            var setting = new JsonSerializerSettings
+            DefaultJsonSerializerSettings = new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,
                 DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat,
                 DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Unspecified,
                 //ContractResolver = new DefaultContractResolver()
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),               
             };
-            DefaultJsonSerializer = JsonSerializer.Create(setting);
+
+            var dateConverter = new Newtonsoft.Json.Converters.IsoDateTimeConverter
+            {
+                DateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss"
+            };
+            DefaultJsonSerializerSettings.Converters.Add(dateConverter);
+
+            DefaultJsonSerializer = JsonSerializer.Create(DefaultJsonSerializerSettings);
         }
 
         /// <summary>
@@ -62,7 +75,6 @@ namespace EasyApiProxys
             {
                 _step2 = step2;
                 _step3 = step3;
-
             }
 
             public async Task Step2(Step2_BeforeHttpSend step)

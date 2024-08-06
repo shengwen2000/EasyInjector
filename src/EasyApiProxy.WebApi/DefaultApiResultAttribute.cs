@@ -1,9 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
 namespace EasyApiProxys.WebApis
@@ -19,6 +17,8 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            var jsonMediaTypeFormater = context.ActionContext.ControllerContext.Configuration.Formatters.OfType<JsonMediaTypeFormatter>().First();            
+        
            // 執行過程有異常 回傳格式處理
             if (context.Exception != null)
             {
@@ -30,12 +30,10 @@ namespace EasyApiProxys.WebApis
                 if (ex is ValidationException)
                 {
                     var e1 = ex as ValidationException;
-                    
-                    var a = new JsonMediaTypeFormatter();                    
                     var c = new ObjectContent<DefaultApiResult>(new DefaultApiResult{
                         Result = "IM",
                         Message = e1.Message
-                    }, new JsonMediaTypeFormatter());
+                    }, jsonMediaTypeFormater);
 
                     context.Response.Content = c;
                 }
@@ -45,19 +43,20 @@ namespace EasyApiProxys.WebApis
                     context.Response.Content = new ObjectContent<DefaultApiResult>(new DefaultApiResult{
                         Result = e2.Code,
                         Message = e2.Message
-                    }, new JsonMediaTypeFormatter());
+                    }, jsonMediaTypeFormater);
                 }
                 else
                 {
                     context.Response.Content = new ObjectContent<DefaultApiResult>(new DefaultApiResult{
                         Result = "EX",
                         Message = ex.Message
-                    }, new JsonMediaTypeFormatter());
+                    }, jsonMediaTypeFormater);
                 }
             }
             // 執行正常
             else
             {
+                
                 // 有內容
                 if (context.Response.Content is ObjectContent)
                 {
@@ -67,8 +66,8 @@ namespace EasyApiProxys.WebApis
                     {
                         Result = "OK",
                         Message = "Success",
-                        Data = robj.Value                        
-                    }, new JsonMediaTypeFormatter());
+                        Data = robj.Value
+                    }, jsonMediaTypeFormater);
                    
                 }
                 // 沒有內容
@@ -79,7 +78,7 @@ namespace EasyApiProxys.WebApis
                     {
                         Result = "OK",
                         Message = "Success"
-                    }, new JsonMediaTypeFormatter());
+                    }, jsonMediaTypeFormater);
                 }
             }
 

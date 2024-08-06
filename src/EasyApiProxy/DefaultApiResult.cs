@@ -1,4 +1,5 @@
 ﻿
+using Newtonsoft.Json;
 namespace EasyApiProxys
 {
     /// <summary>
@@ -9,11 +10,13 @@ namespace EasyApiProxys
         /// <summary>
         /// 回傳代碼 OK 正常 其他為例外代碼
         /// </summary>
+        [JsonProperty(Order=1)]
         public string Result { get; set; }
 
         /// <summary>
         /// 回應訊息
         /// </summary>
+        [JsonProperty(Order = 2)]
         public string Message { get; set; }
 
         /// <summary>
@@ -24,6 +27,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 回傳資料
         /// </summary>
+        [JsonProperty(Order = 3)]
         public object Data {
             get { return _data; }
             set { _data = value; }
@@ -38,6 +42,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 回傳資料
         /// </summary>
+        [JsonProperty(Order = 3)]
         new public T Data
         {
             get { return (T)_data; }
