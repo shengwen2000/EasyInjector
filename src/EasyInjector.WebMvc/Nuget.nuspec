@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>EasyInjector.WebMvc</id>
-    <version>1.5.1.0</version>
+    <version>1.5.2.0</version>
     <title>EasyInjector.WebMvc</title>
     <authors>Shengwen</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

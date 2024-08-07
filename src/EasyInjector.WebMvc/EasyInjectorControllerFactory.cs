@@ -9,7 +9,7 @@ namespace EasyInjectors.WebApis
     /// </summary>
     public class EasyInjectorControllerFactory : DefaultControllerFactory
     {
-        private readonly EasyInjector _injector;
+        private readonly EasyInjector _injector;        
 
         /// <summary>
         /// Controller Factory 只是用來攔截 Controller的建立與終結事件    
@@ -28,7 +28,7 @@ namespace EasyInjectors.WebApis
         protected override IController GetControllerInstance(System.Web.Routing.RequestContext requestContext, Type controllerType)
         {
             var scope = _injector.CreateScope();
-            requestContext.HttpContext.Items.Add("myScope", scope);
+            requestContext.HttpContext.Items.Add(EasyInjectorMvcExtension.SCOPE_ITEM_NAME, scope);
             return base.GetControllerInstance(requestContext, controllerType);
         }
 
@@ -39,7 +39,7 @@ namespace EasyInjectors.WebApis
         public override void ReleaseController(IController controller)
         {
             base.ReleaseController(controller);
-            var scope = HttpContext.Current.Items["myScope"] as IServiceScope;           
+            var scope = HttpContext.Current.Items[EasyInjectorMvcExtension.SCOPE_ITEM_NAME] as IServiceScope;           
             if (scope != null)
                 scope.Dispose();
         }

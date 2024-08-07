@@ -34,7 +34,7 @@ namespace EasyInjectors.WebApis
             // Controller 的話 建立之
             if (typeof(IController).IsAssignableFrom(serviceType))
             {
-                var scope = HttpContext.Current.Items["myScope"] as IServiceScope;
+                var scope = HttpContext.Current.Items[EasyInjectorMvcExtension.SCOPE_ITEM_NAME] as IServiceScope;
                 if (scope == null)
                     return null;
 
