@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web.Http;
 using System.Web.Http.Dependencies;
 
 namespace EasyInjectors.WebApis
@@ -100,12 +101,17 @@ namespace EasyInjectors.WebApis
 
             public object GetService(Type serviceType)
             {
+                if (typeof(ApiController).IsAssignableFrom(serviceType))
+                {
+                    return _scope.ServiceProvider.CreateInstance(serviceType);
+                }
+
                 return _scope.ServiceProvider.GetService(serviceType);
             }
 
             public IEnumerable<object> GetServices(Type serviceType)
             {
-                var srv1 = _scope.ServiceProvider.GetService(serviceType);
+                var srv1 = GetService(serviceType);
                 if (srv1 != null) yield return srv1;
             }
 

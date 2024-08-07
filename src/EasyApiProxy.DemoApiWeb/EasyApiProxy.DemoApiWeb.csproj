@@ -133,9 +133,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\HelloController.cs" />
     <Compile Include="Controllers\DemoController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\IHelloService.cs" />
     <Compile Include="Services\IOwinWebService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -182,6 +184,14 @@
     <ProjectReference Include="..\EasyApiProxy\EasyApiProxy.csproj">
       <Project>{d9a14b19-f407-4312-b7e8-7ed6371b93bd}</Project>
       <Name>EasyApiProxy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EasyInjector.WebApi\EasyInjector.WebApi.csproj">
+      <Project>{a2e5ba3c-e026-490a-81d8-5ea7f25a89fa}</Project>
+      <Name>EasyInjector.WebApi</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EasyInjector\EasyInjector.csproj">
+      <Project>{045a8f59-51ee-4d48-aad9-a02f3508899f}</Project>
+      <Name>EasyInjector</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

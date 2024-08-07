@@ -1,4 +1,5 @@
 ﻿using EasyApiProxys;
+using EasyInjectors;
 using KmuApps.Services;
 using Microsoft.Owin;
 using Microsoft.Owin.Cors;
@@ -29,12 +30,17 @@ namespace KmuApps
             app.Use(async (ctx, next) =>
             {
                 await next();
-                logger.WriteInformation(string.Format("HTTP>{0} {1} Status={2}", ctx.Request.Method, ctx.Request.Path, ctx.Response.StatusCode));
-            }); 
+                logger.WriteInformation(string.Format("HTTP>{0} {1} Status={2}", ctx.Request.Method, ctx.Request.Path, ctx.Response.StatusCode));            
+            });
+
+            var injector = new EasyInjector();
+            injector.AddSingleton<IHelloService, HelloService>();
 
             // webapi register
             {              
                 var config = new System.Web.Http.HttpConfiguration();
+
+                app.UseEasyInjector(config, injector);
 
                 // use attibute routes
                 config.MapHttpAttributeRoutes();

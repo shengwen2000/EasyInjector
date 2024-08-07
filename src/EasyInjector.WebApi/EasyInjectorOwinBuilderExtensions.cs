@@ -7,7 +7,7 @@ namespace Owin
     /// <summary>
     /// EasyInjector OWIN Support
     /// </summary>
-    public static class EasyInjectorAppBuilderExtensions
+    public static class EasyInjectorOwinBuilderExtensions
     {
         /// <summary>
         /// 使用 EasyInjector 作為注入器
