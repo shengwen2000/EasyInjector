@@ -181,7 +181,7 @@
     </ProjectReference>
     <ProjectReference Include="..\EasyApiProxy\EasyApiProxy.csproj">
       <Project>{d9a14b19-f407-4312-b7e8-7ed6371b93bd}</Project>
-      <Name>ApiProxy</Name>
+      <Name>EasyApiProxy</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
