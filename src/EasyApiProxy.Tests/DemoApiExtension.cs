@@ -16,34 +16,27 @@ namespace Tests
             this ApiProxyBuilder builder, 
             HawkCredential hawkCredential=null)
         {
-            var hander = new MethodHandler(builder.Options.GetHttpMessageHandler, builder.Options.GetJsonSerializer, hawkCredential);
+            var hander = new MethodHandler(builder.Options.GetJsonSerializer, hawkCredential);
             builder.Options.GetHttpMessageHandler = hander.GetHandler;
             return builder;
         }
 
         public class MethodHandler
         {
-            readonly private Func<HttpMessageHandler> _current;
-            readonly private Func<JsonSerializer> _current2;
+            readonly private Func<JsonSerializer> _getJsonSerializer;
             readonly private HawkCredential _hawkCredential;
 
-            public MethodHandler(
-                Func<HttpMessageHandler> current, 
-                Func<JsonSerializer> current2,
+            public MethodHandler(               
+                Func<JsonSerializer> getJsonSerializer,
                 HawkCredential hawkCredential)
-            {
-                _current = current;
-                _current2 = current2;
+            {               
+                _getJsonSerializer = getJsonSerializer;
                 _hawkCredential = hawkCredential;
             }
 
             public HttpMessageHandler GetHandler()
             {
-                HttpMessageHandler base1 = null;
-                if (_current != null)
-                    base1 = _current.Invoke();
-
-                var handler0 = new DemoApiServerMockHandler(_current2);
+                var handler0 = new DemoApiServerMockHandler(_getJsonSerializer);
 
                 var handler1 = new DefaultApiResultHandler(handler0, _hawkCredential);
 

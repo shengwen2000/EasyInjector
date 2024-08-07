@@ -3,6 +3,7 @@ using EasyApiProxys.DemoApis;
 using HawkNet;
 using NUnit.Framework;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 
@@ -55,6 +56,17 @@ namespace Tests
                 Algorithm = "sha256",
                 User = "Admin",
             };
+            
+            {
+                var api = new ApiProxyBuilder()
+                    // Server 啟用Hawk驗證
+                    //.UseDemoApiServerMock(credential)
+                    .UseDefaultApiProtocol("http://localhost:8081/api/notfound")
+                    .UseHawkAuthorize(credential)
+                    .Build<IDemoApi>();
+                // 不存在的網址會觸發異常
+                Assert.Catch<HttpRequestException>(() => api.GetServerInfo());                
+            }
 
             {
                 var api = new ApiProxyBuilder()

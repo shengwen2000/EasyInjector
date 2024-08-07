@@ -68,8 +68,8 @@ namespace EasyApiProxys
             // 非Async Method
             else
             {
-                //var ret = Task.Run(() => CallWebApi(invocation)).GetAwaiter().GetResult();
-                var ret = CallWebApi(invocation).GetAwaiter().GetResult();
+                var ret = Task.Run(() => CallWebApi(invocation)).GetAwaiter().GetResult();
+                //var ret = CallWebApi(invocation).GetAwaiter().GetResult();
                 invocation.ReturnValue = ret;
                 return;
             }

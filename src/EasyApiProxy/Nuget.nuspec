@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>EasyApiProxy</id>
-    <version>1.0.5.0</version>
+    <version>1.0.6.0</version>
     <title>EasyApiProxy</title>
     <authors>Shengwen</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

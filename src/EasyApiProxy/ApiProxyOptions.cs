@@ -23,7 +23,7 @@ namespace EasyApiProxys
         public string BaseUrl { get; set; }              
 
         /// <summary>
-        /// 取得Message Handler (default null)
+        /// 取得Message Handler (default HttpClientHandler)
         /// </summary>
         public Func<HttpMessageHandler> GetHttpMessageHandler { get; set; }
 
@@ -61,7 +61,8 @@ namespace EasyApiProxys
         {
             DefaultTimeout = TimeSpan.FromSeconds(15);
             GetHttpMessageHandler = () => null;           
-            GetJsonSerializer = () => _serializer;            
+            GetJsonSerializer = () => _serializer;
+            GetHttpMessageHandler = () => new HttpClientHandler();
         }
     }
 
