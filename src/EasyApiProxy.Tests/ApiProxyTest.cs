@@ -51,8 +51,10 @@ namespace Tests
         /// </summary>
         /// <returns></returns>
         [Test]
-        public void ApiProxy002()
+        public async void ApiProxy002()
         {
+            await Task.FromResult(0);
+
             var credential = new HawkCredential
             {
                 Id = "123",

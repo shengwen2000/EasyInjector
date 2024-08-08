@@ -21,7 +21,7 @@ namespace Tests
             await Task.Delay(100);
 
             // 可以正常執行
-            Action1_OK().GetAwaiter().GetResult();
+            Action1_OK().GetAwaiter().GetResult();          
 
             // 無窮等待 
             // 簡單的說 Action1 執行時 會將結果附加回 目前的Context，又自己等待自己導致
@@ -52,9 +52,9 @@ namespace Tests
         }
 
         async Task<int> Action1_NG()
-        {
+        {            
             await Task.Delay(1000);
             return 123;
-        }      
+        }
 	}
 }

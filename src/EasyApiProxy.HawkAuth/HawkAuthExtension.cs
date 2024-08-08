@@ -1,5 +1,5 @@
-﻿using HawkNet;
-using HawkNet.WebApi;
+﻿using EasyApiProxys.HawkAuths;
+using HawkNet;
 using System;
 using System.Net.Http;
 

@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>EasyApiProxy.HawkAuth</id>
-    <version>1.0.8.0</version>
+    <version>1.0.9.0</version>
     <title>EasyApiProxy.HawkAuth</title>
     <authors>Shengwen</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -16,7 +16,7 @@
     <dependencies>
       <group targetFramework=".NETFramework4.5.1" >
         <dependency id="EasyApiProxy" version="1.0.8.0" />
-        <dependency id="HawkNet.WebApi" version="1.4.6.0" />
+        <dependency id="HawkNet" version="1.4.4.0" />
         <dependency id="Newtonsoft.Json" version="12.0.2" />
       </group>
     </dependencies>
