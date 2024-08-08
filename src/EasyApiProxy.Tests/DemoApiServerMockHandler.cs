@@ -28,20 +28,20 @@ namespace Tests
             var ret1 = await Task.Run(async () => {
                 if (request.RequestUri.Segments.Last().Equals("Login", StringComparison.OrdinalIgnoreCase))
                 {
-                    var ret = await Login(request);
+                    var ret = await Login(request).ConfigureAwait(false);
                     var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
                     resp.Content = new ObjectContent<AccountInfo>(ret, new JsonMediaTypeFormatter());
                     return resp;
                 }
                 else if (request.RequestUri.Segments.Last().Equals("Logout", StringComparison.OrdinalIgnoreCase))
                 {
-                    await Logout(request);
+                    await Logout(request).ConfigureAwait(false);
                     var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
                     return resp;
                 }
                 else if (request.RequestUri.Segments.Last().Equals("GetEmail", StringComparison.OrdinalIgnoreCase))
                 {
-                    var ret = await GetEmail(request);
+                    var ret = await GetEmail(request).ConfigureAwait(false);
                     var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
                     resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
                     return resp;
@@ -56,7 +56,7 @@ namespace Tests
                 }
                 else if (request.RequestUri.Segments.Last().Equals("RunProc_001", StringComparison.OrdinalIgnoreCase))
                 {
-                    var ret = await RunProc_001(request, cancellationToken);
+                    var ret = await RunProc_001(request, cancellationToken).ConfigureAwait(false);
                     var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
                     resp.Content = new ObjectContent<string>(ret, new JsonMediaTypeFormatter());
                     return resp;
@@ -66,15 +66,15 @@ namespace Tests
                     throw new ApplicationException("Not Found");
                 }
             
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
 
             return ret1;            
         }       
 
         public async Task<AccountInfo> Login(HttpRequestMessage request)
         {
-            await Task.Delay(1000);
-            var req = await GetContent<Login>(request);
+            await Task.Delay(1000).ConfigureAwait(false);
+            var req = await GetContent<Login>(request).ConfigureAwait(false);
 
             if (req.Account == "david" && req.Password == "123")
             {
@@ -85,8 +85,8 @@ namespace Tests
 
         public async Task Logout(HttpRequestMessage request)
         {
-            await Task.Delay(1000);
-            var req = await GetContent<TokenInfo>(request);
+            await Task.Delay(1000).ConfigureAwait(false);
+            var req = await GetContent<TokenInfo>(request).ConfigureAwait(false);
             if (req.Token == "123456789")
                 return;
             throw new ApplicationException("The Token Not exits");
@@ -94,8 +94,8 @@ namespace Tests
 
         public async Task<string> GetEmail(HttpRequestMessage request)
         {
-            await Task.Delay(1000);
-            var req = await GetContent<TokenInfo>(request);
+            await Task.Delay(1000).ConfigureAwait(false);
+            var req = await GetContent<TokenInfo>(request).ConfigureAwait(false);
             if (req.Token == "123456789")
             {
                 return "david@gmail.com";
@@ -105,8 +105,8 @@ namespace Tests
 
         public async Task<string> RunProc_001(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            //await Task.Delay(1000);
-            var req = await GetContent<ProcInfo>(request);
+            //await Task.Delay(1000).ConfigureAwait(false);
+            var req = await GetContent<ProcInfo>(request).ConfigureAwait(false);
             if (req.ProcSeconds > 0)
                 await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds), cancellationToken);
 
@@ -120,7 +120,7 @@ namespace Tests
 
         async Task<T> GetContent<T>(HttpRequestMessage request)
         {
-            var s = await request.Content.ReadAsStreamAsync();
+            var s = await request.Content.ReadAsStreamAsync().ConfigureAwait(false);
             using (var sr = new StreamReader(s))
             using (var jr = new JsonTextReader(sr))
             {

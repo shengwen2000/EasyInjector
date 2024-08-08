@@ -34,7 +34,7 @@ namespace EasyApiProxys
                 _http = new HttpClient(handler);
             else
                 _http = new HttpClient();
-            _http.Timeout = _options.DefaultTimeout;
+            _http.Timeout = _options.DefaultTimeout;           
         }
 
         /// <summary>
@@ -67,9 +67,8 @@ namespace EasyApiProxys
             }
             // 非Async Method
             else
-            {
-                var ret = Task.Run(() => CallWebApi(invocation)).GetAwaiter().GetResult();
-                //var ret = CallWebApi(invocation).GetAwaiter().GetResult();
+            {               
+                var ret = CallWebApi(invocation).GetAwaiter().GetResult();
                 invocation.ReturnValue = ret;
                 return;
             }
@@ -94,13 +93,15 @@ namespace EasyApiProxys
         /// <returns>回傳內容</returns>
         private async Task<object> CallWebApi(IInvocation invocation)
         {
+            var stepContext = new StepContext { 
+                Invocation = invocation,
+                Options = _options            
+            };
+            
+
             // step1
             if (_options.Step1 != null)
-                await _options.Step1(new Step1_BeforeCreateRequest
-                {
-                    Invocation = invocation,
-                    Options = _options
-                });
+                await _options.Step1(stepContext).ConfigureAwait(false);
 
             // 呼叫哪個Api
             var apiMethod = invocation.Method;
@@ -112,15 +113,10 @@ namespace EasyApiProxys
                 if (apiAttr != null && !string.IsNullOrEmpty(apiAttr.Name))
                     req.RequestUri = new Uri(string.Concat(_options.BaseUrl, "/", apiAttr.Name));
                 else
-                    req.RequestUri = new Uri(string.Concat(_options.BaseUrl, "/", apiMethod.Name));                
-
+                    req.RequestUri = new Uri(string.Concat(_options.BaseUrl, "/", apiMethod.Name));
+                stepContext.Request = req;
                 if (_options.Step2 != null)
-                    await _options.Step2(new Step2_BeforeHttpSend
-                    {
-                        Invocation = invocation,
-                        Options = _options,
-                        Request = req
-                    });
+                    await _options.Step2(stepContext).ConfigureAwait(false);
 
                 // API逾時設定
                 var cts = new CancellationTokenSource();
@@ -130,29 +126,18 @@ namespace EasyApiProxys
                     cts.CancelAfter(_options.DefaultTimeout);
 
                 // 進行呼叫
-                using (var resp = await _http.SendAsync(req, cts.Token))
+                using (var resp = await _http.SendAsync(req, cts.Token).ConfigureAwait(false))
                 {
-                    var step3 = new Step3_AfterHttpResponse
-                    {
-                        Invocation = invocation,
-                        Options = _options,
-                        Response = resp
-                    };
+                    stepContext.Response = resp;                    
 
                     if (_options.Step3 != null)
-                        await _options.Step3(step3);
+                        await _options.Step3(stepContext).ConfigureAwait(false);
 
                     if (_options.Step4 == null)
-                        return step3.Result;
+                        return stepContext.Result;
 
-                    var step4 = new Step4_ReturnResult
-                    {
-                        Invocation = invocation,
-                        Options = _options,
-                        Result = step3.Result
-                    };
-                    await _options.Step4(step4);
-                    return step4.Result;
+                    await _options.Step4(stepContext).ConfigureAwait(false);
+                    return stepContext.Result;
                 }
             }
         }

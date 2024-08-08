@@ -4,6 +4,7 @@ using HawkNet;
 using NUnit.Framework;
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -18,8 +19,11 @@ namespace Tests
         /// </summary>
         /// <returns></returns>
 		[Test]
-		public async Task ApiProxy001()
-		{
+		public async void ApiProxy001()
+		{   
+            // 類視窗環境模擬
+            Assert.IsNotNull(SynchronizationContext.Current);
+
             var api = new ApiProxyBuilder()
                 .UseDemoApiServerMock()
                 .UseDefaultApiProtocol("http://localhost:8081/api/Demo")                

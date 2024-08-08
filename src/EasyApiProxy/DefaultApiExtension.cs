@@ -66,21 +66,21 @@ namespace EasyApiProxys
 
         internal class DefaultApiHandler
         {
-            Func<Step2_BeforeHttpSend,Task> _step2;
-            Func<Step3_AfterHttpResponse,Task> _step3;
+            Func<StepContext,Task> _step2;
+            Func<StepContext, Task> _step3;
 
             public DefaultApiHandler(
-                Func<Step2_BeforeHttpSend, Task> step2, 
-                Func<Step3_AfterHttpResponse, Task> step3)
+                Func<StepContext, Task> step2,
+                Func<StepContext, Task> step3)
             {
                 _step2 = step2;
                 _step3 = step3;
             }
 
-            public async Task Step2(Step2_BeforeHttpSend step)
+            public async Task Step2(StepContext step)
             {
                 if (_step2 != null)
-                    await _step2(step);
+                    await _step2(step).ConfigureAwait(false);
 
                 var apiMethod = step.Invocation.Method;
                 var req = step.Request;
@@ -99,10 +99,10 @@ namespace EasyApiProxys
                 }                
             }
 
-            public async Task Step3(Step3_AfterHttpResponse step)
+            public async Task Step3(StepContext step)
             {
                 if (_step3 != null)
-                    await _step3(step);
+                    await _step3(step).ConfigureAwait(false);
 
                 var resp = step.Response;
                 var invocation = step.Invocation;
@@ -113,7 +113,7 @@ namespace EasyApiProxys
                     throw new ApiCodeException("HTTP_NOT_OK", string.Format("HTTP連線狀態錯誤 StatusCode={0}", resp.StatusCode));
 
                 // 取得回應內容
-                var s1 = await resp.Content.ReadAsStreamAsync();
+                var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 using (var sr = new StreamReader(s1))
                 using (var jsonTextReader = new JsonTextReader(sr))
                 {

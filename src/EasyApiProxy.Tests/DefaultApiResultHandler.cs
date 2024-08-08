@@ -29,7 +29,7 @@ namespace Tests
             {
                 ValidateHawk(request, _hawkCredential);
 
-                var ret = await base.SendAsync(request, cancellationToken);
+                var ret = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                 // 有內容
                 if (ret.Content is ObjectContent)

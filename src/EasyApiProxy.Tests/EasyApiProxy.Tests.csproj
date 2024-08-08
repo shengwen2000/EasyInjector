@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JsonTest.cs" />
+    <Compile Include="AsyncTest.cs" />
     <Compile Include="NewTest.cs" />
     <Compile Include="ApiProxyTest.cs" />
     <Compile Include="BaseTest.cs" />

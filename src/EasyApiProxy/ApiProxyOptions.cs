@@ -2,6 +2,7 @@
 using EasyApiProxys.Options;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -35,22 +36,22 @@ namespace EasyApiProxys
         /// <summary>
         /// (1)產生HttpRequest之前
         /// </summary>
-        public Func<Step1_BeforeCreateRequest,Task> Step1 { get; set; }
+        public Func<StepContext, Task> Step1 { get; set; }
 
         /// <summary>
         /// (2)準備送出HttpRequest之前
         /// </summary>
-        public Func<Step2_BeforeHttpSend,Task> Step2 { get; set; }
+        public Func<StepContext, Task> Step2 { get; set; }
 
         /// <summary>
         /// (3)當取得HttpResponse時
         /// </summary>
-        public Func<Step3_AfterHttpResponse,Task> Step3 { get; set; }
+        public Func<StepContext, Task> Step3 { get; set; }
 
         /// <summary>
         /// (4)要回傳內容時
         /// </summary>
-        public Func<Step4_ReturnResult, Task> Step4 { get; set; }
+        public Func<StepContext, Task> Step4 { get; set; }
 
         JsonSerializer _serializer = new JsonSerializer();
 
@@ -69,12 +70,12 @@ namespace EasyApiProxys
     namespace Options
     {
         /// <summary>
-        /// 基本步驟
+        /// 步驟Context
         /// </summary>
-        public class BaseStep
+        public class StepContext
         {
             /// <summary>
-            /// 呼叫方法
+            /// 呼叫方法 
             /// </summary>
             public IInvocation Invocation { get; set; }
 
@@ -82,53 +83,27 @@ namespace EasyApiProxys
             /// ApiProxy建立選項
             /// </summary>
             public ApiProxyOptions Options { get; set; }
-        }
 
-        /// <summary>
-        /// (1)產生HttpRequest之前
-        /// </summary>
-        public class Step1_BeforeCreateRequest : BaseStep
-        {
-           
-        }
-
-        /// <summary>
-        /// (2)準備送出HttpRequest之前
-        /// </summary>
-        public class Step2_BeforeHttpSend : BaseStep
-        {
             /// <summary>
-            /// Request
+            /// Request (2)準備送出HttpRequest之前
             /// </summary>
             public HttpRequestMessage Request { get; set; }
-        }        
 
-        /// <summary>
-        /// (3)當取得HttpResponse時
-        /// </summary>
-        public class Step3_AfterHttpResponse : BaseStep
-        {
             /// <summary>
-            /// Response
+            /// Response (3)當取得HttpResponse時
             /// </summary>
             public HttpResponseMessage Response { get; set; }
 
             /// <summary>
-            /// 回傳值
+            /// 回傳值 (3)當取得HttpResponse時
             /// </summary>
             public object Result { get; set; }
-        }
 
-        /// <summary>
-        /// (4)要回傳內容時
-        /// </summary>
-        public class Step4_ReturnResult : BaseStep
-        {
             /// <summary>
-            /// 回傳值
+            /// 其他數據
             /// </summary>
-            public object Result { get; set; }
-        }
+            public Hashtable Items { get; set; }
+        }        
     }
 }
 
