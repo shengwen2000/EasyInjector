@@ -8,7 +8,7 @@ namespace EasyInjectors
 #pragma warning disable 0618,1591
 
     /// <summary>
-    /// (Scoped) 
+    /// (Singleton|Scoped) 
     /// 1. 依據名稱來取得服務。通常用於一個服務類型卻有多個實例，利用名稱來取的想要的實例
     ///  例如 FTP管理服務: FTP(A)管理服務 FTP(B)管理服務
     /// 2. 如果服務有IDispose會自動釋放當此服務銷毀時
@@ -22,7 +22,7 @@ namespace EasyInjectors
     }
  
     /// <summary>
-    /// (Scoped) 提供當依據名稱如何來取得服務實例。應該於建構式中提供建立方法。
+    /// (SingletonScoped) 提供當依據名稱如何來取得服務實例。應該於建構式中提供建立方法。
     /// 如果名稱對映的實例已經建立 再次以該名稱取得回傳原本取得的。
     /// </summary>    
     public class NamedService<TService> : INamed<TService>, IDisposable where TService : class
