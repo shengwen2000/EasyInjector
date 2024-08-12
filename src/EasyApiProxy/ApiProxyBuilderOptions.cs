@@ -11,7 +11,7 @@ namespace EasyApiProxys
     /// <summary>
     /// Api Proxy 建立選項
     /// </summary>
-    public class ApiProxyOptions
+    public class ApiProxyBuilderOptions
     {
         /// <summary>
         /// 執行逾時 Default 15秒
@@ -53,12 +53,12 @@ namespace EasyApiProxys
         /// </summary>
         public Func<StepContext, Task> Step4 { get; set; }
 
-        JsonSerializer _serializer = new JsonSerializer();
+        JsonSerializer _serializer = new JsonSerializer();        
 
         /// <summary>
         /// Api Proxy 建立選項
         /// </summary>
-        public ApiProxyOptions()
+        public ApiProxyBuilderOptions()
         {
             DefaultTimeout = TimeSpan.FromSeconds(15);
             GetHttpMessageHandler = () => null;           
@@ -80,9 +80,14 @@ namespace EasyApiProxys
             public IInvocation Invocation { get; set; }
 
             /// <summary>
-            /// ApiProxy建立選項
+            /// Buidler Options (所有的Proxy同一份)
             /// </summary>
-            public ApiProxyOptions Options { get; set; }
+            public ApiProxyBuilderOptions BuilderOptions { get; set; }
+
+            /// <summary>
+            /// 實例選項(每個Proxy自己一份)
+            /// </summary>
+            public Hashtable InstanceOptions { get; set; }
 
             /// <summary>
             /// Request (2)準備送出HttpRequest之前
@@ -97,10 +102,10 @@ namespace EasyApiProxys
             /// <summary>
             /// 回傳值 (3)當取得HttpResponse時
             /// </summary>
-            public object Result { get; set; }
+            public object Result { get; set; }            
 
             /// <summary>
-            /// 其他數據
+            /// 每次Request進行時都一份 (預設為 null)
             /// </summary>
             public Hashtable Items { get; set; }
         }        

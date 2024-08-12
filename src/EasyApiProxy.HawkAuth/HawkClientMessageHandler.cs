@@ -18,6 +18,10 @@ namespace EasyApiProxys.HawkAuths
         string nonce;
         bool includePayloadHash;
 
+        /// <summary>
+        /// HawkClientMessageHandler 參考 https://github.com/pcibraro/hawknet/blob/master/HawkNet.WebApi/HawkClientMessageHandler.cs
+        /// 因為原本的有個小BUG 所以複製後修改掉
+        /// </summary>
         public HawkClientMessageHandler(HttpMessageHandler innerHandler, HawkCredential credential, string ext = "", DateTime? ts = null, string nonce = null, bool includePayloadHash = false)
             : base(innerHandler)
         {
@@ -36,6 +40,9 @@ namespace EasyApiProxys.HawkAuths
             this.includePayloadHash = includePayloadHash;
         }
 
+        /// <summary>
+        /// Send Message
+        /// </summary>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
         {
             string payloadHash = null;

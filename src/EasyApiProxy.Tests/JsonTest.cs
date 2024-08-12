@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Tests
 {
-	[Category("EasyApiProxy")]
+	[Category("Others")]
 	[TestFixture]
     public class JsonTest : BaseTest
 	{
@@ -35,8 +35,6 @@ namespace Tests
             js.Serialize(jw, ret);
             jw.Flush();
             var txt2 = sw.ToString();
-
-
         }       
 	}
 }

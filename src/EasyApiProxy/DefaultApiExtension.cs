@@ -84,7 +84,7 @@ namespace EasyApiProxys
 
                 var apiMethod = step.Invocation.Method;
                 var req = step.Request;
-                var _options = step.Options;
+                var _options = step.BuilderOptions;
              
                 req.Method = HttpMethod.Post;
 
@@ -106,7 +106,7 @@ namespace EasyApiProxys
 
                 var resp = step.Response;
                 var invocation = step.Invocation;
-                var _options = step.Options;
+                var _options = step.BuilderOptions;
 
                 // 必須是 HTTP 200 回應
                 if (resp.StatusCode != System.Net.HttpStatusCode.OK)

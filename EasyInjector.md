@@ -5,7 +5,8 @@
 * 簡單的注入依賴，適用於舊專案.NET4 Framework
 * 目標也只是讓一些很古老的專案在無法升級的請況下，有限度的導入注入依賴。
 * [Nuget Package Install](https://www.nuget.org/packages/EasyInjector/)
-
+* 支援 MVC 注入依賴
+* 支援 Web API 注入依賴 支援
 
 ## Singleton 範例
 ``` C#
@@ -137,5 +138,36 @@ using (var injector = new EasyInjector())
 
 	//註冊服務 這個會發送異常，因為服務生命週期與之前不相同
 	injector.AddScope<IApi>(sp => new Api4());
+
+```
+
+## MVC 注入依賴支援
+
+- 加入套件 EasyInjector.WebMvc
+
+``` C#
+// 於 Application_Start() 事件內 登記注入器
+
+var injector = new EasyInjector();
+// 啟用MVC注入
+EasyInjectorMvcExtension.UseEasyInjector(injector);
+
+```
+
+## API 注入依賴支援
+- 加入套件 EasyInjector.WebApi
+
+``` C#
+using Owin;
+
+public class Startup {
+
+	public void Configuration(IAppBuilder app) {
+  		var injector = new EasyInjector();
+  		var apiConfig = new System.Web.Http.HttpConfiguration();
+  		// 啟用API注入
+  		app.UseEasyInjector(apiConfig, injector);
+	}
+}
 
 ```

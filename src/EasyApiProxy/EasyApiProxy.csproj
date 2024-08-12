@@ -47,11 +47,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiMethodAttribute.cs" />
+    <Compile Include="ApiProxy.cs" />
+    <Compile Include="IApiProxyFactory.cs" />
     <Compile Include="DefaultApiExtension.cs" />
     <Compile Include="ApiProxyBuilder.cs" />
     <Compile Include="ApiProxyInterceptor.cs" />
     <Compile Include="DefaultApiResult.cs" />
-    <Compile Include="ApiProxyOptions.cs" />
+    <Compile Include="ApiProxyBuilderOptions.cs" />
     <Compile Include="ApiCodeException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
