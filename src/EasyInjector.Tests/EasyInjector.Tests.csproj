@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="BaseTest.cs" />
     <Compile Include="ImplTest.cs" />
+    <Compile Include="OverrideTest.cs" />
     <Compile Include="TryAddTest.cs" />
     <Compile Include="OptionalTest.cs" />
     <Compile Include="RegisterTest.cs" />
@@ -98,6 +99,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EasyInjector.Dev\EasyInjector.Dev.csproj">
+      <Project>{dfc64c7c-8e16-460a-ae03-9567fdcc620a}</Project>
+      <Name>EasyInjector.Dev</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EasyInjector\EasyInjector.csproj">
       <Project>{045a8f59-51ee-4d48-aad9-a02f3508899f}</Project>
       <Name>EasyInjector</Name>
