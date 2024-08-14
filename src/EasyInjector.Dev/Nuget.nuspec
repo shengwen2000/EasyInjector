@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>EasyInjector.Dev</id>
-    <version>1.5.0.0</version>
+    <version>1.5.1.0</version>
     <title>EasyInjector.Dev</title>
     <authors>Shengwen</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
