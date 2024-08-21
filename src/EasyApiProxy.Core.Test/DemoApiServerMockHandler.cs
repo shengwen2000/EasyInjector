@@ -8,23 +8,20 @@ namespace Tests
     /// <summary>
     /// 模擬 Server Api 回應
     /// </summary>
-    public class DemoApiServerMockHandler : HttpMessageHandler
+    public class DemoApiServerMockHandler(Func<JsonSerializer> jsonSerailizer) : HttpMessageHandler
     {
-        private JsonSerializer _jsonSerailizer;
-
-        public DemoApiServerMockHandler(Func<JsonSerializer> jsonSerailizer)
-        {
-            _jsonSerailizer = jsonSerailizer.Invoke();
-        }
+        private JsonSerializer _jsonSerailizer = jsonSerailizer.Invoke();
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var ret1 = await Task.Run(async () => {
-                if (request.RequestUri.Segments.Last().Equals("Login", StringComparison.OrdinalIgnoreCase))
+                if (request.RequestUri!.Segments.Last().Equals("Login", StringComparison.OrdinalIgnoreCase))
                 {
                     var ret = await Login(request).ConfigureAwait(false);
-                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                    resp.Content = JsonContent.Create(ret);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = JsonContent.Create(ret)
+                    };
                     return resp;
                 }
                 else if (request.RequestUri.Segments.Last().Equals("Logout", StringComparison.OrdinalIgnoreCase))
@@ -36,23 +33,29 @@ namespace Tests
                 else if (request.RequestUri.Segments.Last().Equals("GetEmail", StringComparison.OrdinalIgnoreCase))
                 {
                     var ret = await GetEmail(request).ConfigureAwait(false);
-                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                    resp.Content = JsonContent.Create(ret);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = JsonContent.Create(ret)
+                    };
                     return resp;
                 }
 
                 else if (request.RequestUri.Segments.Last().Equals("GetServerInfo", StringComparison.OrdinalIgnoreCase))
                 {
                     var ret = GetServerInfo();
-                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                    resp.Content = JsonContent.Create(ret);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = JsonContent.Create(ret)
+                    };
                     return resp;
                 }
                 else if (request.RequestUri.Segments.Last().Equals("RunProc_001", StringComparison.OrdinalIgnoreCase))
                 {
                     var ret = await RunProc_001(request, cancellationToken).ConfigureAwait(false);
-                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-                    resp.Content = JsonContent.Create(ret);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = JsonContent.Create(ret)
+                    };
                     return resp;
                 }
                 else
@@ -114,12 +117,10 @@ namespace Tests
 
         async Task<T> GetContent<T>(HttpRequestMessage request)
         {
-            var s = await request.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using (var sr = new StreamReader(s))
-            using (var jr = new JsonTextReader(sr))
-            {
-                return _jsonSerailizer.Deserialize<T>(jr);
-            }
+            var s = await request.Content!.ReadAsStreamAsync().ConfigureAwait(false);
+            using var sr = new StreamReader(s);
+            using var jr = new JsonTextReader(sr);
+            return _jsonSerailizer.Deserialize<T>(jr)!;
         }
     }
 }

@@ -3,10 +3,10 @@ using EasyApiProxys.DemoApis;
 
 namespace EasyApiProxy.Core.Test;
 
-[TestClass]
+
 public class UnitTest1
 {
-    [TestMethod]
+    [Test]
     public void TestMethod1()
     {
         var proxy = DispatchProxy.Create<IDemoApi, DemoProxy>();
@@ -27,7 +27,7 @@ public class UnitTest1
 
         protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
         {
-            if (targetMethod.Name == "GetServerInfo")
+            if (targetMethod?.Name == "GetServerInfo")
                 return Name;
             throw new NotImplementedException();
         }

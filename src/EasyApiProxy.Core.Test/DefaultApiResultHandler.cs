@@ -8,15 +8,8 @@ namespace Tests
     /// <summary>
     /// 預設的API回應封裝
     /// </summary>
-    public class DefaultApiResultHandler : DelegatingHandler
+    public class DefaultApiResultHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
     {
-
-        public DefaultApiResultHandler(HttpMessageHandler innerHandler)
-            : base(innerHandler)
-        {
-
-        }
-
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             try
@@ -30,7 +23,7 @@ namespace Tests
                     {
                         Result = "OK",
                         Message = "Success",
-                        Data = robj.Value
+                        Data = robj?.Value
                     });
 
                     //System.Net.Http.Em
@@ -52,13 +45,12 @@ namespace Tests
             }
             catch (Exception ex)
             {
-                if (ex is ValidationException)
+                if (ex is ValidationException e1)
                 {
-                    var e1 = ex as ValidationException;
                     var c = JsonContent.Create(new DefaultApiResult
                     {
                         Result = "IM",
-                        Message = e1.Message
+                        Message = e1?.Message
                     });
 
                     var resp = new HttpResponseMessage(HttpStatusCode.OK)
@@ -67,9 +59,8 @@ namespace Tests
                     };
                     return resp;
                 }
-                else if (ex is ApiCodeException)
+                else if (ex is ApiCodeException e2)
                 {
-                    var e2 = ex as ApiCodeException;
                     var resp = new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         Content = JsonContent.Create(new DefaultApiResult

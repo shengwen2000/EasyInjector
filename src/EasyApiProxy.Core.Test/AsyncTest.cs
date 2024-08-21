@@ -5,82 +5,57 @@ using System.Threading.Tasks;
 
 namespace Tests;
 
-[TestClass]
+[TestFixture]
 public class AsyncTest : BaseTest
 {
-    /// <summary>
-    /// winform 環境 無窮等待 現象
-    /// </summary>
-    [TestMethod]
-    public void Async001_NG()
-    {
+     /// <summary>
+        /// winform 環境 無窮等待 現象
+        /// </summary>
+        [Test, Apartment(ApartmentState.STA)]
+        public async Task Async001_NG()
+        {
+            // winform之類的會有 SynchronizationContext
+            Assert.IsNotNull(SynchronizationContext.Current);
+            await Task.Delay(100);
 
-        //Task.Run(() => {}).ContinueWith((), new TaskScheduler())
+            // 可以正常執行
+            Action1_OK().GetAwaiter().GetResult();
 
-        // 類視窗環境模擬
-        // SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+            // 可以正常執行
+            Task.Run(() => Action1_NG()).GetAwaiter().GetResult();
 
-        // Thread.CurrentThread.Name = "hello";
-        // var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            // 無窮等待
+            // 簡單的說 Action1 執行時 會將結果附加回 目前的Context，又自己等待自己導致
+            Action1_NG().GetAwaiter().GetResult();
+        }
 
-        // var task1 = Task.Factory.StartNew(
-        //     () => Action1_NG(),
-        //     CancellationToken.None,
-        //     TaskCreationOptions.None,
-        //     scheduler
-        // );
+        /// <summary>
+        /// 非winform 環境 一切正常
+        /// </summary>
+        [Test]
+        public async Task Async001_OK()
+        {
+            // 非winform 環境 不會有 SynchronizationContext
+            Assert.IsNull(SynchronizationContext.Current);
+            await Task.Delay(100);
 
-        // task1.GetAwaiter().GetResult();
+            // 可以正常執行
+            Action1_OK().GetAwaiter().GetResult();
 
-        // // winform之類的會有 SynchronizationContext
-        // Assert.IsNotNull(SynchronizationContext.Current);
-        // await Task.Delay(100);
+            // 可以正常執行
+            Action1_NG().GetAwaiter().GetResult();
+        }
 
-        // // 可以正常執行
-        // Action1_OK().GetAwaiter().GetResult();
+        async Task<int> Action1_OK()
+        {
+            await Task.Delay(1000).ConfigureAwait(false);
+            return 123;
+        }
 
-        // // 可以正常執行
-        // Task.Run(() => Action1_NG()).GetAwaiter().GetResult();
+        async Task<int> Action1_NG()
+        {
+            await Task.Delay(1000);
+            return 123;
+        }
 
-        // 無窮等待
-        // 簡單的說 Action1 執行時 會將結果附加回 目前的Context，又自己等待自己導致
-        //Action1_NG1().Wait();
-    }
-
-    /// <summary>
-    /// 非winform 環境 一切正常
-    /// </summary>
-    [TestMethod]
-    public async Task Async001_OK()
-    {
-        // 非winform 環境 不會有 SynchronizationContext
-        Assert.IsNull(SynchronizationContext.Current);
-        await Task.Delay(100);
-
-        // 可以正常執行
-        Action1_OK().GetAwaiter().GetResult();
-
-        // 可以正常執行
-        Action1_NG().GetAwaiter().GetResult();
-    }
-
-    async Task<int> Action1_OK()
-    {
-        await Task.Delay(1000).ConfigureAwait(false);
-        return 123;
-    }
-
-    async Task Action1_NG1() {
-        await Action1_NG();
-        await Action1_NG();
-    }
-
-    async Task<int> Action1_NG()
-    {
-        var ctx1 = SynchronizationContext.Current ;
-        await Task.Delay(1000).ConfigureAwait(true);
-        var ctx = SynchronizationContext.Current ;
-        Console.WriteLine(Thread.CurrentThread.Name);
-        return 123;
-    }
 }
