@@ -1,4 +1,7 @@
 ﻿
+using System;
+using System.ComponentModel;
+using System.Linq;
 namespace EasyApiProxys
 {
     /// <summary>
@@ -10,6 +13,25 @@ namespace EasyApiProxys
         /// OK 是正常 其他為異常
         /// </summary>
         public string Code { get; set; }
+
+        /// <summary>
+        /// API 發生異常 
+        /// 代號為Enum.ToString()
+        /// 訊息自動由 Description中取得 沒有 Description 預設為其名稱
+        /// </summary>      
+        public ApiCodeException(Enum value)
+            : this(value.ToString(), GetDescription(value))
+        {          
+        }
+
+        /// <summary>
+        /// API 發生異常 
+        /// 代號為Enum.ToString()
+        /// </summary>
+        public ApiCodeException(Enum value, string message)
+            : this(value.ToString(), message)
+        {
+        }
 
 
         /// <summary>
@@ -29,6 +51,22 @@ namespace EasyApiProxys
         public override string ToString()
         {
             return string.Format("{0}->{1}", Code, Message);
+        }
+
+        /// <summary>
+        /// 取得Description
+        /// </summary>
+        static string GetDescription(Enum value)
+        {
+            var fieldInfo = value.GetType().GetField(value.ToString());
+            if (fieldInfo == null) return value.ToString();
+
+            var attr = fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                .OfType<DescriptionAttribute>()
+                .FirstOrDefault();
+            if (attr != null)
+                return attr.Description;
+            return value.ToString();
         }
     }
 }
