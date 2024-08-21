@@ -18,7 +18,7 @@ namespace EasyApiProxys
     {   
         private readonly ApiProxyBuilderOptions _buildOptions;
 
-        private readonly Hashtable _instanceOpts;
+        private readonly Hashtable _instanceItems;
 
         /// <summary>
         /// 共用的 httpClient
@@ -34,7 +34,7 @@ namespace EasyApiProxys
         public ApiProxyInterceptor(HttpClient http, ApiProxyBuilderOptions options, Hashtable instanceOpts)
         {
             _buildOptions = options;
-            _instanceOpts = instanceOpts;
+            _instanceItems = instanceOpts;
             _http = http;
         }
 
@@ -97,7 +97,7 @@ namespace EasyApiProxys
             var stepContext = new StepContext { 
                 Invocation = invocation,
                 BuilderOptions = _buildOptions,
-                InstanceOptions = _instanceOpts
+                InstanceOptions = _instanceItems
             };            
 
             // step1

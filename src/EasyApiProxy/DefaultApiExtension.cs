@@ -121,6 +121,8 @@ namespace EasyApiProxys
                     if (invocation.Method.ReturnType == typeof(void) || invocation.Method.ReturnType == typeof(Task))
                     {
                         var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult>(jsonTextReader);
+                        if (ret == null)
+                            throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         if (ret.Result != "OK")
                             throw new ApiCodeException(ret.Result, ret.Message);
                     }
@@ -132,6 +134,8 @@ namespace EasyApiProxys
                         var resultT1 = typeof(DefaultApiResult<>).MakeGenericType(new[] { t1 });
 
                         var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, resultT1) as DefaultApiResult;
+                        if (ret == null)
+                            throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         if (ret.Result != "OK")
                             throw new ApiCodeException(ret.Result, ret.Message);
 
@@ -146,6 +150,8 @@ namespace EasyApiProxys
                         var resultT1 = typeof(DefaultApiResult<>).MakeGenericType(new[] { t1 });
 
                         var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, resultT1) as DefaultApiResult;
+                        if (ret == null)
+                            throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         if (ret.Result != "OK")
                             throw new ApiCodeException(ret.Result, ret.Message);
 

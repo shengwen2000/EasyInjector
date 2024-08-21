@@ -1,4 +1,4 @@
-using EasyApiProxys;
+ï»¿using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using NUnit.Framework;
 using System.Threading;
@@ -11,40 +11,40 @@ namespace Tests
     public class AsyncTest : BaseTest
 	{
         /// <summary>
-        /// winform Àô¹Ò µL½aµ¥«İ ²{¶H
+        /// winform ç’°å¢ƒ ç„¡çª®ç­‰å¾… ç¾è±¡
         /// </summary>
         [Test]
         public async void Async001_NG()
         {
-            // winform¤§Ãşªº·|¦³ SynchronizationContext
+            // winformä¹‹é¡çš„æœƒæœ‰ SynchronizationContext
             Assert.IsNotNull(SynchronizationContext.Current);
             await Task.Delay(100);
 
-            // ¥i¥H¥¿±`°õ¦æ
+            // å¯ä»¥æ­£å¸¸åŸ·è¡Œ
             Action1_OK().GetAwaiter().GetResult();
 
-            // ¥i¥H¥¿±`°õ¦æ
+            // å¯ä»¥æ­£å¸¸åŸ·è¡Œ
             Task.Run(() => Action1_NG()).GetAwaiter().GetResult();
 
-            // µL½aµ¥«İ 
-            // Â²³æªº»¡ Action1 °õ¦æ®É ·|±Nµ²ªGªş¥[¦^ ¥Ø«eªºContext¡A¤S¦Û¤vµ¥«İ¦Û¤v¾É­P
+            // ç„¡çª®ç­‰å¾… 
+            // ç°¡å–®çš„èªª Action1 åŸ·è¡Œæ™‚ æœƒå°‡çµæœé™„åŠ å› ç›®å‰çš„Contextï¼Œåˆè‡ªå·±ç­‰å¾…è‡ªå·±å°è‡´
             Action1_NG().GetAwaiter().GetResult();
         }
 
         /// <summary>
-        /// «Dwinform Àô¹Ò ¤@¤Á¥¿±`
+        /// éwinform ç’°å¢ƒ ä¸€åˆ‡æ­£å¸¸
         /// </summary>
         [Test]
         public async Task Async001_OK()
         {
-            // «Dwinform Àô¹Ò ¤£·|¦³ SynchronizationContext
+            // éwinform ç’°å¢ƒ ä¸æœƒæœ‰ SynchronizationContext
             Assert.IsNull(SynchronizationContext.Current);
             await Task.Delay(100);
 
-            // ¥i¥H¥¿±`°õ¦æ
+            // å¯ä»¥æ­£å¸¸åŸ·è¡Œ
             Action1_OK().GetAwaiter().GetResult();
 
-            // ¥i¥H¥¿±`°õ¦æ      
+            // å¯ä»¥æ­£å¸¸åŸ·è¡Œ      
             Action1_NG().GetAwaiter().GetResult();
         }
 

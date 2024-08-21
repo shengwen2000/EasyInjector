@@ -1,4 +1,4 @@
-using EasyApiProxys;
+ï»¿using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using HawkNet;
 using NUnit.Framework;
@@ -14,13 +14,13 @@ namespace Tests
     public class ApiProxyTest : BaseTest
 	{
         /// <summary>
-        /// ¤@¯ëªºAPI ´ú¸Õ
+        /// ä¸€èˆ¬çš„API æ¸¬è©¦
         /// </summary>
         /// <returns></returns>
 		[Test]
 		public async void ApiProxy001()
 		{   
-            // Ãşµøµ¡Àô¹Ò¼ÒÀÀ
+            // é¡è¦–çª—ç’°å¢ƒæ¨¡æ“¬
             Assert.IsNotNull(SynchronizationContext.Current);
 
             var factory = new ApiProxyBuilder()
@@ -49,7 +49,7 @@ namespace Tests
 		}
 
         /// <summary>
-        /// Hawk ÅçÃÒ
+        /// Hawk é©—è­‰
         /// </summary>
         /// <returns></returns>
         [Test]
@@ -67,20 +67,20 @@ namespace Tests
             
             {
                 var factory = new ApiProxyBuilder()
-                    // Server ±Ò¥ÎHawkÅçÃÒ
+                    // Server å•Ÿç”¨Hawké©—è­‰
                     //.UseDemoApiServerMock(credential)
                     .UseDefaultApiProtocol("http://localhost:8081/api/notfound")
                     .UseHawkAuthorize(credential)
                     .Build<IDemoApi>();
 
                 var proxy = factory.Create();
-                // ¤£¦s¦bªººô§}·|Ä²µo²§±`
+                // ä¸å­˜åœ¨çš„ç¶²å€æœƒè§¸ç™¼ç•°å¸¸
                 Assert.Catch<HttpRequestException>(() => proxy.Object.GetServerInfo());                
             }
 
             {
                 var factory = new ApiProxyBuilder()
-                    // Server ±Ò¥ÎHawkÅçÃÒ
+                    // Server å•Ÿç”¨Hawké©—è­‰
                     .UseDemoApiServerMock(credential)
                     .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
                     .UseHawkAuthorize(credential)
@@ -94,7 +94,7 @@ namespace Tests
 
             {
                 var factory = new ApiProxyBuilder()
-                    // Server ±Ò¥ÎHawkÅçÃÒ
+                    // Server å•Ÿç”¨Hawké©—è­‰
                     .UseDemoApiServerMock(credential)
                     .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
                     .Build<IDemoApi>();
@@ -106,7 +106,7 @@ namespace Tests
         }
 
         /// <summary>
-        /// «ü©w Mehtod »P Timeout
+        /// æŒ‡å®š Mehtod èˆ‡ Timeout
         /// </summary>
         /// <returns></returns>
         [Test]
