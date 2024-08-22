@@ -8,9 +8,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// 授權服務註冊
+builder.Services.AddAuthentication()
+    // 註冊Hawk驗證
+    .AddHawkAuthorize(opt =>
+    {
+        // 設定證書
+        opt.Credentials.Add(new HawkNet.AspNetCore.HawkCredential
+        {
+            Id = "123",
+            Key = "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn",
+            Algorithm = "sha256",
+            User = "Admin",
+            Roles= ["Admins"]
+        });
+    });
+
 builder.Services.AddControllers()
     // 使用 DefaultApi 協助 json 選項
     .AddDefaultApiJsonOptions();
+
 
 var app = builder.Build();
 // Microsoft.Extensions.Options.IConfigureOptions`1[Microsoft.AspNetCore.Mvc.JsonOptions
@@ -24,6 +41,12 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+
+// 使用路由
+app.UseRouting();
+
+// 啟用路由後 底下這種的就可以執行
+//app.MapGet("/hello/{name:alpha}", (string name) => $"Hello {name}!");
 
 // 啟用驗證機制
 app.UseAuthentication();

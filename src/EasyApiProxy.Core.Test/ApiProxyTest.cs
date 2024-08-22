@@ -112,4 +112,43 @@ public class ApiProxyTest : BaseTest
 
         Assert.Catch<Exception>(() => proxy.Object.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
     }
+
+    [Test, Apartment(ApartmentState.STA)]
+    public async Task ApiProxy004()
+    {
+        // 類視窗環境模擬
+        Assert.That(SynchronizationContext.Current, Is.Not.Null);
+
+        var credential = new HawkCredential
+        {
+            Id = "123",
+            Key = "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn",
+            Algorithm = "sha256",
+            User = "Admin",
+        };
+
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
+            .UseHawkAuthorize(credential)
+            .Build<IDemoApi>();
+
+        var apiproxy = factory.Create();
+        //var api = apiproxy.Api;
+
+        var srvInfo = apiproxy.Object.GetServerInfo();
+        Assert.That(srvInfo, Is.EqualTo("Demo Server"));
+
+        var ret = await apiproxy.Object.Login(new Login { Account = "david", Password = "123" });
+        Assert.That(ret.Account, Is.EqualTo("david"));
+
+        var email = await apiproxy.Object.GetEmail(new TokenInfo { Token = ret.Token });
+
+        Assert.That(email, Is.EqualTo("david@gmail.com"));
+
+        await apiproxy.Object.Logout(new TokenInfo { Token = ret.Token });
+
+        var ex = Assert.Catch<ApiCodeException>(
+            () => apiproxy.Object.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
+        Assert.That(ex.Code, Is.EqualTo("EX"));
+    }
 }

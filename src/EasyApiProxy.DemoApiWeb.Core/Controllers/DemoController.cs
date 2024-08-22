@@ -1,21 +1,31 @@
 ﻿
 using EasyApiProxys.DemoApis;
 using EasyApiProxys.WebApis;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KmuApps.Controllers
+namespace EasyApiProxy.DemoApiWeb.Controllers
 {
     /// <summary>
     /// backendapi
     /// </summary>
+    [ApiController]
+    [Route("api/demo")]
     [DefaultApiResult]
-    public partial class DemoController : Controller, IDemoApi
+    [Authorize(AuthenticationSchemes="Hawk", Roles ="Admins")]
+    public partial class DemoController : ControllerBase, IDemoApi
     {
         public DemoController()
         {
         }
 
-        [HttpPost]
+        [AllowAnonymous]
+        [HttpGet("Ping")]
+        public string Ping() {
+            return "Hello Ping";
+        }
+
+        [HttpPost("Login")]
         public async Task<AccountInfo> Login(Login req)
         {
             await Task.Delay(1000);
@@ -26,7 +36,7 @@ namespace KmuApps.Controllers
             throw new NotImplementedException();
         }
 
-        [HttpPost]
+        [HttpPost("Logout")]
         public async Task Logout(TokenInfo req)
         {
             await Task.Delay(1000);
@@ -35,7 +45,7 @@ namespace KmuApps.Controllers
             throw new ApplicationException("The Token Not exits");
         }
 
-        [HttpPost]
+        [HttpPost("GetEmail")]
         public async Task<string> GetEmail(TokenInfo req)
         {
             await Task.Delay(1000);
@@ -46,19 +56,19 @@ namespace KmuApps.Controllers
             throw new ApplicationException("The Token Not exits");
         }
 
-        [HttpPost]
+        [HttpPost("GetServerInfo")]
         public string GetServerInfo()
         {
             return "Demo Server";
         }
 
-        [HttpPost]
+        [HttpPost("RunProc")]
         public Task<string> RunProc(ProcInfo req)
         {
             return RunProc_001(req);
         }
 
-        [HttpPost]
+        [HttpPost("RunProc_001")]
         public async Task<string> RunProc_001(ProcInfo req)
         {
             if (req.ProcSeconds > 0)

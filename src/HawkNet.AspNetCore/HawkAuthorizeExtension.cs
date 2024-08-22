@@ -1,6 +1,5 @@
 using HawkNet.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
