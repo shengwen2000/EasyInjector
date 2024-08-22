@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package >
+<package>
   <metadata>
     <id>EasyInjector.Dev</id>
     <version>1.5.1.0</version>
@@ -27,7 +27,7 @@
 
     <file src="bin\Release\EasyInjector.Dev.dll" target="lib\net40\EasyInjector.Dev.dll" />
     <file src="bin\Release\EasyInjector.Dev.xml" target="lib\net40\EasyInjector.Dev.xml" />
-    
+
     <!--<file src="icon.png" target="" />-->
   </files>
 </package>

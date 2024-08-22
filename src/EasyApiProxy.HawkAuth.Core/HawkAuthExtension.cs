@@ -1,7 +1,5 @@
 ﻿using EasyApiProxys.HawkAuths;
 using HawkNet;
-using System;
-using System.Net.Http;
 
 namespace EasyApiProxys
 {
@@ -18,26 +16,17 @@ namespace EasyApiProxys
         static public ApiProxyBuilder UseHawkAuthorize(this ApiProxyBuilder builder, HawkCredential credential)
         {
             var hander = new MethodHandler(credential, builder.Options.GetHttpMessageHandler);
-            builder.Options.GetHttpMessageHandler = hander.GetHandler;         
+            builder.Options.GetHttpMessageHandler = hander.GetHandler;
             return builder;
         }
 
-        internal class MethodHandler
+        internal class MethodHandler(
+            HawkCredential credential,
+            Func<HttpMessageHandler> current)
         {
-            readonly private Func<HttpMessageHandler> _current;
-            readonly private HawkCredential _credential;            
-
-            public MethodHandler(
-                HawkCredential credential,
-                Func<HttpMessageHandler> current)              
-            {
-                _current = current;
-                _credential = credential;
-            }
-
             public HttpMessageHandler GetHandler()
             {
-                return new HawkClientMessageHandler(_current.Invoke(), _credential);
+                return new HawkClientMessageHandler(current.Invoke(), credential);
             }
         }
     }

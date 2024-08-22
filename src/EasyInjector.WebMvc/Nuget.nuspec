@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package >
+<package>
   <metadata>
     <id>EasyInjector.WebMvc</id>
     <version>1.5.2.0</version>
@@ -18,7 +18,7 @@
         <dependency id="EasyInjector" version="1.5.0" />
         <dependency id="Microsoft.AspNet.Mvc" version="5.2.3" />
       </group>
-             
+
     </dependencies>
     <tags>Dependency Injection EasyInjector MVC</tags>
   </metadata>
@@ -28,7 +28,7 @@
 
     <file src="bin\Release\EasyInjector.WebMvc.dll" target="lib\net40\EasyInjector.WebMvc.dll" />
     <file src="bin\Release\EasyInjector.WebMvc.xml" target="lib\net40\EasyInjector.WebMvc.xml" />
-    
+
     <!--<file src="icon.png" target="" />-->
   </files>
 </package>

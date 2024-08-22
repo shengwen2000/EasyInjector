@@ -1,0 +1,116 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "apiproxy/publish",
+			"type": "process",
+			"command": "dotnet",
+			"options": {
+				"cwd":"${workspaceFolder}/src/EasyApiProxy.Core"
+			},
+			"args": [
+				"publish",
+				"-c",
+				"Release",
+				// "-r",
+				// "win-x64",
+				// "--self-contained",
+				// "false",
+				//"${workspaceFolder}/src/EasyApiProxy.Core"
+			],
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "apiproxy/nuget",
+			"type": "process",
+			"command": "nuget.exe",
+			"dependsOn": [
+				"apiproxy/publish"
+			],
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/EasyApiProxy.Core"
+			},
+			"args": [
+				"pack",
+				"Nuget.nuspec",
+				"-OutputDirectory",
+				"../../nugets"
+			]
+		},
+		{
+			"label": "apiproxy.webapi/publish",
+			"type": "process",
+			"command": "dotnet",
+			"options": {
+				"cwd": "${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+			},
+			"args": [
+				"publish",
+				"-c",
+				"Release",
+				// "-r",
+				// "win-x64",
+				// "--self-contained",
+				// "false",
+				//"${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+			],
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "apiproxy.webapi/nuget",
+			"type": "process",
+			"command": "nuget.exe",
+			"dependsOn": [
+				"apiproxy.webapi/publish"
+			],
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+			},
+			"args": [
+				"pack",
+				"Nuget.nuspec",
+				"-OutputDirectory",
+				"../../nugets"
+			]
+		},
+		{
+			"label": "apiproxy.hawk/publish",
+			"type": "process",
+			"command": "dotnet",
+			"options": {
+				"cwd": "${workspaceFolder}/src/EasyApiProxy.HawkAuth.Core"
+			},
+			"args": [
+				"publish",
+				"-c",
+				"Release",
+				// "-r",
+				// "win-x64",
+				// "--self-contained",
+				// "false",
+				//"${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+			],
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "apiproxy.hawk/nuget",
+			"type": "process",
+			"command": "nuget.exe",
+			"dependsOn": [
+				"apiproxy.hawk/publish"
+			],
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/EasyApiProxy.HawkAuth.Core"
+			},
+			"args": [
+				"pack",
+				"Nuget.nuspec",
+				"-OutputDirectory",
+				"../../nugets"
+			]
+		}
+	]
+}

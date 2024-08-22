@@ -7,9 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DocumentationFile>bin\Debug\net8.0\EasyApiProxy.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\net8.0\EasyApiProxy.Core.XML</DocumentationFile>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
