@@ -1,7 +1,8 @@
 ﻿using EasyApiProxys.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Globalization;
 
 namespace EasyApiProxys
 {
@@ -11,34 +12,19 @@ namespace EasyApiProxys
     public static class DefaultApiExtension
     {
         /// <summary>
-        /// Default Api 預設 Json Serializer
-        /// </summary>
-        public static JsonSerializer DefaultJsonSerializer { get; private set; }
-
-        /// <summary>
-        /// Default Api 預設 JsonSerializerSettings
+        /// Default Api 預設 JsonSerializer Options
         /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41
         /// </summary>
-        public static JsonSerializerSettings DefaultJsonSerializerSettings { get; private set; }
+        public static JsonSerializerOptions DefaultJsonOptions { get; private set; }
 
         static DefaultApiExtension()
         {
-            DefaultJsonSerializerSettings = new JsonSerializerSettings
+            DefaultJsonOptions = new JsonSerializerOptions
             {
-                NullValueHandling = NullValueHandling.Ignore,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                DateTimeZoneHandling = DateTimeZoneHandling.Unspecified,
-                //ContractResolver = new DefaultContractResolver()
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             };
-
-            var dateConverter = new Newtonsoft.Json.Converters.IsoDateTimeConverter
-            {
-                DateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss"
-            };
-            DefaultJsonSerializerSettings.Converters.Add(dateConverter);
-
-            DefaultJsonSerializer = JsonSerializer.Create(DefaultJsonSerializerSettings);
+            DefaultJsonOptions.Converters.Add(new DateTimeConverter());
         }
 
         /// <summary>
@@ -50,7 +36,7 @@ namespace EasyApiProxys
         static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
             var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);
-            builder.Options.GetJsonSerializer = () => DefaultJsonSerializer;
+            builder.Options.JsonOptions = DefaultJsonOptions;
             builder.Options.Step2 = hander.Step2;
             builder.Options.Step3 = hander.Step3;
             builder.Options.BaseUrl = baseUrl;
@@ -76,9 +62,8 @@ namespace EasyApiProxys
                 // 方法的第一個參數 會當成Json內容進行傳送
                 if (step.Invocation?.Arguments?.Any() == true)
                 {
-                    using var sw = new StringWriter();
-                    _options.GetJsonSerializer().Serialize(sw, step.Invocation.Arguments.ElementAt(0));
-                    req.Content = new StringContent(sw.ToString(), Encoding.UTF8, "application/json");
+                    var jsontext = JsonSerializer.Serialize(step.Invocation.Arguments.ElementAt(0), _options.JsonOptions);
+                    req.Content = new StringContent(jsontext, Encoding.UTF8, "application/json");
                 }
             }
 
@@ -97,12 +82,11 @@ namespace EasyApiProxys
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                using var sr = new StreamReader(s1);
-                using var jsonTextReader = new JsonTextReader(sr);
+
                 // 方法沒有回傳值(void | task)
                 if (invocation.Method.ReturnType == typeof(void) || invocation.Method.ReturnType == typeof(Task))
                 {
-                    var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult>(jsonTextReader)
+                    var ret = JsonSerializer.Deserialize<DefaultApiResult>(s1, _options.JsonOptions)
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
                         throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty);
@@ -114,7 +98,7 @@ namespace EasyApiProxys
                     var t1 = invocation.Method.ReturnType.GetGenericArguments()[0];
                     var resultT1 = typeof(DefaultApiResult<>).MakeGenericType([t1]);
 
-                    var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, resultT1) as DefaultApiResult
+                    var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
                         throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty);
@@ -129,7 +113,7 @@ namespace EasyApiProxys
                     var t1 = invocation.Method.ReturnType;
                     var resultT1 = typeof(DefaultApiResult<>).MakeGenericType([t1]);
 
-                    var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, resultT1) as DefaultApiResult
+                    var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
                         throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty);
@@ -137,6 +121,19 @@ namespace EasyApiProxys
                     var data = ret.Data;
                     step.Result = data;
                 }
+            }
+        }
+
+        public class DateTimeConverter : JsonConverter<DateTime>
+        {
+            public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                return DateTime.Parse(reader.GetString()!, CultureInfo.InvariantCulture);
+            }
+
+            public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture));
             }
         }
     }

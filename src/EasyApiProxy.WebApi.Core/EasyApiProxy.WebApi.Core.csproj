@@ -12,7 +12,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DocumentationFile>bin\Debug\net8.0\EasyApiProxy.WebApi.Core.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\net8.0\EasyApiProxy.WebApi.Core.XML</DocumentationFile>
   </PropertyGroup>
 
 </Project>

@@ -1,6 +1,5 @@
 ﻿using EasyApiProxys.Options;
-using Newtonsoft.Json;
-using System;
+using System.Text.Json;
 using System.Collections;
 
 namespace EasyApiProxys
@@ -26,9 +25,10 @@ namespace EasyApiProxys
         public Func<HttpMessageHandler> GetHttpMessageHandler { get; set; }
 
         /// <summary>
-        /// 取得Json Serializer
+        /// Json Serializer Options
+        /// (default is JsonSerializerDefaults.Web)
         /// </summary>
-        public Func<JsonSerializer> GetJsonSerializer { get; set; }
+        public JsonSerializerOptions JsonOptions { get; set; } = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
         /// <summary>
         /// (1)產生HttpRequest之前
@@ -50,14 +50,11 @@ namespace EasyApiProxys
         /// </summary>
         public Func<StepContext, Task>? Step4 { get; set; }
 
-        readonly JsonSerializer _serializer = new();
-
         /// <summary>
         /// Api Proxy 建立選項
         /// </summary>
         public ApiProxyBuilderOptions()
         {
-            GetJsonSerializer = () => _serializer;
             GetHttpMessageHandler = () => new HttpClientHandler();
         }
     }

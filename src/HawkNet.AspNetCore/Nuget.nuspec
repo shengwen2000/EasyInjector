@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>EasyApiProxy.Core</id>
-    <version>2.2.0.0</version>
-    <title>EasyApiProxy.Core</title>
+    <id>HawkNet.AspNetCore</id>
+    <version>1.0.0</version>
+    <title>HawkNet.AspNetCore</title>
     <authors>Shengwen</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <!-- <icon>icon.png</icon> -->
     <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
-    <description>WebApi 的快速代理類別</description>
+    <description>HawkNet Hawk驗證 於 asp.net core 8 的驗支援 (注意並不支援hash) </description>
     <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>copyright</copyright>
-    <readme>docs\EasyApiProxy.md</readme>
+    <!-- <readme>docs\HawkNet.AspNetCore.md</readme> -->
     <dependencies>
       <group targetFramework="net8.0" >
       </group>
@@ -23,15 +23,15 @@
       </group>
     </frameworkReferences>
 
-    <tags>WebAPI Proxy</tags>
+    <tags>HawkNet HawkAuth</tags>
 
     <!--<tags>Tag1 Tag2</tags>-->
   </metadata>
 
   <files>
     <file src="..\..\EasyApiProxy.md" target="docs\" />
-    <file src="bin\Release\net8.0\publish\EasyApiProxy.Core.dll" target="lib\net8.0\EasyApiProxy.Core.dll" />
-    <file src="bin\Release\net8.0\publish\EasyApiProxy.Core.xml" target="lib\net8.0\EasyApiProxy.Core.xml" />
+    <file src="bin\Release\net8.0\publish\HawkNet.AspNetCore.dll" target="lib\net8.0\HawkNet.AspNetCore.dll" />
+    <file src="bin\Release\net8.0\publish\HawkNet.AspNetCore.xml" target="lib\net8.0\HawkNet.AspNetCore.xml" />
     <!--<file src="icon.png" target="" />-->
   </files>
 </package>

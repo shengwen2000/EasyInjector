@@ -1,5 +1,5 @@
 ﻿using EasyApiProxys.DemoApis;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Net.Http.Json;
 
 
@@ -8,10 +8,8 @@ namespace Tests
     /// <summary>
     /// 模擬 Server Api 回應
     /// </summary>
-    public class DemoApiServerMockHandler(Func<JsonSerializer> jsonSerailizer) : HttpMessageHandler
+    public class DemoApiServerMockHandler(JsonSerializerOptions jsonOptions) : HttpMessageHandler
     {
-        private JsonSerializer _jsonSerailizer = jsonSerailizer.Invoke();
-
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var ret1 = await Task.Run(async () => {
@@ -118,9 +116,7 @@ namespace Tests
         async Task<T> GetContent<T>(HttpRequestMessage request)
         {
             var s = await request.Content!.ReadAsStreamAsync().ConfigureAwait(false);
-            using var sr = new StreamReader(s);
-            using var jr = new JsonTextReader(sr);
-            return _jsonSerailizer.Deserialize<T>(jr)!;
+            return JsonSerializer.Deserialize<T>(s, jsonOptions)!;
         }
     }
 }

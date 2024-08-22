@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace EasyApiProxys.WebApis
 {
@@ -100,7 +100,7 @@ namespace EasyApiProxys.WebApis
                         propName = x.Key,
                         propError = string.Join(",", x.Value!.Errors.Select(y => y.ErrorMessage))
                     })
-                    .Select(x => new JObject
+                    .Select(x => new JsonObject
                     {
                         [x.propName[..1].ToLower() + x.propName[1..]] = x.propError
                     });
@@ -109,7 +109,7 @@ namespace EasyApiProxys.WebApis
                 {
                     Result = "IM",
                     Message = "Model State Error",
-                    Data = JsonConvert.SerializeObject(errors)
+                    Data = JsonSerializer.Serialize(errors, DefaultApiExtension.DefaultJsonOptions)
                 });
             }
         }

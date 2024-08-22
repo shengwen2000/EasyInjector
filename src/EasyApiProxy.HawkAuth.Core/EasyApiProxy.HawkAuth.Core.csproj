@@ -15,8 +15,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DocumentationFile>bin\Debug\net8.0\EasyApiProxy.HawkAuth.Core.XML</DocumentationFile>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DocumentationFile>bin\Release\net8.0\EasyApiProxy.HawkAuth.Core.XML</DocumentationFile>
   </PropertyGroup>
 
 </Project>

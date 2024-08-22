@@ -4,21 +4,21 @@ using EasyApiProxys.DemoApis;
 namespace EasyApiProxy.Core.Test;
 
 
-public class UnitTest1
+public class DispatchProxyTest
 {
     [Test]
-    public void TestMethod1()
+    public void DispatchTestMethod1()
     {
         var proxy = DispatchProxy.Create<IDemoApi, DemoProxy>();
 
         var info = proxy.GetServerInfo();
-        Assert.AreEqual("Hello World", info);
+        Assert.That(info, Is.EqualTo("Hello World"));
 
         var p1 = proxy as DemoProxy;
-        Assert.IsNotNull(p1);
+        Assert.That(p1, Is.Not.Null);
         p1.Name = "123";
 
-        Assert.AreEqual("123", proxy.GetServerInfo());
+        Assert.That(proxy.GetServerInfo(), Is.EqualTo("123"));
     }
 
     public class DemoProxy : DispatchProxy
@@ -32,6 +32,4 @@ public class UnitTest1
             throw new NotImplementedException();
         }
     }
-
-
 }

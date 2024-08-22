@@ -111,6 +111,43 @@
 				"-OutputDirectory",
 				"../../nugets"
 			]
+		},
+		{
+			"label": "hawknet/publish",
+			"type": "process",
+			"command": "dotnet",
+			"options": {
+				"cwd": "${workspaceFolder}/src/HawkNet.AspNetCore"
+			},
+			"args": [
+				"publish",
+				"-c",
+				"Release",
+				// "-r",
+				// "win-x64",
+				// "--self-contained",
+				// "false",
+				//"${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+			],
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "hawknet/nuget",
+			"type": "process",
+			"command": "nuget.exe",
+			"dependsOn": [
+				"hawknet/publish"
+			],
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/HawkNet.AspNetCore"
+			},
+			"args": [
+				"pack",
+				"Nuget.nuspec",
+				"-OutputDirectory",
+				"../../nugets"
+			]
 		}
 	]
 }

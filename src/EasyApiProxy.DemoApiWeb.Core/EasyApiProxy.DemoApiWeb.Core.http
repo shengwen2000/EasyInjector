@@ -1,0 +1,6 @@
+@EasyApiProxy.DemoApiWeb.Core_HostAddress = http://localhost:5249
+
+GET {{EasyApiProxy.DemoApiWeb.Core_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
