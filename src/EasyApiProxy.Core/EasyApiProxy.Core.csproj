@@ -1,13 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <AssemblyTitle>HawkNet.AspNetCore</AssemblyTitle>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <Company>shengwen2000</Company>
+    <Description>WebApi 的快速代理類別</Description>
+
     <RootNamespace>EasyApiProxys</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DocumentationFile>bin\Debug\net8.0\EasyApiProxy.Core.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\net8.0\EasyApiProxy.Core.XML</DocumentationFile>
   </PropertyGroup>
 
 </Project>

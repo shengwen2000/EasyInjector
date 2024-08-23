@@ -6,6 +6,11 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <PropertyGroup>
+    <AssemblyTitle>EasyApiProxy.WebApi.Core</AssemblyTitle>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <Company>shengwen2000</Company>
+    <Description>支援 asp.net core 8 提供 Hawk驗證。</Description>
+
     <RootNamespace>EasyApiProxys.WebApis</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

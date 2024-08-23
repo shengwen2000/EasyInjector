@@ -9,6 +9,12 @@
   </ItemGroup>
 
   <PropertyGroup>
+
+    <AssemblyTitle>EasyApiProxy.HawkAuth.Core</AssemblyTitle>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <Company>shengwen2000</Company>
+    <Description>WebApi 的快速代理類別 HAWK驗證(net8)</Description>
+
     <RootNamespace>EasyApiProxys</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

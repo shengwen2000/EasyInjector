@@ -5,6 +5,9 @@ using EasyApiProxys;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+/// <summary>
+/// 提供DefaultApi協定必要的設定支援
+/// </summary>
 public static class DefaultApiMvcExtension {
 
     /// <summary>

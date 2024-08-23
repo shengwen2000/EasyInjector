@@ -2,7 +2,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "apiproxy/publish",
+			"label": "apiproxy.core/publish",
 			"type": "process",
 			"command": "dotnet",
 			"options": {
@@ -21,11 +21,11 @@
 			"problemMatcher": "$msCompile"
 		},
 		{
-			"label": "apiproxy/nuget",
+			"label": "apiproxy.core/nuget",
 			"type": "process",
 			"command": "nuget.exe",
 			"dependsOn": [
-				"apiproxy/publish"
+				"apiproxy.core/publish"
 			],
 			"problemMatcher": "$msCompile",
 			"options": {

@@ -4,12 +4,12 @@
     <id>EasyApiProxy.WebApi.Core</id>
     <version>2.2.0.0</version>
     <title>EasyApiProxy.WebApi.Core</title>
-    <authors>Shengwen</authors>
+    <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <!-- <icon>icon.png</icon> -->
     <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
-    <description>WebApi 的快速代理類別 HAWK驗證(net8) </description>
+    <description>WebApi Server端 WebApi for DefaultApi Protocol (.net8)</description>
     <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>copyright</copyright>
     <readme>docs\EasyApiProxy.md</readme>
@@ -18,7 +18,7 @@
         <dependency id="EasyApiProxy.Core" version="2.2.0.0" />
       </group>
     </dependencies>
-    <tags>WebAPI Proxy Hawk</tags>
+    <tags>WebAPI</tags>
   </metadata>
 
   <files>
