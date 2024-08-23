@@ -27,7 +27,7 @@ namespace EasyApiProxys
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult From(string result, string message, object data)
+        public static DefaultApiResult From(string result, string message, object? data)
         {
             return new DefaultApiResult { Result = result, Message = message, Data = data };
         }
@@ -35,7 +35,7 @@ namespace EasyApiProxys
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult<T> From<T>(string result, string message, T data)
+        public static DefaultApiResult<T> From<T>(string result, string message, T? data)
         {
             return new DefaultApiResult<T> { Result = result, Message = message, Data = data };
         }

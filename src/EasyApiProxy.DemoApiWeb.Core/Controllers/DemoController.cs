@@ -13,7 +13,7 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
     [Route("api/demo")]
     [DefaultApiResult]
     [Authorize(AuthenticationSchemes="Hawk", Roles ="Admins")]
-    public partial class DemoController : ControllerBase, IDemoApi
+    public class DemoController : ControllerBase, IDemoApi
     {
         public DemoController()
         {

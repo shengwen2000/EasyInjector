@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Globalization;
+using System.Net;
 
 namespace EasyApiProxys
 {
@@ -53,14 +54,13 @@ namespace EasyApiProxys
                 if (step2 != null)
                     await step2(step).ConfigureAwait(false);
 
-                var apiMethod = step.Invocation.Method;
                 var req = step.Request!;
                 var _options = step.BuilderOptions;
 
                 req.Method = HttpMethod.Post;
 
                 // 方法的第一個參數 會當成Json內容進行傳送
-                if (step.Invocation?.Arguments?.Any() == true)
+                if (step.Invocation.Arguments.Length != 0)
                 {
                     var jsontext = JsonSerializer.Serialize(step.Invocation.Arguments.ElementAt(0), _options.JsonOptions);
                     req.Content = new StringContent(jsontext, Encoding.UTF8, "application/json");
@@ -77,8 +77,10 @@ namespace EasyApiProxys
                 var _options = step.BuilderOptions;
 
                 // 必須是 HTTP 200 回應
-                if (resp.StatusCode != System.Net.HttpStatusCode.OK)
-                    throw new ApiCodeException("HTTP_NOT_OK", string.Format("HTTP連線狀態錯誤 StatusCode={0}", resp.StatusCode));
+                if (resp.StatusCode != HttpStatusCode.OK)
+                    throw new ApiCodeException("HTTP_NOT_OK", $"HTTP呼叫沒有回應OK而是回應{resp.StatusCode}", new {
+                        Code=(int)resp.StatusCode,
+                        Status=resp.StatusCode.ToString()});
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -89,7 +91,7 @@ namespace EasyApiProxys
                     var ret = JsonSerializer.Deserialize<DefaultApiResult>(s1, _options.JsonOptions)
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
-                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty);
+                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty, ret.Data);
                 }
                 // 方法有回傳值Task<T>
                 else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
@@ -101,7 +103,7 @@ namespace EasyApiProxys
                     var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
-                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty);
+                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty, ret.Data);
 
                     var data = ret.Data;
                     step.Result = data;
@@ -116,7 +118,7 @@ namespace EasyApiProxys
                     var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
-                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty);
+                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty, ret.Data);
 
                     var data = ret.Data;
                     step.Result = data;

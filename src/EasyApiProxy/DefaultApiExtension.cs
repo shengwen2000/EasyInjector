@@ -82,7 +82,6 @@ namespace EasyApiProxys
                 if (_step2 != null)
                     await _step2(step).ConfigureAwait(false);
 
-                var apiMethod = step.Invocation.Method;
                 var req = step.Request;
                 var _options = step.BuilderOptions;
              
@@ -110,7 +109,9 @@ namespace EasyApiProxys
 
                 // 必須是 HTTP 200 回應
                 if (resp.StatusCode != System.Net.HttpStatusCode.OK)
-                    throw new ApiCodeException("HTTP_NOT_OK", string.Format("HTTP連線狀態錯誤 StatusCode={0}", resp.StatusCode));
+                   throw new ApiCodeException("HTTP_NOT_OK", string.Format("HTTP呼叫沒有回應OK而是回應{0}",resp.StatusCode), new {
+                        Code=(int)resp.StatusCode,
+                        Status=resp.StatusCode.ToString()});
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -124,7 +125,7 @@ namespace EasyApiProxys
                         if (ret == null)
                             throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         if (ret.Result != "OK")
-                            throw new ApiCodeException(ret.Result, ret.Message);
+                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                     // 方法有回傳值Task<T>
                     else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
@@ -137,7 +138,7 @@ namespace EasyApiProxys
                         if (ret == null)
                             throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         if (ret.Result != "OK")
-                            throw new ApiCodeException(ret.Result, ret.Message);
+                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
 
                         var data = ret.Data;
                         step.Result = data;
@@ -153,7 +154,7 @@ namespace EasyApiProxys
                         if (ret == null)
                             throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         if (ret.Result != "OK")
-                            throw new ApiCodeException(ret.Result, ret.Message);
+                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
 
                         var data = ret.Data;
                         step.Result = data;

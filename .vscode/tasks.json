@@ -48,12 +48,7 @@
 			"args": [
 				"publish",
 				"-c",
-				"Release",
-				// "-r",
-				// "win-x64",
-				// "--self-contained",
-				// "false",
-				//"${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+				"Release"
 			],
 			"problemMatcher": "$msCompile"
 		},
@@ -85,12 +80,7 @@
 			"args": [
 				"publish",
 				"-c",
-				"Release",
-				// "-r",
-				// "win-x64",
-				// "--self-contained",
-				// "false",
-				//"${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+				"Release"
 			],
 			"problemMatcher": "$msCompile"
 		},
@@ -122,12 +112,7 @@
 			"args": [
 				"publish",
 				"-c",
-				"Release",
-				// "-r",
-				// "win-x64",
-				// "--self-contained",
-				// "false",
-				//"${workspaceFolder}/src/EasyApiProxy.WebApi.Core"
+				"Release"
 			],
 			"problemMatcher": "$msCompile"
 		},

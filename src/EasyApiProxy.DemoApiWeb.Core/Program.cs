@@ -1,4 +1,5 @@
 using EasyApiProxys;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,10 +29,7 @@ builder.Services.AddControllers()
     // 使用 DefaultApi 協助 json 選項
     .AddDefaultApiJsonOptions();
 
-
 var app = builder.Build();
-// Microsoft.Extensions.Options.IConfigureOptions`1[Microsoft.AspNetCore.Mvc.JsonOptions
-// var opt1 = app.Services.GetRequiredService<IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

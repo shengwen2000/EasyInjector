@@ -12,12 +12,17 @@ namespace EasyApiProxys
         public string Code { get; set; }
 
         /// <summary>
+        /// 異常資料
+        /// </summary>
+        public object? ErrorData {get; set;}
+
+        /// <summary>
         /// API 發生異常
         /// 代號為Enum.ToString()
         /// 訊息自動由 Description中取得 沒有 Description 預設為其名稱
         /// </summary>
         public ApiCodeException(Enum value)
-            : this(value.ToString(), GetDescription(value))
+            : this(value, GetDescription(value))
         {
         }
 
@@ -26,10 +31,21 @@ namespace EasyApiProxys
         /// 代號為Enum.ToString()
         /// </summary>
         public ApiCodeException(Enum value, string message)
-            : this(value.ToString(), message)
+             :base(message)
         {
+            Code = value.ToString();
         }
 
+        /// <summary>
+        /// API 發生異常
+        /// 代號為Enum.ToString()
+        /// </summary>
+        public ApiCodeException(Enum value, string message, object? errorData)
+             :base(message)
+        {
+            Code = value.ToString();
+            ErrorData = errorData;
+        }
 
         /// <summary>
         /// API 發生的異常
@@ -43,17 +59,32 @@ namespace EasyApiProxys
         }
 
         /// <summary>
+        /// API 發生的異常
+        /// <param name="code">錯誤代碼</param>
+        /// <param name="message">錯誤訊息</param>
+        /// </summary>
+        public ApiCodeException(string code, string message, object? errorData)
+            : base(message)
+        {
+            Code = code;
+            ErrorData = errorData;
+        }
+
+        /// <summary>
         /// ToString
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{0}->{1}", Code, Message);
+            if (ErrorData != null)
+                return string.Format("{0}->{1} {2}", Code, Message, ErrorData);
+            else
+                return string.Format("{0}->{1}", Code, Message);
         }
 
         /// <summary>
         /// 取得Description
         /// </summary>
-        static string GetDescription(Enum value)
+        static public string GetDescription(Enum value)
         {
             var fieldInfo = value.GetType().GetField(value.ToString());
             if (fieldInfo == null) return value.ToString();
