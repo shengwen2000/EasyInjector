@@ -14,3 +14,10 @@
 * 支援Hawk驗證
 * [Nuget Package Install](https://www.nuget.org/packages/EasyApiProxy/)
 * [詳細內容](./EasyApiProxy.md)
+
+
+# HawkNet.AspNetCore
+
+* 支援 asp.net core 8 提供 Hawk驗證。
+* [Nuget Package Install](https://www.nuget.org/packages/HawkNet.AspNetCore/)
+* [詳細內容](./HawkNet.AspNetCore.md)

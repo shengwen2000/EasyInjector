@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace EasyApiProxy.DemoApiWeb.Controllers
 {
     /// <summary>
-    /// backendapi
+    /// Demo Api
     /// </summary>
     [ApiController]
     [Route("api/demo")]
-    [DefaultApiResult]
+    [DefaultApiResult] // 預設API的協定封裝
     [Authorize(AuthenticationSchemes="Hawk", Roles ="Admins")]
     public class DemoController : ControllerBase, IDemoApi
     {

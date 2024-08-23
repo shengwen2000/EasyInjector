@@ -4,15 +4,15 @@
     <id>HawkNet.AspNetCore</id>
     <version>1.0.0</version>
     <title>HawkNet.AspNetCore</title>
-    <authors>Shengwen</authors>
+    <authors>shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <!-- <icon>icon.png</icon> -->
     <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
-    <description>HawkNet Hawk驗證 於 asp.net core 8 的驗支援 (注意並不支援hash) </description>
+    <description>HawkNet Hawk驗證於 asp.net core 8 (注意並不支援hash) </description>
     <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>copyright</copyright>
-    <!-- <readme>docs\HawkNet.AspNetCore.md</readme> -->
+    <readme>docs\HawkNet.AspNetCore.md</readme>
     <dependencies>
       <group targetFramework="net8.0" >
       </group>
@@ -29,7 +29,7 @@
   </metadata>
 
   <files>
-    <file src="..\..\EasyApiProxy.md" target="docs\" />
+    <file src="..\..\HawkNet.AspNetCore.md" target="docs\" />
     <file src="bin\Release\net8.0\publish\HawkNet.AspNetCore.dll" target="lib\net8.0\HawkNet.AspNetCore.dll" />
     <file src="bin\Release\net8.0\publish\HawkNet.AspNetCore.xml" target="lib\net8.0\HawkNet.AspNetCore.xml" />
     <!--<file src="icon.png" target="" />-->

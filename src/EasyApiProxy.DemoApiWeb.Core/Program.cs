@@ -23,6 +23,9 @@ builder.Services.AddAuthentication()
             User = "Admin",
             Roles= ["Admins"]
         });
+
+        // 也可以自行實作取得證書方法
+        //opt.GetCredentialFunc = (id) => Task.FromResult(new HawkNet.AspNetCore.HawkCredential());
     });
 
 builder.Services.AddControllers()
@@ -46,9 +49,9 @@ app.UseRouting();
 // 啟用路由後 底下這種的就可以執行
 //app.MapGet("/hello/{name:alpha}", (string name) => $"Hello {name}!");
 
-// 啟用驗證機制
+// 啟用憑證檢驗 確定憑證有效性
 app.UseAuthentication();
-// 啟用授權機制 (必需在使用路由之後)
+// 啟用權限驗證機制 檢查你是否有權限存取方法
 app.UseAuthorization();
 
 // 啟用 API Controllers
