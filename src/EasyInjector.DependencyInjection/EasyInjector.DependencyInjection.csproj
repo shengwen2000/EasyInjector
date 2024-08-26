@@ -3,10 +3,9 @@
   <PropertyGroup>
 
     <AssemblyTitle>EasyInjector.DependencyInjection</AssemblyTitle>
-    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>1.6.0.0</AssemblyVersion>
     <Company>shengwen2000</Company>
-    <Description>EasyInjector 部分特性 使用微軟DI來實現</Description>
-
+    <Description>EasyInjector 使用微軟DI來實現一些專用的服務</Description>
     <RootNamespace>EasyInjectors</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

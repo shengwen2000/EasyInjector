@@ -1,8 +1,8 @@
-﻿using EasyInjectors.Dev;
-using Microsoft.Extensions.DependencyInjection;
+﻿using EasyInjectors;
+using EasyInjectors.Dev;
 using System.Reflection;
 
-namespace EasyInjectors
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// 擴充方法
@@ -10,20 +10,113 @@ namespace EasyInjectors
     public static class EasyInjectorExtension
     {
         /// <summary>
+        /// 增加EasyInjector 特製的服務
+        /// - IProvider 可以取得某服務
+        /// - IServiceScope 可以注入當前的ServiceScope
+        /// </summary>
+        public static IServiceCollection AddEasyInjector(this IServiceCollection services) {
+
+            services.AddTransient(typeof(IProvider<>), typeof(ProviderService<>));
+            services.AddScoped<IServiceScope, ServiceScopeImpl>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// 建立實例(類型不需要註冊) 自動填入建構子中的依賴服務
+        /// </summary>
+        public static object CreateInstance(this IServiceProvider provider, Type srvType)
+        {
+            var ctor1 = srvType.GetConstructors()
+                .Where(x => x.IsPublic)
+                .FirstOrDefault() ?? throw new ApplicationException(string.Format("類別{0}沒有公開建構子，無法生成實例", srvType.FullName));
+
+            var pp = ctor1.GetParameters();
+            if (pp.Length == 0)
+            {
+                var inst = Activator.CreateInstance(srvType) ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", srvType.FullName));
+                return inst;
+            }
+
+            var vv = new object[pp.Length];
+
+            for (var i = 0; i < pp.Length; i++)
+            {
+                var p1 = pp[i];
+                var srv1 = provider.GetService(p1.ParameterType) ?? throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", srvType.FullName, p1.ParameterType.FullName));
+                vv[i] = srv1;
+            }
+            {
+                var inst = ctor1.Invoke(vv) ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", srvType.FullName));
+                return inst;
+            }
+        }
+
+        /// <summary>
+        /// 建立實例(類型不需要註冊) 自動填入建構子中的依賴服務
+        /// </summary>
+        public static TService CreateInstance<TService>(this IServiceProvider provider) where TService : class
+        {
+            var inst = CreateInstance(provider, typeof(TService)) as TService
+                ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", typeof(TService).FullName));
+            return inst;
+        }
+
+        /// <summary>
+        /// 註冊有名稱的Singleton服務 INamed<Service>
+        /// </summary>
+        public static IServiceCollection AddNamedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
+        where TService : class
+        {
+            services.AddSingleton<INamed<TService>>(sp =>
+            {
+                return new NamedService<TService>(sp, createFunc);
+            });
+            return services;
+        }
+
+        /// <summary>
+        /// 註冊有名稱的Scoped服務 INamed<Service>
+        /// </summary>
+        public static IServiceCollection AddNamedScoped<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
+        where TService : class
+        {
+            services.AddScoped<INamed<TService>>(sp =>
+            {
+                return new NamedService<TService>(sp, createFunc);
+            });
+            return services;
+        }
+
+        /// <summary>
+        /// 註冊有名稱的Transient服務 INamed<Service>
+        /// </summary>
+        public static IServiceCollection AddNameTransient<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
+        where TService : class
+        {
+            services.AddTransient<INamed<TService>>(sp =>
+            {
+                return new NamedTransientService<TService>(sp, createFunc);
+            });
+            return services;
+        }
+
+
+        /// <summary>
         /// 增加複寫服務
         /// </summary>
         /// <typeparam name="TService">要複寫的服務</typeparam>
         /// <typeparam name="TOverride">要複寫類別 (方法須標示[Override]才會複蓋) </typeparam>
-        /// <param name="injector">Injector</param>
+        /// <param name="services">ServiceCollection</param>
         /// <returns></returns>
-        public static void AddOverride<TService, TOverride>(this ServiceCollection injector) where TService : class
+        public static void AddOverride<TService, TOverride>(this IServiceCollection services) where TService : class
         {
-            var baseDescriptor1 = injector.Where(x => x.ServiceType == typeof(TService))
+            var baseDescriptor1 = services.Where(x => x.ServiceType == typeof(TService))
                 .LastOrDefault() ?? throw new ApplicationException($"Service {typeof(TService).FullName} not registered, cant be override");
 
             if (baseDescriptor1.Lifetime == ServiceLifetime.Singleton)
             {
-                injector.AddSingleton<TService>(sp =>
+                services.AddSingleton<TService>(sp =>
                 {
                     var instance = CreateOverrideInstance<TService, TOverride>(sp, baseDescriptor1);
                     return (TService)instance;
@@ -31,7 +124,7 @@ namespace EasyInjectors
             }
             else if (baseDescriptor1.Lifetime == ServiceLifetime.Scoped)
             {
-                injector.AddScoped<TService>(sp =>
+                services.AddScoped<TService>(sp =>
                 {
                     var instance = CreateOverrideInstance<TService, TOverride>(sp, baseDescriptor1);
                     return (TService)instance;
@@ -39,7 +132,7 @@ namespace EasyInjectors
             }
             else if (baseDescriptor1.Lifetime == ServiceLifetime.Transient)
             {
-                injector.AddTransient<TService>(sp =>
+                services.AddTransient<TService>(sp =>
                 {
                     var instance = CreateOverrideInstance<TService, TOverride>(sp, baseDescriptor1);
                     return (TService)instance;
@@ -77,7 +170,8 @@ namespace EasyInjectors
                 var p1 = pp[i];
                 // 如果是服務自身的話 提供舊的版本
                 object? srv1 = null;
-                if (p1.ParameterType == typeof(TService)) {
+                if (p1.ParameterType == typeof(TService))
+                {
                     srv1 = CreateInstanceByDescriptor(provider, baseServiceDescriptor);
                     baseInstance = srv1;
                 }

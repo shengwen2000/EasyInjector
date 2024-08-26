@@ -9,7 +9,7 @@ namespace Tests
 {
     [Category("EasyInjector")]
     [TestFixture]
-    public class OptionalTest : BaseTest
+    public class ProviderTest : BaseTest
     {
         [SetUp]
         public void Init()
