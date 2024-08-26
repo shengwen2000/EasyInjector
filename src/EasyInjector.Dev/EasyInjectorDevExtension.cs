@@ -55,6 +55,7 @@ namespace EasyInjectors
             // 建構參數
             var pp = ctor1.GetParameters();
             var vv = new object[pp.Length];
+            object baseInstance = null;
 
             // 逐一取的建構參數服務
             for (var i = 0; i < pp.Length; i++)
@@ -63,7 +64,10 @@ namespace EasyInjectors
                 // 如果是服務自身的話 提供舊的版本
                 object srv1 = null;
                 if (p1.ParameterType == typeof(TService))
+                {
                     srv1 = baseServiceRegister.CreateFunc.Invoke(provider);
+                    baseInstance = srv1;
+                }
                 else
                     srv1 = provider.GetService(p1.ParameterType);
                 if (srv1 == null)
@@ -73,18 +77,19 @@ namespace EasyInjectors
 
             {
                 // 複寫的服務實例
-                var overOne = ctor1.Invoke(vv);
-                if (overOne == null)
+                var overInstance = ctor1.Invoke(vv);
+                if (overInstance == null)
                     throw new ApplicationException(string.Format("類別{0} 無法生成實例", overrideType.FullName));
 
                 // 基礎的服務實例
-                object baseOne = baseServiceRegister.CreateFunc.Invoke(provider);
-                if (baseOne == null)
+                if (baseInstance == null)
+                    baseInstance = baseServiceRegister.CreateFunc.Invoke(provider);
+                if (baseInstance == null)
                     throw new ApplicationException(string.Format("類別{0}的複寫基礎服務 無法生成實例", overrideType.FullName));
 
                 // 產生代理類別
                 var generator = new ProxyGenerator();
-                var proxy = generator.CreateInterfaceProxyWithoutTarget(typeof(TService), new OverrideInterceptor(overOne, baseOne));
+                var proxy = generator.CreateInterfaceProxyWithoutTarget(typeof(TService), new OverrideInterceptor(overInstance, baseInstance));
                 return proxy;
             }
         }

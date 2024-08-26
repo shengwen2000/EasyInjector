@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyApiProxy.DemoApiWeb.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HawkNet.AspNetCore", "HawkNet.AspNetCore\HawkNet.AspNetCore.csproj", "{D6C2BD29-563F-445B-95E9-85541BBB949E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyInjector.DependencyInjection", "EasyInjector.DependencyInjection\EasyInjector.DependencyInjection.csproj", "{EAB33C95-64A8-44C9-B86E-93D02108494B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyInjector.Core.Tests", "EasyInjector.Core.Tests\EasyInjector.Core.Tests.csproj", "{9634D440-DBC3-4AF1-91F5-CC821E8027BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{D6C2BD29-563F-445B-95E9-85541BBB949E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6C2BD29-563F-445B-95E9-85541BBB949E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6C2BD29-563F-445B-95E9-85541BBB949E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAB33C95-64A8-44C9-B86E-93D02108494B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAB33C95-64A8-44C9-B86E-93D02108494B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAB33C95-64A8-44C9-B86E-93D02108494B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAB33C95-64A8-44C9-B86E-93D02108494B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9634D440-DBC3-4AF1-91F5-CC821E8027BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9634D440-DBC3-4AF1-91F5-CC821E8027BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9634D440-DBC3-4AF1-91F5-CC821E8027BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9634D440-DBC3-4AF1-91F5-CC821E8027BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

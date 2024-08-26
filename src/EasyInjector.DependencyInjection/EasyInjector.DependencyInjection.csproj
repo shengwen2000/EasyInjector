@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+
+    <AssemblyTitle>EasyInjector.DependencyInjection</AssemblyTitle>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <Company>shengwen2000</Company>
+    <Description>EasyInjector 部分特性 使用微軟DI來實現</Description>
+
+    <RootNamespace>EasyInjectors</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>
