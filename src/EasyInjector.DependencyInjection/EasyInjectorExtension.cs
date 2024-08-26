@@ -7,7 +7,7 @@ namespace EasyInjectors
     /// <summary>
     /// 擴充方法
     /// </summary>
-    public static class EasyInjectorDevExtension
+    public static class EasyInjectorExtension
     {
         /// <summary>
         /// 增加複寫服務
@@ -78,7 +78,7 @@ namespace EasyInjectors
                 // 如果是服務自身的話 提供舊的版本
                 object? srv1 = null;
                 if (p1.ParameterType == typeof(TService)) {
-                    srv1 = CreateInstance(provider, baseServiceDescriptor);
+                    srv1 = CreateInstanceByDescriptor(provider, baseServiceDescriptor);
                     baseInstance = srv1;
                 }
                 else
@@ -93,7 +93,7 @@ namespace EasyInjectors
                 var overInstance = ctor1.Invoke(vv) ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", overrideType.FullName));
 
                 // 基礎的服務實例
-                baseInstance ??= CreateInstance(provider, baseServiceDescriptor)
+                baseInstance ??= CreateInstanceByDescriptor(provider, baseServiceDescriptor)
                     ?? throw new ApplicationException(string.Format("類別{0}的複寫基礎服務 無法生成實例", overrideType.FullName));
 
                 // 產生代理類別
@@ -113,7 +113,7 @@ namespace EasyInjectors
         /// <param name="provider"></param>
         /// <param name="serviceDescriptor"></param>
         /// <returns></returns>
-        static object? CreateInstance(IServiceProvider provider, ServiceDescriptor serviceDescriptor)
+        static object? CreateInstanceByDescriptor(IServiceProvider provider, ServiceDescriptor serviceDescriptor)
         {
             if (serviceDescriptor.ImplementationType != null)
             {
@@ -149,6 +149,4 @@ namespace EasyInjectors
             return null;
         }
     }
-
-
 }
