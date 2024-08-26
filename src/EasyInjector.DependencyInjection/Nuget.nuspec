@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>EasyInjector.DependencyInjection</id>
+    <version>1.6.0.0</version>
+    <title>EasyInjector.DependencyInjection</title>
+    <authors>Shengwen2000</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <!-- <icon>icon.png</icon> -->
+    <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
+    <description>簡單的模仿 .net core 注入依賴庫 適用於舊專案.net4.0的場合</description>
+    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <copyright>copyright</copyright>
+    <readme>docs\EasyInjector.DependencyInjection.md</readme>
+    <dependencies>
+      <group targetFramework="net8.0" >
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net8.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+    <tags>Dependency Injection EasyInjector</tags>
+  </metadata>
+
+  <files>
+    <file src="..\..\EasyInjector.DependencyInjection.md" target="docs\" />
+
+    <file src="bin\Release\net8.0\EasyInjector.DependencyInjection.dll" target="lib\net8.0\EasyInjector.DependencyInjection.dll" />
+    <file src="bin\Release\net8.0\EasyInjector.DependencyInjection.xml" target="lib\net8.0\EasyInjector.DependencyInjection.xml" />
+
+    <!--<file src="icon.png" target="" />-->
+  </files>
+</package>

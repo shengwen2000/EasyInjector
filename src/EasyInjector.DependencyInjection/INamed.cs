@@ -27,6 +27,7 @@ namespace EasyInjectors
     /// </summary>
     /// <remarks>建構方法</remarks>
     /// <param name="createFunc">建立此服務的方法</param>
+    /// <param name="provider">ServiceProvider</param>
     public class NamedService<TService>(
         IServiceProvider provider,
         Func<IServiceProvider, string, TService> createFunc) : INamed<TService>, IDisposable where TService : class
@@ -65,12 +66,18 @@ namespace EasyInjectors
             }
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public void Dispose()
         {
             GC.SuppressFinalize(this);
             Dispose(true);
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
@@ -105,6 +112,7 @@ namespace EasyInjectors
     /// </summary>
     /// <remarks>建構方法</remarks>
     /// <param name="createFunc">建立此服務的方法</param>
+    /// <param name="provider">ServiceProvider</param>
     public class NamedTransientService<TService>(
         IServiceProvider provider,
         Func<IServiceProvider, string, TService> createFunc) : INamed<TService> where TService : class

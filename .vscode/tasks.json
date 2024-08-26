@@ -133,6 +133,38 @@
 				"-OutputDirectory",
 				"../../nugets"
 			]
+		},
+		{
+			"label": "easyinjector/publish",
+			"type": "process",
+			"command": "dotnet",
+			"options": {
+				"cwd": "${workspaceFolder}/src/EasyInjector.DependencyInjection"
+			},
+			"args": [
+				"publish",
+				"-c",
+				"Release"
+			],
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "easyinjector/nuget",
+			"type": "process",
+			"command": "nuget.exe",
+			"dependsOn": [
+				"easyinjector/publish"
+			],
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/EasyInjector.DependencyInjection"
+			},
+			"args": [
+				"pack",
+				"Nuget.nuspec",
+				"-OutputDirectory",
+				"../../nugets"
+			]
 		}
 	]
 }

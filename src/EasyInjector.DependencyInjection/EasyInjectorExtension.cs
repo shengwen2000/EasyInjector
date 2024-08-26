@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 註冊有名稱的Singleton服務 INamed<Service>
+        /// 註冊有名稱的Singleton服務 INamed
         /// </summary>
         public static IServiceCollection AddNamedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
         where TService : class
@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 註冊有名稱的Scoped服務 INamed<Service>
+        /// 註冊有名稱的Scoped服務 INamed
         /// </summary>
         public static IServiceCollection AddNamedScoped<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
         where TService : class
@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 註冊有名稱的Transient服務 INamed<Service>
+        /// 註冊有名稱的Transient服務 INamed
         /// </summary>
         public static IServiceCollection AddNameTransient<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
         where TService : class

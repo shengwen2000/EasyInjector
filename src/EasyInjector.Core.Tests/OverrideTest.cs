@@ -2,6 +2,9 @@
 using EasyInjectors.Dev;
 using EasyInjectors;
 using Tests.Overrides;
+using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 
 namespace Tests
 {
@@ -50,6 +53,28 @@ namespace Tests
 
             var ret3 = api.Hello();
             Assert.That(ret3, Is.EqualTo("World World Dev World Dev"));
+        }
+
+        //[Test, Apartment(ApartmentState.STA)]
+        public void Override003()
+        {
+            {
+                var services = new ServiceCollection();
+                services.AddSingleton(typeof(IMyLogger<>), typeof(MyLoggerImpl<>));
+                services.AddSingleton(typeof(IMyLogger<>), typeof(MyLoggerImpl2<>));
+                services.BuildServiceProvider(true);
+            }
+
+             {
+                var services = new ServiceCollection();
+                services.AddSingleton(typeof(IMyLogger<>), typeof(MyLoggerImpl<>));
+                services.AddOverride<IMyLogger<string>, MyLoggerImpl2<string>>();
+                var provider = services.BuildServiceProvider(true);
+
+                var srv = provider.GetRequiredService<IMyLogger<string>>();
+                srv.LogInfo("hello");
+            }
+
         }
     }
     namespace Overrides
@@ -125,6 +150,54 @@ namespace Tests
         {
             public string Account { get; set; } = default!;
             public string Password { get; set; } = default!;
+        }
+
+        public static class Storage
+        {
+            public static List<string> Logs { get; } = [];
+        }
+
+        public interface IMyLogger<TService>
+        {
+            void LogInfo(TService info);
+
+            void LogWarn(TService info);
+        }
+
+        public class MyLoggerImpl<TService> : IMyLogger<TService>
+        {
+            public void LogInfo(TService info)
+            {
+                Storage.Logs.Add("Info-" + info.ToString());
+            }
+
+            public void LogWarn(TService info)
+            {
+                Storage.Logs.Add("Warn-" + info.ToString());
+            }
+        }
+
+        public class MyLoggerImpl2<TService>() : IMyLogger<TService>
+        {
+
+            public void LogInfo(TService info)
+            {
+            }
+
+            [Override]
+            public void LogWarn(TService info)
+            {
+                //baseOne.LogWarn(info);
+                Storage.Logs.Add("Warn-" + info.ToString());
+            }
+        }
+
+        public class Hello<TService> : DispatchProxy
+        {
+            protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

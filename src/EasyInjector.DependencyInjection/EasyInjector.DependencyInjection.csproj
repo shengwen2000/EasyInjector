@@ -12,6 +12,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DocumentationFile>bin\Release\net8.0\EasyInjector.DependencyInjection.XML</DocumentationFile>
+  </PropertyGroup>
+
    <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
