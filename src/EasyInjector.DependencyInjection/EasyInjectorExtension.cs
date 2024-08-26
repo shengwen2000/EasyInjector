@@ -143,6 +143,52 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// 直接建立複寫服務實例 (複寫類別不需要註冊)
+        /// </summary>
+        /// <typeparam name="TService">服務類別</typeparam>
+        /// <typeparam name="TOverride">複寫類別</typeparam>
+        /// <param name="provider">服務提供</param>
+        /// <returns>複寫服務</returns>
+        static public TService CreateOverrideInstance<TService, TOverride>(this IServiceProvider provider) {
+
+            var dd = GetServiceDescriptors(provider);
+            var serviceDescriptor = dd.Where(x => x.ServiceType == typeof(TService))
+                .LastOrDefault() ?? throw new ApplicationException($"找不到服務 {typeof(TService).FullName}註冊紀錄");
+            var inst = (TService) CreateOverrideInstance<TService, TOverride>(provider, serviceDescriptor)
+                ?? throw new ApplicationException($"無法建立服務 {typeof(TService).FullName}");
+            return inst;
+        }
+
+        static IList<ServiceDescriptor> GetServiceDescriptors(IServiceProvider provider)
+        {
+            if (provider is ServiceProvider sp1)
+                return GetServiceDescriptors(sp1);
+
+            // 可能是Scope
+            else
+            {
+                var prop1 = provider.GetType().GetProperty("RootProvider", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    ?? throw new NotSupportedException();
+                var sp2 = prop1.GetValue(provider) as ServiceProvider
+                    ?? throw new NotSupportedException();
+
+                return GetServiceDescriptors(sp2);
+            }
+
+            static IList<ServiceDescriptor> GetServiceDescriptors(ServiceProvider sp)
+            {
+                var f1 = typeof(ServiceProvider).GetProperty("CallSiteFactory", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    ?? throw new NotSupportedException();
+                var v1 = f1.GetValue(sp) ?? throw new NotSupportedException();
+                var f2 = v1.GetType().GetField("_descriptors", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    ?? throw new NotSupportedException();
+                var v2 = f2.GetValue(v1);
+                var ss2 = v2 as IList<ServiceDescriptor> ?? throw new NotSupportedException();
+                return ss2;
+            }
+        }
+
+        /// <summary>
         /// 建立複寫服務實例
         /// </summary>
         /// <typeparam name="TService">服務類別</typeparam>

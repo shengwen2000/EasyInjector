@@ -55,6 +55,21 @@ namespace Tests
             Assert.That(ret3, Is.EqualTo("World World Dev World Dev"));
         }
 
+        [Test, Apartment(ApartmentState.STA)]
+        public void Override002A()
+        {
+            var services = new ServiceCollection();
+            services.AddScoped<ILoginService, LoginService>();
+            var provider = services.BuildServiceProvider(true);
+
+            var scope = provider.CreateScope();
+
+            var api = scope.ServiceProvider.CreateOverrideInstance<ILoginService, LoginServiceDev>();
+
+            var ret3 = api.Hello();
+            Assert.That(ret3, Is.EqualTo("World World Dev"));
+        }
+
         //[Test, Apartment(ApartmentState.STA)]
         public void Override003()
         {
@@ -76,6 +91,8 @@ namespace Tests
             }
 
         }
+
+
     }
     namespace Overrides
     {
