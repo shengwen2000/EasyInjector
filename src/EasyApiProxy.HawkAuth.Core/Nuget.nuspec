@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>EasyApiProxy.HawkAuth.Core</id>
-    <version>3.0.0.0</version>
+    <version>3.0.1.0</version>
     <title>EasyApiProxy.HawkAuth.Core</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
