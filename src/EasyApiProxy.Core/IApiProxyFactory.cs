@@ -11,7 +11,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立Proxy實例
         /// </summary>
-        IApiProxy<TAPI> Create();
+        TAPI Create();
     }
 
     /// <summary>
@@ -40,25 +40,15 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立實例
         /// </summary>
-        public IApiProxy<TAPI> Create()
+        public TAPI Create()
         {
-            var instopt = new Hashtable();
-
-            var proxy = new ApiProxy<TAPI>
-            {
-                Items = instopt
-            };
-
             var api = DispatchProxy.Create<TAPI, ApiProxyInterceptor<TAPI>>();
 
-            //var generator = new ProxyGenerator();
             var inteceptor1 =  api as ApiProxyInterceptor<TAPI> ?? throw new Exception("convert faild");
             inteceptor1.Http = _http;
             inteceptor1.BuildOptions = _options;
-            inteceptor1.InstanceItems = proxy.Items;
-
-            proxy.Object = api;
-            return proxy;
+            inteceptor1.Items = [];
+            return api;
         }
 
     }

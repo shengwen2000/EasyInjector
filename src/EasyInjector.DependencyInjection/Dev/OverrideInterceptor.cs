@@ -55,7 +55,7 @@ namespace EasyInjectors.Dev
             var parametersTypes = targetMethod.GetParameters().Select(y => y.ParameterType).ToArray();
             var m1 = OverrideInstance.GetType().GetMethod(targetMethod.Name, parametersTypes);
 
-            if (m1 != null && m1.GetCustomAttributes(typeof(OverrideAttribute), false).Any())
+            if (m1 != null && m1.GetCustomAttributes(typeof(OverrideAttribute), true).Any())
                 return m1.Invoke(OverrideInstance, args);
             else
             {

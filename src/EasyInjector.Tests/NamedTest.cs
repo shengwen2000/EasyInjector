@@ -22,9 +22,8 @@ namespace Tests
         {
             using (var injector = new EasyInjector())
             {
-                injector.AddScoped<INamed<IFtpAdminService>>(sp => 
-                    new NamedService<IFtpAdminService>(name => 
-                        new FtpAdminService(name)));
+                injector.AddNamedScoped<IFtpAdminService>((sp,name) =>                    
+                        new FtpAdminService(name));
 
                 injector.AddScoped<IFtpAdminService>(sp => 
                     sp.GetRequiredService<INamed<IFtpAdminService>>().GetByName("Default"));

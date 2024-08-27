@@ -18,7 +18,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 實例 Items
         /// </summary>
-        public Hashtable InstanceItems { get; set; } = default!;
+        public Hashtable Items { get; set; } = default!;
 
         /// <summary>
         /// 共用的 httpClient
@@ -90,7 +90,7 @@ namespace EasyApiProxys
             {
                 Invocation = invocation,
                 BuilderOptions = BuildOptions,
-                InstanceOptions = InstanceItems
+                InstanceOptions = Items
             };
 
             // step1

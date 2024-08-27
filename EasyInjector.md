@@ -41,9 +41,7 @@
 using (var injector = new EasyInjector())
 {
 	// 註冊服務 定義名稱如何取得實例
-    injector.AddScoped<INamed<IFtp>>(sp =>
-        new NamedService<IFtp>(name =>
-            new MockFtp(name)));
+    injector.AddNamedScoped<INamed<IFtp>>((sp,name) =>new Ftp(name));
 
     using (var scope = injector.CreateScope())
     {

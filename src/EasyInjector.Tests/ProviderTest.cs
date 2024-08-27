@@ -18,13 +18,13 @@ namespace Tests
         }
 
         [Test]
-        public void Optional001()
+        public void Provider001()
         {           
             using (var injector = new EasyInjector())
             {
                 injector.AddScoped<IFtpAdminService>(sp => new FtpAdminService());
 
-                // Optional服務只有實際Get()才會生成
+                // Provider服務只有實際Get()才會生成
                 using (var scope = injector.CreateScope())
                 {
                     // 由Scope取得預設Provider為Scope

@@ -126,13 +126,22 @@ namespace EasyApiProxys
             }
         }
 
+        /// <summary>
+        /// JSON日期格式
+        /// </summary>
         public class DateTimeConverter : JsonConverter<DateTime>
         {
+            /// <summary>
+            /// 讀取
+            /// </summary>
             public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 return DateTime.Parse(reader.GetString()!, CultureInfo.InvariantCulture);
             }
 
+            /// <summary>
+            /// 寫入
+            /// </summary>
             public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
             {
                 writer.WriteStringValue(value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture));

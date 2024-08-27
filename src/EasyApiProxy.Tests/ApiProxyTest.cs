@@ -1,8 +1,10 @@
-﻿using EasyApiProxys;
+﻿using Castle.DynamicProxy;
+using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using HawkNet;
 using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,21 +31,20 @@ namespace Tests
                 .Build<IDemoApi>();
 
             var apiproxy = factory.Create();
-            //var api = apiproxy.Api;
 
-            var srvInfo = apiproxy.Object.GetServerInfo();
+            var srvInfo = apiproxy.GetServerInfo();
             Assert.AreEqual("Demo Server", srvInfo);
 
-            var ret = await apiproxy.Object.Login(new Login { Account = "david", Password = "123" });
+            var ret = await apiproxy.Login(new Login { Account = "david", Password = "123" });
             Assert.True(ret.Account == "david");
 
-            var email = await apiproxy.Object.GetEmail(new TokenInfo { Token = ret.Token });
+            var email = await apiproxy.GetEmail(new TokenInfo { Token = ret.Token });
 
             Assert.AreEqual("david@gmail.com", email);
 
-            await apiproxy.Object.Logout(new TokenInfo { Token = ret.Token });
+            await apiproxy.Logout(new TokenInfo { Token = ret.Token });
 
-            var ex = Assert.Catch<ApiCodeException>(() => apiproxy.Object.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
+            var ex = Assert.Catch<ApiCodeException>(() => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
             Assert.AreEqual("EX", ex.Code);
 
 		}
@@ -75,7 +76,7 @@ namespace Tests
 
                 var proxy = factory.Create();
                 // 不存在的網址會觸發異常
-                Assert.Catch<HttpRequestException>(() => proxy.Object.GetServerInfo());                
+                Assert.Catch<HttpRequestException>(() => proxy.GetServerInfo());                
             }
 
             {
@@ -88,7 +89,7 @@ namespace Tests
 
                 var proxy = factory.Create();
 
-                var srvInfo = proxy.Object.GetServerInfo();
+                var srvInfo = proxy.GetServerInfo();
                 Assert.AreEqual("Demo Server", srvInfo);
             }
 
@@ -100,7 +101,7 @@ namespace Tests
                     .Build<IDemoApi>();
                 var proxy = factory.Create();
 
-                var ex = Assert.Catch<ApiCodeException>(() => proxy.Object.GetServerInfo());
+                var ex = Assert.Catch<ApiCodeException>(() => proxy.GetServerInfo());
                 Assert.True(ex.Code == "HAWK_FAIL");
             }            
         }
@@ -118,10 +119,10 @@ namespace Tests
                 .Build<IDemoApi>();
             var proxy = factory.Create();
 
-            var msg1 = await proxy.Object.RunProc(new ProcInfo { ProcSeconds = 2 });
+            var msg1 = await proxy.RunProc(new ProcInfo { ProcSeconds = 2 });
             Assert.AreEqual("OK 2", msg1);
 
-            Assert.Catch<Exception>(() => proxy.Object.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
+            Assert.Catch<Exception>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
         }
 
 

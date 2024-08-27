@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>EasyInjector.DependencyInjection</id>
-    <version>1.6.1.0</version>
+    <version>1.6.2.0</version>
     <title>EasyInjector.DependencyInjection</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

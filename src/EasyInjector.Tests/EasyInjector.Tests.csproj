@@ -81,7 +81,7 @@
     <Compile Include="OverrideGenericTest.cs" />
     <Compile Include="OverrideTest.cs" />
     <Compile Include="TryAddTest.cs" />
-    <Compile Include="OptionalTest.cs" />
+    <Compile Include="ProviderTest.cs" />
     <Compile Include="RegisterTest.cs" />
     <Compile Include="NamedTest.cs" />
     <Compile Include="DisposeTest.cs" />

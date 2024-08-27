@@ -28,7 +28,7 @@ namespace EasyInjectors
     /// <remarks>建構方法</remarks>
     /// <param name="createFunc">建立此服務的方法</param>
     /// <param name="provider">ServiceProvider</param>
-    public class NamedService<TService>(
+    public class NamedServiceV2<TService>(
         IServiceProvider provider,
         Func<IServiceProvider, string, TService> createFunc) : INamed<TService>, IDisposable where TService : class
     {
@@ -39,7 +39,7 @@ namespace EasyInjectors
         readonly object _lock_all = new();
 
         /// <summary>解構方法</summary>
-        ~NamedService()
+        ~NamedServiceV2()
         {
             Dispose(false);
         }

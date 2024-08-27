@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using EasyInjectors.Dev;
-using EasyInjectors;
 using Tests.Overrides;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
 
 namespace Tests
 {
@@ -70,6 +67,29 @@ namespace Tests
             Assert.That(ret3, Is.EqualTo("World World Dev"));
         }
 
+        [Test, Apartment(ApartmentState.STA)]
+        public void Override002B()
+        {
+            var services = new ServiceCollection();
+            services.AddScoped<ILoginService, LoginService>();
+            var provider = services.BuildServiceProvider(true);
+
+            var scope = provider.CreateScope();
+            var srv1 = scope.ServiceProvider.GetRequiredService<ILoginService>();
+            var srv2 = scope.ServiceProvider.CreateOverrideInstance<ILoginService, LoginServiceDev>(srv1);
+            Assert.That(srv2.Account, Is.EqualTo("david"));
+            var ret2 = srv2.Hello();
+            Assert.That(ret2, Is.EqualTo("World World Dev"));
+
+
+
+            var ret1 = srv1.Hello();
+            Assert.That(ret1, Is.EqualTo("World"));
+            Assert.That(srv1.Account, Is.EqualTo("david"));
+
+
+        }
+
         //[Test, Apartment(ApartmentState.STA)]
         public void Override003()
         {
@@ -80,7 +100,7 @@ namespace Tests
                 services.BuildServiceProvider(true);
             }
 
-             {
+            {
                 var services = new ServiceCollection();
                 services.AddSingleton(typeof(IMyLogger<>), typeof(MyLoggerImpl<>));
                 services.AddOverride<IMyLogger<string>, MyLoggerImpl2<string>>();
@@ -105,10 +125,14 @@ namespace Tests
             string Hello();
 
             string GetName();
+
+            string Account { get; }
         }
 
         public class LoginService : ILoginService
         {
+            public string Account { get => "david"; }
+
             public string Login(Login req)
             {
                 if (req.Account == "david" && req.Password == "123")
@@ -138,6 +162,8 @@ namespace Tests
 
         public class LoginServiceDev(ILoginService basesrv) : ILoginService
         {
+            public string Account { get => "kevin"; }
+
             [Override]
             public string Login(Login req)
             {
@@ -174,14 +200,14 @@ namespace Tests
             public static List<string> Logs { get; } = [];
         }
 
-        public interface IMyLogger<TService>
+        public interface IMyLogger<TService> where TService : class
         {
             void LogInfo(TService info);
 
             void LogWarn(TService info);
         }
 
-        public class MyLoggerImpl<TService> : IMyLogger<TService>
+        public class MyLoggerImpl<TService> : IMyLogger<TService> where TService : class
         {
             public void LogInfo(TService info)
             {
@@ -194,7 +220,7 @@ namespace Tests
             }
         }
 
-        public class MyLoggerImpl2<TService>() : IMyLogger<TService>
+        public class MyLoggerImpl2<TService>() : IMyLogger<TService> where TService : class
         {
 
             public void LogInfo(TService info)

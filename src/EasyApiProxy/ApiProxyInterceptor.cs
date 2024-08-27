@@ -14,28 +14,33 @@ namespace EasyApiProxys
     /// 負責實際呼叫Api的實作
     /// </summary>
     /// <typeparam name="TAPI"></typeparam>
-    internal class ApiProxyInterceptor<TAPI> : IInterceptor
-    {   
-        private readonly ApiProxyBuilderOptions _buildOptions;
+    public class ApiProxyInterceptor<TAPI> : IInterceptor
+    {
+        /// <summary>
+        /// 建立選項
+        /// </summary>
+        private ApiProxyBuilderOptions BuildOptions { get; set; }
 
-        private readonly Hashtable _instanceItems;
+        /// <summary>
+        /// Items
+        /// </summary>
+        private Hashtable Items { get; set; }
 
         /// <summary>
         /// 共用的 httpClient
         /// </summary>
-        private readonly HttpClient _http;
+        private HttpClient Http { get; set; }
 
         /// <summary>
         /// 負責實際呼叫Api的實作
         /// </summary>
         /// <param name="http">HttpClient</param>
-        /// <param name="options">代理Builder選項</param>
-        /// <param name="instanceOpts">實例選項</param>
-        public ApiProxyInterceptor(HttpClient http, ApiProxyBuilderOptions options, Hashtable instanceOpts)
+        /// <param name="options">代理Builder選項</param>        
+        public ApiProxyInterceptor(HttpClient http, ApiProxyBuilderOptions options)
         {
-            _buildOptions = options;
-            _instanceItems = instanceOpts;
-            _http = http;
+            BuildOptions = options;
+            Items = new Hashtable();
+            Http = http;
         }
 
         /// <summary>
@@ -96,13 +101,13 @@ namespace EasyApiProxys
         {
             var stepContext = new StepContext { 
                 Invocation = invocation,
-                BuilderOptions = _buildOptions,
-                InstanceOptions = _instanceItems
+                BuilderOptions = BuildOptions,
+                InstanceOptions = Items
             };            
 
             // step1
-            if (_buildOptions.Step1 != null)
-                await _buildOptions.Step1(stepContext).ConfigureAwait(false);
+            if (BuildOptions.Step1 != null)
+                await BuildOptions.Step1(stepContext).ConfigureAwait(false);
 
             // 呼叫哪個Api
             var apiMethod = invocation.Method;
@@ -112,32 +117,32 @@ namespace EasyApiProxys
             {
                 // API Url e.g. http://demo/demoapi
                 if (apiAttr != null && !string.IsNullOrEmpty(apiAttr.Name))
-                    req.RequestUri = new Uri(string.Concat(_buildOptions.BaseUrl, "/", apiAttr.Name));
+                    req.RequestUri = new Uri(string.Concat(BuildOptions.BaseUrl, "/", apiAttr.Name));
                 else
-                    req.RequestUri = new Uri(string.Concat(_buildOptions.BaseUrl, "/", apiMethod.Name));
+                    req.RequestUri = new Uri(string.Concat(BuildOptions.BaseUrl, "/", apiMethod.Name));
                 stepContext.Request = req;
-                if (_buildOptions.Step2 != null)
-                    await _buildOptions.Step2(stepContext).ConfigureAwait(false);
+                if (BuildOptions.Step2 != null)
+                    await BuildOptions.Step2(stepContext).ConfigureAwait(false);
 
                 // API逾時設定
                 var cts = new CancellationTokenSource();
                 if (apiAttr != null && apiAttr.TimeoutSeconds > 0)
                     cts.CancelAfter(TimeSpan.FromSeconds(apiAttr.TimeoutSeconds));
                 else
-                    cts.CancelAfter(_buildOptions.DefaultTimeout);
+                    cts.CancelAfter(BuildOptions.DefaultTimeout);
 
                 // 進行呼叫
-                using (var resp = await _http.SendAsync(req, cts.Token).ConfigureAwait(false))
+                using (var resp = await Http.SendAsync(req, cts.Token).ConfigureAwait(false))
                 {
                     stepContext.Response = resp;                    
 
-                    if (_buildOptions.Step3 != null)
-                        await _buildOptions.Step3(stepContext).ConfigureAwait(false);
+                    if (BuildOptions.Step3 != null)
+                        await BuildOptions.Step3(stepContext).ConfigureAwait(false);
 
-                    if (_buildOptions.Step4 == null)
+                    if (BuildOptions.Step4 == null)
                         return stepContext.Result;
 
-                    await _buildOptions.Step4(stepContext).ConfigureAwait(false);
+                    await BuildOptions.Step4(stepContext).ConfigureAwait(false);
                     return stepContext.Result;
                 }
             }

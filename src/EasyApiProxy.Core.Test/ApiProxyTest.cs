@@ -20,20 +20,20 @@ public class ApiProxyTest : BaseTest
         var apiproxy = factory.Create();
         //var api = apiproxy.Api;
 
-        var srvInfo = apiproxy.Object.GetServerInfo();
+        var srvInfo = apiproxy.GetServerInfo();
         Assert.That(srvInfo, Is.EqualTo("Demo Server"));
 
-        var ret = await apiproxy.Object.Login(new Login { Account = "david", Password = "123" });
+        var ret = await apiproxy.Login(new Login { Account = "david", Password = "123" });
         Assert.That(ret.Account, Is.EqualTo("david"));
 
-        var email = await apiproxy.Object.GetEmail(new TokenInfo { Token = ret.Token });
+        var email = await apiproxy.GetEmail(new TokenInfo { Token = ret.Token });
 
         Assert.That(email, Is.EqualTo("david@gmail.com"));
 
-        await apiproxy.Object.Logout(new TokenInfo { Token = ret.Token });
+        await apiproxy.Logout(new TokenInfo { Token = ret.Token });
 
         var ex = Assert.Catch<ApiCodeException>(
-            () => apiproxy.Object.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
+            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
         Assert.That(ex.Code, Is.EqualTo("EX"));
     }
 
@@ -64,7 +64,7 @@ public class ApiProxyTest : BaseTest
 
             var proxy = factory.Create();
             // 不存在的網址會觸發異常
-            Assert.Catch<HttpRequestException>(() => proxy.Object.GetServerInfo());
+            Assert.Catch<HttpRequestException>(() => proxy.GetServerInfo());
         }
 
         {
@@ -77,7 +77,7 @@ public class ApiProxyTest : BaseTest
 
             var proxy = factory.Create();
 
-            var srvInfo = proxy.Object.GetServerInfo();
+            var srvInfo = proxy.GetServerInfo();
             Assert.That(srvInfo, Is.EqualTo("Demo Server"));
         }
 
@@ -89,7 +89,7 @@ public class ApiProxyTest : BaseTest
                 .Build<IDemoApi>();
             var proxy = factory.Create();
 
-            var ex = Assert.Catch<ApiCodeException>(() => proxy.Object.GetServerInfo());
+            var ex = Assert.Catch<ApiCodeException>(() => proxy.GetServerInfo());
             Assert.That(ex?.Code, Is.EqualTo("HAWK_FAIL"));
         }
     }
@@ -107,10 +107,10 @@ public class ApiProxyTest : BaseTest
             .Build<IDemoApi>();
         var proxy = factory.Create();
 
-        var msg1 = await proxy.Object.RunProc(new ProcInfo { ProcSeconds = 2 });
+        var msg1 = await proxy.RunProc(new ProcInfo { ProcSeconds = 2 });
         Assert.That(msg1, Is.EqualTo("OK 2"));
 
-        Assert.Catch<Exception>(() => proxy.Object.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
+        Assert.Catch<Exception>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
     }
 
     [Test, Apartment(ApartmentState.STA)]
@@ -135,20 +135,20 @@ public class ApiProxyTest : BaseTest
         var apiproxy = factory.Create();
         //var api = apiproxy.Api;
 
-        var srvInfo = apiproxy.Object.GetServerInfo();
+        var srvInfo = apiproxy.GetServerInfo();
         Assert.That(srvInfo, Is.EqualTo("Demo Server"));
 
-        var ret = await apiproxy.Object.Login(new Login { Account = "david", Password = "123" });
+        var ret = await apiproxy.Login(new Login { Account = "david", Password = "123" });
         Assert.That(ret.Account, Is.EqualTo("david"));
 
-        var email = await apiproxy.Object.GetEmail(new TokenInfo { Token = ret.Token });
+        var email = await apiproxy.GetEmail(new TokenInfo { Token = ret.Token });
 
         Assert.That(email, Is.EqualTo("david@gmail.com"));
 
-        await apiproxy.Object.Logout(new TokenInfo { Token = ret.Token });
+        await apiproxy.Logout(new TokenInfo { Token = ret.Token });
 
         var ex = Assert.Catch<ApiCodeException>(
-            () => apiproxy.Object.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
+            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
         Assert.That(ex.Code, Is.EqualTo("EX"));
     }
 }

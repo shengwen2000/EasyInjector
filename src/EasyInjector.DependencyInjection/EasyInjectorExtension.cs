@@ -55,7 +55,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// 建立實例(類型不需要註冊) 自動填入建構子中的依賴服務
         /// </summary>
-        public static TService CreateInstance<TService>(this IServiceProvider provider) where TService : class
+        public static TService CreateInstance<TService>(this IServiceProvider provider)
+            where TService : class
         {
             var inst = CreateInstance(provider, typeof(TService)) as TService
                 ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", typeof(TService).FullName));
@@ -66,11 +67,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// 註冊有名稱的Singleton服務 INamed
         /// </summary>
         public static IServiceCollection AddNamedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
-        where TService : class
+            where TService : class
         {
             services.AddSingleton<INamed<TService>>(sp =>
             {
-                return new NamedService<TService>(sp, createFunc);
+                return new NamedServiceV2<TService>(sp, createFunc);
             });
             return services;
         }
@@ -79,11 +80,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// 註冊有名稱的Scoped服務 INamed
         /// </summary>
         public static IServiceCollection AddNamedScoped<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
-        where TService : class
+            where TService : class
         {
             services.AddScoped<INamed<TService>>(sp =>
             {
-                return new NamedService<TService>(sp, createFunc);
+                return new NamedServiceV2<TService>(sp, createFunc);
             });
             return services;
         }
@@ -91,8 +92,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// 註冊有名稱的Transient服務 INamed
         /// </summary>
-        public static IServiceCollection AddNameTransient<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
-        where TService : class
+        public static IServiceCollection AddNamedTransient<TService>(this IServiceCollection services, Func<IServiceProvider, string, TService> createFunc)
+            where TService : class
         {
             services.AddTransient<INamed<TService>>(sp =>
             {
@@ -100,7 +101,6 @@ namespace Microsoft.Extensions.DependencyInjection
             });
             return services;
         }
-
 
         /// <summary>
         /// 增加複寫服務
@@ -159,6 +159,22 @@ namespace Microsoft.Extensions.DependencyInjection
             return inst;
         }
 
+        /// <summary>
+        /// 直接建立複寫服務實例 (複寫類別不需要註冊)
+        /// </summary>
+        /// <typeparam name="TService">服務類別</typeparam>
+        /// <typeparam name="TOverride">複寫類別</typeparam>
+        /// <param name="provider">服務提供</param>
+        /// <param name="serviceInstance">服務實例</param>
+        /// <returns>複寫服務</returns>
+        static public TService CreateOverrideInstance<TService, TOverride>(this IServiceProvider provider, TService serviceInstance)
+            where TService : class {
+
+            var inst = (TService) CreateOverrideInstance2<TService, TOverride>(provider, serviceInstance)
+                ?? throw new ApplicationException($"無法建立服務 {typeof(TService).FullName}");
+            return inst;
+        }
+
         static IList<ServiceDescriptor> GetServiceDescriptors(IServiceProvider provider)
         {
             if (provider is ServiceProvider sp1)
@@ -167,7 +183,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // 可能是Scope
             else
             {
-                var prop1 = provider.GetType().GetProperty("RootProvider", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                var prop1 = provider.GetType().GetProperty("RootProvider", BindingFlags.Instance | BindingFlags.NonPublic)
                     ?? throw new NotSupportedException();
                 var sp2 = prop1.GetValue(provider) as ServiceProvider
                     ?? throw new NotSupportedException();
@@ -177,10 +193,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
             static IList<ServiceDescriptor> GetServiceDescriptors(ServiceProvider sp)
             {
-                var f1 = typeof(ServiceProvider).GetProperty("CallSiteFactory", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                var f1 = typeof(ServiceProvider).GetProperty("CallSiteFactory", BindingFlags.Instance | BindingFlags.NonPublic)
                     ?? throw new NotSupportedException();
                 var v1 = f1.GetValue(sp) ?? throw new NotSupportedException();
-                var f2 = v1.GetType().GetField("_descriptors", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                var f2 = v1.GetType().GetField("_descriptors", BindingFlags.Instance | BindingFlags.NonPublic)
                     ?? throw new NotSupportedException();
                 var v2 = f2.GetValue(v1);
                 var ss2 = v2 as IList<ServiceDescriptor> ?? throw new NotSupportedException();
@@ -235,6 +251,57 @@ namespace Microsoft.Extensions.DependencyInjection
                 // 基礎的服務實例
                 baseInstance ??= CreateInstanceByDescriptor(provider, baseServiceDescriptor)
                     ?? throw new ApplicationException(string.Format("類別{0}的複寫基礎服務 無法生成實例", overrideType.FullName));
+
+                // 產生代理類別
+                var proxy = DispatchProxy.Create<TService, OverrideInterceptor>()
+                    ?? throw new ApplicationException($"無法產生代理類別 ${typeof(TService).FullName}");
+                var inteceptor1 = proxy as OverrideInterceptor
+                    ?? throw new ApplicationException($"無法取得代理類別 ${typeof(TService).FullName}");
+                inteceptor1.BaseInstance = baseInstance;
+                inteceptor1.OverrideInstance = overInstance;
+                return proxy;
+            }
+        }
+
+        /// <summary>
+        /// 建立複寫服務實例
+        /// </summary>
+        /// <typeparam name="TService">服務類別</typeparam>
+        /// <typeparam name="TOverride">複寫類別</typeparam>
+        /// <param name="provider">服務提供</param>
+        /// <param name="baseInstance">服務實例</param>
+        /// <returns>複寫服務</returns>
+        static object CreateOverrideInstance2<TService, TOverride>(IServiceProvider provider, TService baseInstance)
+            where TService : class
+        {
+            var overrideType = typeof(TOverride);
+
+            var ctor1 = overrideType.GetConstructors()
+                .Where(x => x.IsPublic)
+                .FirstOrDefault() ?? throw new ApplicationException(string.Format("類別{0}沒有公開建構子，無法生成實例", overrideType.FullName));
+
+            // 建構參數
+            var pp = ctor1.GetParameters();
+            var vv = new object[pp.Length];
+
+            // 逐一取的建構參數服務
+            for (var i = 0; i < pp.Length; i++)
+            {
+                var p1 = pp[i];
+                // 如果是服務自身的話 提供舊的版本
+                object? srv1 = null;
+                if (p1.ParameterType == typeof(TService))
+                    srv1 = baseInstance;
+                else
+                    srv1 = provider.GetService(p1.ParameterType);
+                if (srv1 == null)
+                    throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", overrideType.FullName, p1.ParameterType.FullName));
+                vv[i] = srv1;
+            }
+
+            {
+                // 複寫的服務實例
+                var overInstance = ctor1.Invoke(vv) ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", overrideType.FullName));
 
                 // 產生代理類別
                 var proxy = DispatchProxy.Create<TService, OverrideInterceptor>()

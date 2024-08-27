@@ -62,6 +62,7 @@ namespace EasyApiProxys
         /// API 發生的異常
         /// <param name="code">錯誤代碼</param>
         /// <param name="message">錯誤訊息</param>
+        /// <param name="errorData">錯誤資料</param>
         /// </summary>
         public ApiCodeException(string code, string message, object? errorData)
             : base(message)

@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiMethodAttribute.cs" />
-    <Compile Include="IApiProxy.cs" />
     <Compile Include="IApiProxyFactory.cs" />
     <Compile Include="DefaultApiExtension.cs" />
     <Compile Include="ApiProxyBuilder.cs" />

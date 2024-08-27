@@ -13,7 +13,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立Proxy實例
         /// </summary>
-        IApiProxy<TAPI> Create();
+        TAPI Create();
     }
 
     /// <summary>
@@ -42,18 +42,12 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立實例
         /// </summary>
-        public IApiProxy<TAPI> Create()
+        public TAPI Create()
         {
-            var instopt = new Hashtable();
-
-            var proxy = new ApiProxy<TAPI>();
-            proxy.Items = instopt;
-
             var generator = new ProxyGenerator();
-            var inteceptor1 = new ApiProxyInterceptor<TAPI>(_http, _options, proxy.Items);
+            var inteceptor1 = new ApiProxyInterceptor<TAPI>(_http, _options);
             var api = generator.CreateInterfaceProxyWithoutTarget<TAPI>(inteceptor1);
-            proxy.Object = api;
-            return proxy;
+            return api;
         }
 
     }

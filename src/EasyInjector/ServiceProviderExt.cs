@@ -76,5 +76,44 @@ namespace EasyInjectors
             var inst = CreateInstance(provider, typeof(TInstance)) as TInstance;
             return inst;
         }
+
+        /// <summary>
+        /// 註冊有名稱的Singleton服務 INamed
+        /// </summary>
+        public static EasyInjector AddNamedSingleton<TService>(this EasyInjector services, Func<IServiceProvider, string, TService> createFunc)
+            where TService : class
+        {
+            services.AddSingleton<INamed<TService>>(sp =>
+            {
+                return new NamedServiceV2<TService>(sp, createFunc);
+            });
+            return services;
+        }
+
+        /// <summary>
+        /// 註冊有名稱的Scoped服務 INamed
+        /// </summary>
+        public static EasyInjector AddNamedScoped<TService>(this EasyInjector services, Func<IServiceProvider, string, TService> createFunc)
+            where TService : class
+        {
+            services.AddScoped<INamed<TService>>(sp =>
+            {
+                return new NamedServiceV2<TService>(sp, createFunc);
+            });
+            return services;
+        }
+
+        /// <summary>
+        /// 註冊有名稱的Transient服務 INamed
+        /// </summary>
+        public static EasyInjector AddNamedTransient<TService>(this EasyInjector services, Func<IServiceProvider, string, TService> createFunc)
+            where TService : class
+        {
+            services.AddTransient<INamed<TService>>(sp =>
+            {
+                return new NamedTransientService<TService>(sp, createFunc);
+            });
+            return services;
+        }
     }
 }
