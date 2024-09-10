@@ -20,7 +20,7 @@
 	var proxy = factory.Create();
 
     // 呼叫Api
-    var ret = await proxy.Api.Login(new Login { Account = "david", Password = "123" });
+    var ret = await proxy.Login(new Login { Account = "david", Password = "123" });
 ```
 
 ## Api 介面定義
@@ -106,7 +106,7 @@
 	var proxy = factory.Create();
 
     // 呼叫Api
-    var ret = await proxy.Api.Login(new Login { Account = "david", Password = "123" });
+    var ret = await proxy.Login(new Login { Account = "david", Password = "123" });
 ```
 
 ## 後台API端啟用HAWK驗證 範例

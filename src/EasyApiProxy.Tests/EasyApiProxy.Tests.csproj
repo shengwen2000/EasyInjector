@@ -90,7 +90,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IEnuerable.cs" />
     <Compile Include="JsonTest.cs" />
     <Compile Include="AsyncTest.cs" />
     <Compile Include="NewTest.cs" />
