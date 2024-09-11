@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>EasyApiProxy.HawkAuth.Core</id>
-    <version>3.0.1.0</version>
+    <version>3.1.0.0</version>
     <title>EasyApiProxy.HawkAuth.Core</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -15,7 +15,7 @@
     <readme>docs\EasyApiProxy.md</readme>
     <dependencies>
       <group targetFramework="net8.0" >
-        <dependency id="EasyApiProxy.Core" version="3.0.0.0" />
+        <dependency id="EasyApiProxy.Core" version="3.1.0.0" />
         <dependency id="HawkNet.Core" version="1.0.1" />
       </group>
     </dependencies>
