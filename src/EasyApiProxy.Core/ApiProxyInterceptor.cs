@@ -39,7 +39,7 @@ namespace EasyApiProxys
             if (invocation.Method.ReturnType == typeof(Task))
             {
                 var ret = CallWebApi(invocation);
-                return CallWebApi(invocation);
+                return ret;
             }
             // asyn method has return value
             else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
