@@ -19,48 +19,61 @@ namespace EasyInjectors
     /// <summary>
     /// 提供Scope支援
     /// </summary>
-    class CScope : IServiceScope, IServiceProvider
+    public class ServiceScope : IServiceScope, IServiceProvider
     {
         /// <summary>
-        /// Scope 實例服務的存放位置
+        /// Scope實例儲放位置
         /// </summary>
-        internal Dictionary<ServiceRegister, object> _instances = new Dictionary<ServiceRegister, object>();
-
-        /// <summary>
-        /// Scope 實例服務的存放位置(泛型)
-        /// </summary>
-        internal Dictionary<ServiceRegister, Dictionary<Type, object>> _instances_generic = new Dictionary<ServiceRegister, Dictionary<Type, object>>();
+        internal InstanceCaches _caches = new InstanceCaches();
 
         private EasyInjector _injector;
 
         private bool disposed = false;
 
-        public CScope(EasyInjector injector)
+        /// <summary>
+        /// Scope範圍
+        /// </summary>
+        public ServiceScope(EasyInjector injector)
         {
             _injector = injector;           
         }
 
-        ~CScope()
+        /// <summary>
+        /// 解構
+        /// </summary>
+        ~ServiceScope()
         {
             Dispose(false);
         }
 
+        /// <summary>
+        /// 取得服務
+        /// </summary>
         public object GetService(Type serviceType)
         {
             return _injector.GetService(serviceType, this);
         }
 
+        /// <summary>
+        /// 服務提供者
+        /// </summary>
         public IServiceProvider ServiceProvider
         {
             get { return this; }
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
@@ -72,33 +85,7 @@ namespace EasyInjectors
             //正常Dispose，所有子項目一併施放
             if (disposing)
             {
-                //一般實例
-                foreach (var kv in _instances)
-                {
-                    var instance = kv.Value as IDisposable;
-                    if (instance != null)
-                    {
-                        try { instance.Dispose(); }
-                        catch { }
-                    }
-                }
-                _instances.Clear();
-
-                //泛型實例
-                foreach (var kv1 in _instances_generic)
-                {
-                    foreach (var obj in kv1.Value.Values)
-                    {
-                        var instance = obj as IDisposable;
-                        if (instance != null)
-                        {
-                            try { instance.Dispose(); }
-                            catch { }
-                        }
-                    }
-                    kv1.Value.Clear();
-                }
-                _instances_generic.Clear();
+                _caches.Dispose();
             }
             //不正常Dispose只要確保自身資源釋放即可
             else

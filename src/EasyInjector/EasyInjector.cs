@@ -23,14 +23,9 @@ namespace EasyInjectors
         private bool disposed = false;
 
         /// <summary>
-        /// 單一實例服務的存放位置
+        /// singleton服務實例存放的地方
         /// </summary>
-        Dictionary<ServiceRegister, object> _instances = new Dictionary<ServiceRegister, object>();
-
-        /// <summary>
-        /// 單一實例服務的存放位置(泛型)
-        /// </summary>
-        Dictionary<ServiceRegister, Dictionary<Type, object>> _instances_generic = new Dictionary<ServiceRegister, Dictionary<Type, object>>();
+        InstanceCaches _caches = new InstanceCaches();
 
         public EasyInjector()
         {
@@ -96,8 +91,6 @@ namespace EasyInjectors
             AddServiceInternal(register);
             return this;
         }
-
-
 
         /// <summary>
         /// 註冊服務
@@ -490,7 +483,7 @@ namespace EasyInjectors
         /// <summary>
         /// 取得服務(服務必須先註冊) 可以建立Scope類型的服務
         /// </summary>
-        internal object GetService(Type serviceType, CScope scope)
+        internal object GetService(Type serviceType, ServiceScope scope)
         {
             //免註冊的預設服務
             if (serviceType == typeof(IServiceProvider))
@@ -506,43 +499,13 @@ namespace EasyInjectors
             {
                 // 找出服務註冊項目
                 var register = FindRegister(serviceType);
-                if (register == null) return null;                
+                if (register == null) return null;      
 
                 // 取得服務 singleton
                 if (register.Lifetimes == SimpleLifetimes.Singleton)
                 {
-                    // 一般服務
-                    if (register.IsGeneric == false)
-                    {
-                        object instance;
-                        if (_instances.TryGetValue(register, out instance) == false)
-                        {
-                            instance = register.CreateFunc(this);
-                            _instances.Add(register, instance);
-                        }
-                        return instance;
-                    }
-                    // 泛型服務(每個泛型服務都有自己專屬(sericetype, instance)
-                    else
-                    {
-                        //找出自己專屬的Instancss
-                        Dictionary<Type, object> instances;
-                        object instance;
-                        if (_instances_generic.TryGetValue(register, out instances) == false)
-                        {
-                            instances = new Dictionary<Type, object>();
-                            _instances_generic.Add(register, instances);
-                        }
-
-                        // 不存在就新增一個
-                        if (instances.TryGetValue(serviceType, out instance) == false)
-                        {
-                            var genericArgs = serviceType.GetGenericArguments();
-                            instance = register.CreateGenericFunc(this, genericArgs);
-                            instances.Add(serviceType, instance);
-                        }
-                        return instance;
-                    }
+                    var instance = _caches.GetOrCreateInstance(this, register, serviceType);
+                    return instance;
                 }
                 // 取得服務 Scope 如果是Scope類型，必須有Scope傳入否則無法建立
                 else if (register.Lifetimes == SimpleLifetimes.Scoped)
@@ -550,40 +513,8 @@ namespace EasyInjectors
                     if (scope == null)
                         throw new ApplicationException(string.Format("Service {0} is Scoped, you need create a scope first. please inject IServiceScopeFactory then use CreateScope().", serviceType.FullName));
 
-                    // 一般服務
-                    if (register.IsGeneric == false)
-                    {                        
-                        object instance;
-                        //scope內已經產生直接回傳
-                        if (scope._instances.TryGetValue(register, out instance))
-                            return instance;
-                        //新增一實例並放置Scope內
-                        instance = register.CreateFunc(scope);
-                        scope._instances.Add(register, instance);
-                        return instance;
-                    }
-                    // 泛型服務
-                    else
-                    {
-                        //找出自己專屬的Instancss
-                        Dictionary<Type, object> instances;
-                        object instance;
-                        if (scope._instances_generic.TryGetValue(register, out instances) == false)
-                        {
-                            instances = new Dictionary<Type, object>();
-                            scope._instances_generic.Add(register, instances);
-                        }
-
-                        // 不存在就新增一個
-                        if (instances.TryGetValue(serviceType, out instance) == false)
-                        {
-                            var genericArgs = serviceType.GetGenericArguments();
-                            instance = register.CreateGenericFunc(scope, genericArgs);
-                            instances.Add(serviceType, instance);
-                        }
-                        return instance;
-                    }
-
+                    var instance = scope._caches.GetOrCreateInstance(scope, register, serviceType);
+                    return instance;
                 }
                 // 取得服務  Transient 
                 else if (register.Lifetimes == SimpleLifetimes.Transient)
@@ -645,7 +576,7 @@ namespace EasyInjectors
 
         public IServiceScope CreateScope()
         {
-            return new CScope(this);
+            return new ServiceScope(this);
         }
 
         public void Dispose()
@@ -665,39 +596,7 @@ namespace EasyInjectors
             //正常Dispose，所有子項目一併施放
             if (disposing)
             {
-                lock (_serviceRegisters_lock)
-                {
-                    //一般實例
-                    foreach (var kv in _instances)
-                    {
-                        var instance = kv.Value as IDisposable;
-                        if (instance != null)
-                        {
-                            try { instance.Dispose(); }
-                            catch { }
-                        }
-                    }
-                    _instances.Clear();
-
-                    //泛型實例
-                    foreach (var kv1 in _instances_generic)
-                    {
-                        foreach (var obj in kv1.Value.Values)
-                        {
-                            var instance = obj as IDisposable;
-                            if (instance != null)
-                            {
-                                try { instance.Dispose(); }
-                                catch { }
-                            }
-                        }
-                        kv1.Value.Clear();                        
-                    }
-                    _instances_generic.Clear();
-
-
-                    _serviceRegisters.Clear();
-                }
+                _caches.Dispose();
             }
             //不正常Dispose只要確保自身資源釋放即可
             else

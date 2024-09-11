@@ -78,6 +78,7 @@
   <ItemGroup>
     <Compile Include="BaseTest.cs" />
     <Compile Include="ImplTest.cs" />
+    <Compile Include="GenericTest.cs" />
     <Compile Include="OverrideGenericTest.cs" />
     <Compile Include="OverrideTest.cs" />
     <Compile Include="TryAddTest.cs" />

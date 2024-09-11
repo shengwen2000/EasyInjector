@@ -27,11 +27,13 @@ namespace EasyInjectors
 
         /// <summary>
         /// 建構一般服務實例的方法，其依賴服務必須由 IServiceProvider取得
+        /// (服務提供者) return 實例
         /// </summary>
         public Func<IServiceProvider, object> CreateFunc { get; set; }
 
         /// <summary>
         /// 建構泛型服務實例的方法，其依賴服務必須由 IServiceProvider取得
+        /// (服務提供者、泛型參數) return 實例
         /// </summary>
         public Func<IServiceProvider, Type[], object> CreateGenericFunc { get; set; }
        
