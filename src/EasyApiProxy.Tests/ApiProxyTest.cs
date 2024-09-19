@@ -125,6 +125,26 @@ namespace Tests
             Assert.Catch<Exception>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
         }
 
+        /// <summary>
+        /// 指定 Mehtod 與 Timeout
+        /// </summary>
+        /// <returns></returns>
+        //[Test]
+        public async Task ApiProxy004()
+        {
+            var factory = new ApiProxyBuilder()
+                //.UseDemoApiServerMock()
+                .UseDefaultApiProtocol("http://localhost:8081/api/Demo", 20)
+                .Build<IDemoApi>();
+            var proxy = factory.Create();
 
+            try
+            {
+                await proxy.GetEmail(new TokenInfo { Token = "123" });
+            }
+            catch (Exception ex)
+            {
+            }
+        }
 	}
 }

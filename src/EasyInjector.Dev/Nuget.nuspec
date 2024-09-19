@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>EasyInjector.Dev</id>
-    <version>1.5.1.0</version>
+    <version>1.6.0.0</version>
     <title>EasyInjector.Dev</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -15,7 +15,7 @@
     <readme>docs\EasyInjector.md</readme>
     <dependencies>
       <group targetFramework=".NETFramework4.0" >
-         <dependency id="EasyInjector" version="1.5.0" />
+         <dependency id="EasyInjector" version="1.6.0" />
          <dependency id="Castle.Core" version="4.4.1" />
       </group>
     </dependencies>

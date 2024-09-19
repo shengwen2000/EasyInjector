@@ -1,4 +1,5 @@
 ﻿using EasyApiProxys;
+using EasyApiProxys.DemoApis;
 using EasyInjectors;
 using KmuApps.Services;
 using Microsoft.Owin;
@@ -35,6 +36,8 @@ namespace KmuApps
 
             var injector = new EasyInjector();
             injector.AddSingleton<IHelloService, HelloService>();
+            injector.AddSingleton<IDemoApi, DemoApiService>();
+            injector.AddOverride<IDemoApi, DemoApiServiceDev>();
 
             // webapi register
             {              

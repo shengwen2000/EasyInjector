@@ -64,16 +64,25 @@ namespace EasyInjectors.Dev
         {
             // 呼叫方法有 [Override] 呼叫複寫類別方法
             // 呼叫方法沒有 [Override] 呼叫基礎類別方法
-
-            var parametersTypes = invocation.Method.GetParameters().Select(y => y.ParameterType).ToArray();
-            var m1 = _overrideInstance.GetType().GetMethod(invocation.Method.Name, parametersTypes);
-            var hasOverride = m1.GetCustomAttributes(typeof(OverrideAttribute), false).Any();
-            if (hasOverride)
-                invocation.ReturnValue = m1.Invoke(_overrideInstance, invocation.Arguments);
-            else
+            try
             {
-                var m2 = _baseInstance.GetType().GetMethod(invocation.Method.Name, parametersTypes);
-                invocation.ReturnValue = m2.Invoke(_baseInstance, invocation.Arguments);
+                var parametersTypes = invocation.Method.GetParameters().Select(y => y.ParameterType).ToArray();
+                var m1 = _overrideInstance.GetType().GetMethod(invocation.Method.Name, parametersTypes);
+                var hasOverride = m1.GetCustomAttributes(typeof(OverrideAttribute), false).Any();
+                if (hasOverride)
+                    invocation.ReturnValue = m1.Invoke(_overrideInstance, invocation.Arguments);
+                else
+                {
+                    var m2 = _baseInstance.GetType().GetMethod(invocation.Method.Name, parametersTypes);
+                    invocation.ReturnValue = m2.Invoke(_baseInstance, invocation.Arguments);
+                }
+            }
+            // 遇到執行方法異常 回拋 innerException
+            catch (System.Reflection.TargetInvocationException ex)
+            {
+                if (ex.InnerException != null)
+                    throw ex.InnerException;
+                throw;
             }
         }
     }        

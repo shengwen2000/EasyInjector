@@ -137,6 +137,8 @@
     <Compile Include="Controllers\DemoController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\DemoApiService.cs" />
+    <Compile Include="Services\DemoApiServiceDev.cs" />
     <Compile Include="Services\IHelloService.cs" />
     <Compile Include="Services\IOwinWebService.cs" />
     <Compile Include="Startup.cs" />
@@ -184,6 +186,10 @@
     <ProjectReference Include="..\EasyApiProxy\EasyApiProxy.csproj">
       <Project>{d9a14b19-f407-4312-b7e8-7ed6371b93bd}</Project>
       <Name>EasyApiProxy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EasyInjector.Dev\EasyInjector.Dev.csproj">
+      <Project>{dfc64c7c-8e16-460a-ae03-9567fdcc620a}</Project>
+      <Name>EasyInjector.Dev</Name>
     </ProjectReference>
     <ProjectReference Include="..\EasyInjector.WebApi\EasyInjector.WebApi.csproj">
       <Project>{a2e5ba3c-e026-490a-81d8-5ea7f25a89fa}</Project>
