@@ -2,9 +2,7 @@
 using EasyInjectors.Dev;
 using Tests.Overrides;
 using System.Reflection;
-using System.Data.Common;
 using System.Collections;
-using NuGet.Frameworks;
 
 namespace Tests
 {
@@ -138,15 +136,50 @@ namespace Tests
             var txt = srv1.SayHello();
             Assert.That(txt, Is.EqualTo("Hi Override Dev | Hello Demo1 Demo"));
         }
+
+        /// <summary>
+        /// 異常不會被TargetInvocationException  包裝
+        /// </summary>
+        [Test, Apartment(ApartmentState.STA)]
+        public void Override005()
+        {
+            var services = new ServiceCollection();
+            var demoQueue = new Queue();
+            demoQueue.Enqueue("Demo");
+            var devQueue = new Queue();
+            devQueue.Enqueue("Dev");
+
+            services.AddKeyedSingleton<Queue>("Demo", (sp, name) => demoQueue);
+            services.AddKeyedSingleton<Queue>("Dev", (sp, name) => devQueue);
+            services.AddScoped<IDemoService, DemoService>();
+            services.AddOverride<IDemoService, DemoServiceDev>();
+
+            var provider = services.BuildServiceProvider(true);
+
+            var scope = provider.CreateScope();
+            var srv1 = scope.ServiceProvider.GetRequiredService<IDemoService>();
+            Assert.Throws<ApplicationException>(() => srv1.SayError());
+        }
     }
     namespace Overrides
     {
         public interface IDemoService {
             string SayHello();
+
+            /// <summary>
+            /// 觸發異常
+            /// </summary>
+            /// <returns></returns>
+            string SayError();
         }
 
         public class DemoService([FromKeyedServices("Demo")] Queue queue) : IDemoService
         {
+            public string SayError()
+            {
+                return "This is a Error";
+            }
+
             public string SayHello()
             {
                 return $"Hello Demo1 {queue.Peek()}";
@@ -159,6 +192,12 @@ namespace Tests
             public string SayHello()
             {
                 return $"Hi Override {queue.Peek()} | {baseone.SayHello()}";
+            }
+
+            [Override]
+            public string SayError()
+            {
+                throw new ApplicationException("Error1");
             }
         }
 

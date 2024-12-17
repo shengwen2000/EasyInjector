@@ -49,19 +49,27 @@ namespace EasyInjectors.Dev
         /// </summary>
         protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
         {
-            if (targetMethod == null) return null;
-            if (args == null) return null;
-
-            var parametersTypes = targetMethod.GetParameters().Select(y => y.ParameterType).ToArray();
-            var m1 = OverrideInstance.GetType().GetMethod(targetMethod.Name, parametersTypes);
-
-            if (m1 != null && m1.GetCustomAttributes(typeof(OverrideAttribute), true).Any())
-                return m1.Invoke(OverrideInstance, args);
-            else
+            try
             {
-                var m2 = BaseInstance.GetType().GetMethod(targetMethod.Name, parametersTypes)
-                    ?? throw new ApplicationException($"找不到方法 {targetMethod.Name}");
-                return m2.Invoke(BaseInstance, args);
+                if (targetMethod == null) return null;
+                if (args == null) return null;
+
+                var parametersTypes = targetMethod.GetParameters().Select(y => y.ParameterType).ToArray();
+                var m1 = OverrideInstance.GetType().GetMethod(targetMethod.Name, parametersTypes);
+
+                if (m1 != null && m1.GetCustomAttributes(typeof(OverrideAttribute), true).Any())
+                    return m1.Invoke(OverrideInstance, args);
+                else
+                {
+                    var m2 = BaseInstance.GetType().GetMethod(targetMethod.Name, parametersTypes)
+                        ?? throw new ApplicationException($"找不到方法 {targetMethod.Name}");
+                    return m2.Invoke(BaseInstance, args);
+                }
+            }
+            catch (TargetInvocationException ex)
+            {
+                // 重新拋出內部的原始異常
+                throw ex.InnerException ?? ex;
             }
         }
     }

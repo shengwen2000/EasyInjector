@@ -3,7 +3,7 @@
   <PropertyGroup>
 
     <AssemblyTitle>EasyInjector.DependencyInjection</AssemblyTitle>
-    <AssemblyVersion>1.6.4.0</AssemblyVersion>
+    <AssemblyVersion>1.6.5.0</AssemblyVersion>
     <Company>shengwen2000</Company>
     <Description>EasyInjector 使用微軟DI來實現一些專用的服務</Description>
     <RootNamespace>EasyInjectors</RootNamespace>

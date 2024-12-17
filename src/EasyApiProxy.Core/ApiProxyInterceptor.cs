@@ -30,35 +30,43 @@ namespace EasyApiProxys
         /// </summary>
         protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
         {
-            if (targetMethod == null) return null;
-            if (args == null) return null;
-
-            var invocation = new Invocation(targetMethod, args);
-
-            // async method void return
-            if (invocation.Method.ReturnType == typeof(Task))
+            try
             {
-                var ret = CallWebApi(invocation);
-                return ret;
+                if (targetMethod == null) return null;
+                if (args == null) return null;
+
+                var invocation = new Invocation(targetMethod, args);
+
+                // async method void return
+                if (invocation.Method.ReturnType == typeof(Task))
+                {
+                    var ret = CallWebApi(invocation);
+                    return ret;
+                }
+                // asyn method has return value
+                else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                {
+                    var ret = CallWebApi(invocation);
+                    // Task<Type1>
+                    var type1 = invocation.Method.ReturnType.GetGenericArguments().First();
+
+                    // Task<Object> to Task<Type1>
+                    var ret2 = typeof(ApiProxyInterceptor<TAPI>).GetMethod(nameof(ToTask), BindingFlags.NonPublic | BindingFlags.Static)!
+                        .MakeGenericMethod([type1])
+                        .Invoke(this, [ret]);
+                    return ret2;
+                }
+                // 非Async Method
+                else
+                {
+                    var ret = CallWebApi(invocation).GetAwaiter().GetResult();
+                    return ret;
+                }
             }
-            // asyn method has return value
-            else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+            catch (TargetInvocationException ex)
             {
-                var ret = CallWebApi(invocation);
-                // Task<Type1>
-                var type1 = invocation.Method.ReturnType.GetGenericArguments().First();
-
-                // Task<Object> to Task<Type1>
-                var ret2 = typeof(ApiProxyInterceptor<TAPI>).GetMethod(nameof(ToTask), BindingFlags.NonPublic | BindingFlags.Static)!
-                    .MakeGenericMethod([type1])
-                    .Invoke(this, [ret]);
-                return ret2;
-            }
-            // 非Async Method
-            else
-            {
-                var ret = CallWebApi(invocation).GetAwaiter().GetResult();
-                return ret;
+                // 重新拋出內部的原始異常
+                throw ex.InnerException ?? ex;
             }
         }
 

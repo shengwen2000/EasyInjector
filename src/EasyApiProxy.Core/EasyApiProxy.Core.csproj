@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyTitle>HawkNet.AspNetCore</AssemblyTitle>
-    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <AssemblyTitle>EasyApiProxys .net</AssemblyTitle>
+    <AssemblyVersion>3.1.5.0</AssemblyVersion>
     <Company>shengwen2000</Company>
     <Description>WebApi 的快速代理類別</Description>
 
