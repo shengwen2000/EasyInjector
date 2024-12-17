@@ -2,6 +2,9 @@
 using EasyInjectors.Dev;
 using Tests.Overrides;
 using System.Reflection;
+using System.Data.Common;
+using System.Collections;
+using NuGet.Frameworks;
 
 namespace Tests
 {
@@ -12,6 +15,7 @@ namespace Tests
         public async Task Override001()
         {
             var services = new ServiceCollection();
+
             services.AddScoped<ILoginService, LoginService>();
             // 複寫測試類別
             services.AddOverride<ILoginService, LoginServiceDev>();
@@ -37,6 +41,7 @@ namespace Tests
         public void Override002()
         {
             var services = new ServiceCollection();
+
             services.AddScoped<ILoginService, LoginService>();
             // 複寫測試類別
             services.AddOverride<ILoginService, LoginServiceDev>();
@@ -81,14 +86,12 @@ namespace Tests
             var ret2 = srv2.Hello();
             Assert.That(ret2, Is.EqualTo("World World Dev"));
 
-
-
             var ret1 = srv1.Hello();
             Assert.That(ret1, Is.EqualTo("World"));
             Assert.That(srv1.Account, Is.EqualTo("david"));
-
-
         }
+
+
 
         //[Test, Apartment(ApartmentState.STA)]
         public void Override003()
@@ -109,13 +112,56 @@ namespace Tests
                 var srv = provider.GetRequiredService<IMyLogger<string>>();
                 srv.LogInfo("hello");
             }
-
         }
 
+        /// <summary>
+        /// injected Key Service
+        /// </summary>
+        [Test, Apartment(ApartmentState.STA)]
+        public void Override004()
+        {
+            var services = new ServiceCollection();
+            var demoQueue = new Queue();
+            demoQueue.Enqueue("Demo");
+            var devQueue = new Queue();
+            devQueue.Enqueue("Dev");
 
+            services.AddKeyedSingleton<Queue>("Demo", (sp, name) => demoQueue);
+            services.AddKeyedSingleton<Queue>("Dev", (sp, name) => devQueue);
+            services.AddScoped<IDemoService, DemoService>();
+            services.AddOverride<IDemoService, DemoServiceDev>();
+
+            var provider = services.BuildServiceProvider(true);
+
+            var scope = provider.CreateScope();
+            var srv1 = scope.ServiceProvider.GetRequiredService<IDemoService>();
+            var txt = srv1.SayHello();
+            Assert.That(txt, Is.EqualTo("Hi Override Dev | Hello Demo1 Demo"));
+        }
     }
     namespace Overrides
     {
+        public interface IDemoService {
+            string SayHello();
+        }
+
+        public class DemoService([FromKeyedServices("Demo")] Queue queue) : IDemoService
+        {
+            public string SayHello()
+            {
+                return $"Hello Demo1 {queue.Peek()}";
+            }
+        }
+
+        public class DemoServiceDev([FromKeyedServices("Dev")]Queue queue, IDemoService baseone) : IDemoService
+        {
+            [Override]
+            public string SayHello()
+            {
+                return $"Hi Override {queue.Peek()} | {baseone.SayHello()}";
+            }
+        }
+
         public interface ILoginService
         {
             string Login(Login req);
@@ -129,7 +175,7 @@ namespace Tests
             string Account { get; }
         }
 
-        public class LoginService : ILoginService
+        public class LoginService() : ILoginService
         {
             public string Account { get => "david"; }
 

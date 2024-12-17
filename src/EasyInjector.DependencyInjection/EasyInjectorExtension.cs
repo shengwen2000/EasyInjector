@@ -14,7 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// - IProvider 可以取得某服務
         /// - IServiceScope 可以注入當前的ServiceScope
         /// </summary>
-        public static IServiceCollection AddEasyInjector(this IServiceCollection services) {
+        public static IServiceCollection AddEasyInjector(this IServiceCollection services)
+        {
 
             services.AddTransient(typeof(IProvider<>), typeof(ProviderService<>));
             services.AddScoped<IServiceScope, ServiceScopeImpl>();
@@ -43,13 +44,31 @@ namespace Microsoft.Extensions.DependencyInjection
             for (var i = 0; i < pp.Length; i++)
             {
                 var p1 = pp[i];
-                var srv1 = provider.GetService(p1.ParameterType) ?? throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", srvType.FullName, p1.ParameterType.FullName));
-                vv[i] = srv1;
+                vv[i] = GetParameterInstance(provider, srvType, p1);
             }
             {
                 var inst = ctor1.Invoke(vv) ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", srvType.FullName));
                 return inst;
             }
+        }
+
+        /// <summary>
+        /// 取得建構參數的注入實例
+        /// 無法建構的話拋例外
+        /// </summary>
+        static object GetParameterInstance(IServiceProvider provider, Type srvType, ParameterInfo p1)
+        {
+            object? srv1;
+            // 支援Keyed Service
+            var keyattr1 = p1.GetCustomAttribute<FromKeyedServicesAttribute>();
+            if (keyattr1 != null)
+                srv1 = provider.GetKeyedServices(p1.ParameterType, keyattr1.Key).FirstOrDefault();
+            // non Keyed Service
+            else
+                srv1 = provider.GetService(p1.ParameterType);
+            if (srv1 == null)
+                throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", srvType.FullName, p1.ParameterType.FullName));
+            return srv1;
         }
 
         /// <summary>
@@ -149,12 +168,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TOverride">複寫類別</typeparam>
         /// <param name="provider">服務提供</param>
         /// <returns>複寫服務</returns>
-        static public TService CreateOverrideInstance<TService, TOverride>(this IServiceProvider provider) {
-
+        static public TService CreateOverrideInstance<TService, TOverride>(this IServiceProvider provider)
+        {
             var dd = GetServiceDescriptors(provider);
             var serviceDescriptor = dd.Where(x => x.ServiceType == typeof(TService))
                 .LastOrDefault() ?? throw new ApplicationException($"找不到服務 {typeof(TService).FullName}註冊紀錄");
-            var inst = (TService) CreateOverrideInstance<TService, TOverride>(provider, serviceDescriptor)
+            var inst = (TService)CreateOverrideInstance<TService, TOverride>(provider, serviceDescriptor)
                 ?? throw new ApplicationException($"無法建立服務 {typeof(TService).FullName}");
             return inst;
         }
@@ -164,13 +183,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="TService">服務類別</typeparam>
         /// <typeparam name="TOverride">複寫類別</typeparam>
-        /// <param name="provider">服務提供</param>
-        /// <param name="serviceInstance">服務實例</param>
+        /// <param name="baseInstance">基礎服務實例</param>
+        /// <param name="provider">Service Provider</param>
         /// <returns>複寫服務</returns>
-        static public TService CreateOverrideInstance<TService, TOverride>(this IServiceProvider provider, TService serviceInstance)
-            where TService : class {
-
-            var inst = (TService) CreateOverrideInstance2<TService, TOverride>(provider, serviceInstance)
+        static public TService CreateOverrideInstance<TService, TOverride>(this IServiceProvider provider, TService baseInstance)
+            where TService : class
+        {
+            var inst = (TService)CreateOverrideInstance2<TService, TOverride>(provider, baseInstance)
                 ?? throw new ApplicationException($"無法建立服務 {typeof(TService).FullName}");
             return inst;
         }
@@ -238,7 +257,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     baseInstance = srv1;
                 }
                 else
-                    srv1 = provider.GetService(p1.ParameterType);
+                    srv1 = GetParameterInstance(provider, overrideType, p1);
                 if (srv1 == null)
                     throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", overrideType.FullName, p1.ParameterType.FullName));
                 vv[i] = srv1;
@@ -248,7 +267,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 // 複寫的服務實例
                 var overInstance = ctor1.Invoke(vv) ?? throw new ApplicationException(string.Format("類別{0} 無法生成實例", overrideType.FullName));
 
-                // 基礎的服務實例
+                // 基礎的服務實例 (必須建立，因為如果沒有Override的方法必須呼叫基礎物件)
                 baseInstance ??= CreateInstanceByDescriptor(provider, baseServiceDescriptor)
                     ?? throw new ApplicationException(string.Format("類別{0}的複寫基礎服務 無法生成實例", overrideType.FullName));
 
@@ -269,7 +288,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TService">服務類別</typeparam>
         /// <typeparam name="TOverride">複寫類別</typeparam>
         /// <param name="provider">服務提供</param>
-        /// <param name="baseInstance">服務實例</param>
+        /// <param name="baseInstance">基礎服務實例</param>
         /// <returns>複寫服務</returns>
         static object CreateOverrideInstance2<TService, TOverride>(IServiceProvider provider, TService baseInstance)
             where TService : class
@@ -293,7 +312,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (p1.ParameterType == typeof(TService))
                     srv1 = baseInstance;
                 else
-                    srv1 = provider.GetService(p1.ParameterType);
+                    srv1 = GetParameterInstance(provider, overrideType, p1);
                 if (srv1 == null)
                     throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", overrideType.FullName, p1.ParameterType.FullName));
                 vv[i] = srv1;
@@ -341,7 +360,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 for (var i = 0; i < pp.Length; i++)
                 {
                     var p1 = pp[i];
-                    var srv1 = provider.GetService(p1.ParameterType) ?? throw new ApplicationException(string.Format("類別{0} 要求注入服務{1} 失敗", srvType.FullName, p1.ParameterType.FullName));
+                    var srv1 = GetParameterInstance(provider, srvType, p1);
                     vv[i] = srv1;
                 }
                 {

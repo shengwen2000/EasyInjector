@@ -5,14 +5,4 @@ packages/
 /src/EasyInjector/EasyInjector.csproj.user
 *.user
 /nugets
-src/.vs/EasyProjectsCore/DesignTimeBuild/.dtbcache.v2
-src/.vs/EasyProjectsCore/FileContentIndex/5b75c92b-5617-49de-8579-6ba9b821545c.vsidx
-src/.vs/EasyProjectsCore/FileContentIndex/76003733-e4d9-4582-a49a-13a5ab0367bb.vsidx
-src/.vs/EasyProjectsCore/v17/.futdcache.v2
-src/.vs/EasyProjectsCore/v17/DocumentLayout.backup.json
-src/.vs/EasyProjectsCore/v17/DocumentLayout.json
-src/.vs/EasyProjectsCore/v17/TestStore/0/001.testlog
-src/.vs/EasyProjectsCore/v17/TestStore/0/testlog.manifest
-src/.vs/ProjectEvaluation/easyprojectscore.metadata.v9.bin
-src/.vs/ProjectEvaluation/easyprojectscore.projects.v9.bin
-src/.vs/ProjectEvaluation/easyprojectscore.strings.v9.bin
+src/.vs/
