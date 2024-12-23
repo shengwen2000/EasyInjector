@@ -3,6 +3,8 @@ using HawkNet;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Tests
 {
@@ -51,17 +53,37 @@ namespace Tests
             {
                 if (ex is ValidationException e1)
                 {
-                    var c = JsonContent.Create(new DefaultApiResult
+                    try
                     {
-                        Result = "IM",
-                        Message = e1?.Message
-                    });
+                        var errorJson = JsonSerializer.Deserialize<JsonNode>(e1.Message, DefaultApiExtension.DefaultJsonOptions);
 
-                    var resp = new HttpResponseMessage(HttpStatusCode.OK)
+                        var c = JsonContent.Create(new DefaultApiResult<JsonNode>
+                        {
+                            Result = "IM",
+                            Message = "validate error",
+                            Data = errorJson
+                        });
+
+                        var resp = new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = c
+                        };
+                        return resp;
+                    }
+                    catch (JsonException)
                     {
-                        Content = c
-                    };
-                    return resp;
+                        var c = JsonContent.Create(new DefaultApiResult<string>
+                        {
+                            Result = "IM",
+                            Message = "validate error",
+                            Data = e1.Message
+                        });
+                        var resp = new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = c
+                        };
+                        return resp;
+                    }
                 }
                 else if (ex is ApiCodeException e2)
                 {

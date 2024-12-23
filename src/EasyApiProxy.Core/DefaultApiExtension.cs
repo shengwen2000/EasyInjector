@@ -14,7 +14,7 @@ namespace EasyApiProxys
     {
         /// <summary>
         /// Default Api 預設 JsonSerializer Options
-        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41
+        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 UnsafeRelaxedJsonEscaping
         /// </summary>
         public static JsonSerializerOptions DefaultJsonOptions { get; private set; }
 
@@ -24,7 +24,9 @@ namespace EasyApiProxys
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             };
+
             DefaultJsonOptions.Converters.Add(new DateTimeConverter());
         }
 

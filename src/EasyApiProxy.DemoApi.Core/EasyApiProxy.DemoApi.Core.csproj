@@ -4,6 +4,10 @@
     <ProjectReference Include="..\EasyApiProxy.Core\EasyApiProxy.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="UoN.ExpressiveAnnotations.NetCore" Version="1.0.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <RootNamespace>EasyApiProxys.DemoApis</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>

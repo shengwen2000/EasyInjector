@@ -25,11 +25,25 @@ namespace EasyApiProxys.WebApis
 
                 if (ex is ValidationException e1)
                 {
-                    context.Result = new ObjectResult(new DefaultApiResult
+                    try
                     {
-                        Result = "IM",
-                        Message = e1.Message
-                    });
+                        var errorJson = JsonSerializer.Deserialize<JsonNode>(e1.Message, DefaultApiExtension.DefaultJsonOptions);
+                        context.Result = new ObjectResult(new DefaultApiResult<JsonNode>
+                        {
+                            Result = "IM",
+                            Message = "validate error",
+                            Data = errorJson
+                        });
+                    }
+                    catch (JsonException)
+                    {
+                        context.Result = new ObjectResult(new DefaultApiResult<string>
+                        {
+                            Result = "IM",
+                            Message = "validate error",
+                            Data = e1.Message
+                        });
+                    }
                 }
                 else if (ex is ApiCodeException e2)
                 {
@@ -98,18 +112,22 @@ namespace EasyApiProxys.WebApis
                     .Select(x => new
                     {
                         propName = x.Key,
-                        propError = string.Join(",", x.Value!.Errors.Select(y => y.ErrorMessage))
+                        propError = string.Join("\n", x.Value!.Errors.Select(y => y.ErrorMessage))
                     })
                     .Select(x => new JsonObject
                     {
                         [x.propName[..1].ToLower() + x.propName[1..]] = x.propError
                     });
 
-                context.Result = new ObjectResult(new DefaultApiResult
+                var errorsArray = new JsonArray();
+                foreach (var err in errors)
+                    errorsArray.Add(err);
+
+                context.Result = new ObjectResult(new DefaultApiResult<JsonArray>
                 {
                     Result = "IM",
                     Message = "Model State Error",
-                    Data = JsonSerializer.Serialize(errors, DefaultApiExtension.DefaultJsonOptions)
+                    Data = errorsArray
                 });
             }
         }

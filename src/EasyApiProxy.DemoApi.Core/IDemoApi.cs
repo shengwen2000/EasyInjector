@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using EasyApiProxys;
 
@@ -16,11 +17,19 @@ namespace EasyApiProxys.DemoApis
 
         [ApiMethod(Name = "RunProc_001", TimeoutSeconds=5)]
         Task<string> RunProc(ProcInfo info);
+
+        /// <summary>
+        /// 呼叫會引發一個欄位異常
+        /// </summary>
+        /// <returns></returns>
+        Task RaiseValidateError();
     }
 
     public class Login
     {
+        [StringLength(10), MaxLength(10)]
         public string Account { get; set; } = default!;
+        [StringLength(10)]
         public string Password { get; set; } = default!;
     }
 

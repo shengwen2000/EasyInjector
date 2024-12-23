@@ -1,4 +1,7 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using EasyApiProxys.WebApis;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +15,7 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
     [ApiController]
     [Route("api/demo")]
     [DefaultApiResult] // 預設API的協定封裝
-    [Authorize(AuthenticationSchemes="Hawk", Roles ="Admins")]
+    [Authorize(AuthenticationSchemes = "Hawk", Roles = "Admins")]
     public class DemoController : ControllerBase, IDemoApi
     {
         public DemoController()
@@ -21,7 +24,8 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
 
         [AllowAnonymous]
         [HttpGet("Ping")]
-        public string Ping() {
+        public string Ping()
+        {
             return "Hello Ping";
         }
 
@@ -74,6 +78,23 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             if (req.ProcSeconds > 0)
                 await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds));
             return string.Format("OK {0}", req.ProcSeconds);
+        }
+
+        [HttpPost("RaiseValidateError")]
+        public Task RaiseValidateError()
+        {
+            //hrow new ValidationException("The field Account must be a string with a maximum length of 10");
+            var rr = new List<object>
+            {
+                new {
+                Account = "The field Account must be a string with a maximum length of 10."
+                }
+            };
+
+            var msg = JsonSerializer.Serialize(rr, DefaultApiExtension.DefaultJsonOptions);
+
+            var err1 = new ValidationResult(msg, ["account"]);
+            throw new ValidationException(err1, null, null);
         }
     }
 }

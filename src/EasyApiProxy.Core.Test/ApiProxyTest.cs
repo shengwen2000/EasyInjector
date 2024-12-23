@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using HawkNet;
@@ -33,7 +35,8 @@ public class ApiProxyTest : BaseTest
         await apiproxy.Logout(new TokenInfo { Token = ret.Token });
 
         var ex = Assert.Catch<ApiCodeException>(
-            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
+            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
+            ?? throw new NullReferenceException();
         Assert.That(ex.Code, Is.EqualTo("EX"));
     }
 
@@ -148,7 +151,25 @@ public class ApiProxyTest : BaseTest
         await apiproxy.Logout(new TokenInfo { Token = ret.Token });
 
         var ex = Assert.Catch<ApiCodeException>(
-            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
+            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
+            ?? throw new NullReferenceException();
         Assert.That(ex.Code, Is.EqualTo("EX"));
     }
+
+    [Test]
+    public void PorxyValidate001()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDemoApiServerMock()
+            .UseDefaultApiProtocol("http://localhost:8081/api/Demo", 20)
+            .Build<IDemoApi>();
+        var proxy = factory.Create();
+
+        var ex = Assert.CatchAsync<ApiCodeException>(proxy.RaiseValidateError)
+            ?? throw new NullReferenceException();
+        Assert.That(ex.Code, Is.EqualTo("IM"));
+        Assert.That(ex.ErrorData is JsonElement, Is.True);
+        //Assert.Catch<Exception>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
+    }
+
 }

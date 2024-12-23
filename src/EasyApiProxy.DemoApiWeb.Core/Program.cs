@@ -1,6 +1,4 @@
-using EasyApiProxys;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +19,7 @@ builder.Services.AddAuthentication()
             Key = "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn",
             Algorithm = "sha256",
             User = "Admin",
-            Roles= ["Admins"]
+            Roles = ["Admins"]
         });
 
         // 也可以自行實作取得證書方法
@@ -31,6 +29,9 @@ builder.Services.AddAuthentication()
 builder.Services.AddControllers()
     // 使用 DefaultApi 協助 json 選項
     .AddDefaultApiJsonOptions();
+
+// requiredif 這種的
+builder.Services.AddExpressiveAnnotations();
 
 var app = builder.Build();
 

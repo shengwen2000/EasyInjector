@@ -7,7 +7,7 @@ namespace EasyApiProxys.DemoApis
     public interface IDemoApi
     {
         Task<AccountInfo> Login(Login req);
-      
+
         Task Logout(TokenInfo req);
 
         Task<string> GetEmail(TokenInfo req);
@@ -19,7 +19,8 @@ namespace EasyApiProxys.DemoApis
     }
 
     public class Login
-    {      
+    {
+        [StringLength(20)]
         public string Account { get; set; }
         public string Password { get; set; }
     }
@@ -41,8 +42,8 @@ namespace EasyApiProxys.DemoApis
 
     public class ProcInfo
     {
-        public int ProcSeconds { get; set; }        
+        public int ProcSeconds { get; set; }
     }
 
-   
+
 }

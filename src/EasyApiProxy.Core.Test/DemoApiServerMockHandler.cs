@@ -1,6 +1,8 @@
 ﻿using EasyApiProxys.DemoApis;
 using System.Text.Json;
 using System.Net.Http.Json;
+using EasyApiProxys;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace Tests
@@ -12,7 +14,8 @@ namespace Tests
     {
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var ret1 = await Task.Run(async () => {
+            var ret1 = await Task.Run(async () =>
+            {
                 if (request.RequestUri!.Segments.Last().Equals("Login", StringComparison.OrdinalIgnoreCase))
                 {
                     var ret = await Login(request).ConfigureAwait(false);
@@ -56,6 +59,12 @@ namespace Tests
                     };
                     return resp;
                 }
+                else if (request.RequestUri.Segments.Last().Equals("RaiseValidateError", StringComparison.OrdinalIgnoreCase))
+                {
+                    await GetEmaiRaiseValidateError(request).ConfigureAwait(false);
+                    var resp = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                    return resp;
+                }
                 else
                 {
                     throw new ApplicationException("Not Found");
@@ -65,6 +74,8 @@ namespace Tests
 
             return ret1;
         }
+
+
 
         public async Task<AccountInfo> Login(HttpRequestMessage request)
         {
@@ -96,6 +107,22 @@ namespace Tests
                 return "david@gmail.com";
             }
             throw new ApplicationException("The Token Not exits");
+        }
+
+        private async Task GetEmaiRaiseValidateError(HttpRequestMessage request)
+        {
+            await Task.Delay(1000).ConfigureAwait(false);
+            var rr = new List<object>
+            {
+                new {
+                Account = "The field Account must be a string with a maximum length of 10."
+                }
+            };
+
+            var msg = JsonSerializer.Serialize(rr, DefaultApiExtension.DefaultJsonOptions);
+
+            var err1 = new ValidationResult(msg, ["account"]);
+            throw new ValidationException(err1, null, null);
         }
 
         public async Task<string> RunProc_001(HttpRequestMessage request, CancellationToken cancellationToken)
