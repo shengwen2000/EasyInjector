@@ -50,7 +50,8 @@ namespace EasyApiProxys.WebApis
                     context.Result = new ObjectResult(new DefaultApiResult
                     {
                         Result = e2.Code,
-                        Message = e2.Message
+                        Message = e2.Message,
+                        Data = e2.ErrorData
                     });
                 }
                 else
