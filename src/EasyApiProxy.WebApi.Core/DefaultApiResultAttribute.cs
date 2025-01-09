@@ -72,7 +72,7 @@ namespace EasyApiProxys.WebApis
                     context.Result = new ObjectResult(new DefaultApiResult
                     {
                         Result = "OK",
-                        Message = "Success",
+                        //Message = "Success",
                         Data = robj.Value
                     });
 
@@ -83,7 +83,7 @@ namespace EasyApiProxys.WebApis
                     context.Result = new ObjectResult(new DefaultApiResult
                     {
                         Result = "OK",
-                        Message = "Success"
+                        //Message = "Success"
                     });
                 }
             }
