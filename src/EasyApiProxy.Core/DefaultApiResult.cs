@@ -13,13 +13,13 @@ namespace EasyApiProxys
         /// </summary>
         public static DefaultApiResult FromOK()
         {
-            return new DefaultApiResult { Result = "OK", Message = "Success" };
+            return new DefaultApiResult { Result = "OK" };
         }
 
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult From(string result, string message)
+        public static DefaultApiResult From(string result, string? message)
         {
             return new DefaultApiResult { Result = result, Message = message };
         }
@@ -27,7 +27,7 @@ namespace EasyApiProxys
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult From(string result, string message, object? data)
+        public static DefaultApiResult From(string result, string? message, object? data)
         {
             return new DefaultApiResult { Result = result, Message = message, Data = data };
         }
@@ -35,7 +35,7 @@ namespace EasyApiProxys
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult<T> From<T>(string result, string message, T? data)
+        public static DefaultApiResult<T> From<T>(string result, string? message, T? data)
         {
             return new DefaultApiResult<T> { Result = result, Message = message, Data = data };
         }

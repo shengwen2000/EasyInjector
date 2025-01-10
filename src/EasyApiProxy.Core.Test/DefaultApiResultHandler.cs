@@ -10,9 +10,12 @@ namespace Tests
 {
     /// <summary>
     /// 預設的API回應封裝
+    /// - 測試用
     /// </summary>
     public class DefaultApiResultHandler(HttpMessageHandler innerHandler, HawkCredential? credential) : DelegatingHandler(innerHandler)
     {
+        private const string ResultHeader = "X_Api_Result";
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             try

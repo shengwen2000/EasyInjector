@@ -14,7 +14,7 @@ namespace EasyApiProxys
     {
         /// <summary>
         /// Default Api 預設 JsonSerializer Options
-        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 UnsafeRelaxedJsonEscaping
+        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 UnsafeRelaxedJsonEscaping Enum 為小寫
         /// </summary>
         public static JsonSerializerOptions DefaultJsonOptions { get; private set; }
 
@@ -28,6 +28,7 @@ namespace EasyApiProxys
             };
 
             DefaultJsonOptions.Converters.Add(new DateTimeConverter());
+            DefaultJsonOptions.Converters.Add(new JsonLowerCaseEnumFactory());
         }
 
         /// <summary>
@@ -78,11 +79,12 @@ namespace EasyApiProxys
                 var invocation = step.Invocation;
                 var _options = step.BuilderOptions;
 
-                // 必須是 HTTP 200 回應
+                // NOT OK 拋送 HttpRequestException
                 if (resp.StatusCode != HttpStatusCode.OK)
-                    throw new ApiCodeException("HTTP_NOT_OK", $"HTTP呼叫沒有回應OK而是回應{resp.StatusCode}", new {
-                        Code=(int)resp.StatusCode,
-                        Status=resp.StatusCode.ToString()});
+                {
+                    var msg = await resp.Content.ReadAsStringAsync();
+                    throw new HttpRequestException(msg, null, resp.StatusCode);
+                }
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -93,7 +95,7 @@ namespace EasyApiProxys
                     var ret = JsonSerializer.Deserialize<DefaultApiResult>(s1, _options.JsonOptions)
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
-                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty, ret.Data);
+                        throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                 }
                 // 方法有回傳值Task<T>
                 else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
@@ -105,7 +107,7 @@ namespace EasyApiProxys
                     var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
-                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty, ret.Data);
+                        throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
 
                     var data = ret.Data;
                     step.Result = data;
@@ -120,7 +122,7 @@ namespace EasyApiProxys
                     var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
                         ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                     if (ret.Result != "OK")
-                        throw new ApiCodeException(ret.Result, ret.Message ?? string.Empty, ret.Data);
+                        throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
 
                     var data = ret.Data;
                     step.Result = data;
@@ -147,6 +149,36 @@ namespace EasyApiProxys
             public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
             {
                 writer.WriteStringValue(value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture));
+            }
+        }
+
+        public class JsonLowerCaseEnumFactory : JsonConverterFactory
+        {
+            public override bool CanConvert(Type typeToConvert)
+            {
+                return typeToConvert.IsEnum;
+            }
+
+            public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+            {
+                var converterType = typeof(JsonLowerCaseEnumConverter<>).MakeGenericType(typeToConvert);
+                return Activator.CreateInstance(converterType) as JsonConverter ?? throw new NotSupportedException(typeToConvert.FullName);
+            }
+        }
+
+        public class JsonLowerCaseEnumConverter<T> : JsonConverter<T> where T : struct, Enum
+        {
+            public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                var enumString = reader.GetString();
+                if (Enum.TryParse(enumString, true, out T value))
+                    return value;
+                throw new JsonException($"Unable to convert \"{enumString}\" to Enum \"{typeof(T)}\".");
+            }
+
+            public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(value.ToString().ToLower());
             }
         }
     }

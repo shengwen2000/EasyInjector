@@ -30,7 +30,7 @@ namespace EasyApiProxys
         /// API 發生異常
         /// 代號為Enum.ToString()
         /// </summary>
-        public ApiCodeException(Enum value, string message)
+        public ApiCodeException(Enum value, string? message)
              :base(message)
         {
             Code = value.ToString();
@@ -40,7 +40,7 @@ namespace EasyApiProxys
         /// API 發生異常
         /// 代號為Enum.ToString()
         /// </summary>
-        public ApiCodeException(Enum value, string message, object? errorData)
+        public ApiCodeException(Enum value, string? message, object? errorData)
              :base(message)
         {
             Code = value.ToString();
@@ -52,7 +52,7 @@ namespace EasyApiProxys
         /// <param name="code">錯誤代碼</param>
         /// <param name="message">錯誤訊息</param>
         /// </summary>
-        public ApiCodeException(string code, string message)
+        public ApiCodeException(string code, string? message)
             : base(message)
         {
             Code = code;
@@ -64,7 +64,7 @@ namespace EasyApiProxys
         /// <param name="message">錯誤訊息</param>
         /// <param name="errorData">錯誤資料</param>
         /// </summary>
-        public ApiCodeException(string code, string message, object? errorData)
+        public ApiCodeException(string code, string? message, object? errorData)
             : base(message)
         {
             Code = code;

@@ -11,6 +11,8 @@ namespace EasyApiProxys.WebApis
     /// </summary>
     public class DefaultApiResultAttribute : ActionFilterAttribute
     {
+        private const string ResultHeader = "X_Api_Result";
+
         /// <summary>
         /// Action執行完成 封裝格式
         /// </summary>
@@ -25,42 +27,42 @@ namespace EasyApiProxys.WebApis
 
                 if (ex is ValidationException e1)
                 {
-                    try
+                    var array1 = new JsonArray();
+                    var err1 = new JsonObject();
+                    var fieldName = string.Join(',', e1.ValidationResult.MemberNames);
+                    if (fieldName.Length == 0)
+                        fieldName = "$";
+                    err1[fieldName] = e1.ValidationResult.ErrorMessage;
+                    array1.Add(err1);
+                    var ret = new DefaultApiResult<JsonNode>
                     {
-                        var errorJson = JsonSerializer.Deserialize<JsonNode>(e1.Message, DefaultApiExtension.DefaultJsonOptions);
-                        context.Result = new ObjectResult(new DefaultApiResult<JsonNode>
-                        {
-                            Result = "IM",
-                            Message = "validate error",
-                            Data = errorJson
-                        });
-                    }
-                    catch (JsonException)
-                    {
-                        context.Result = new ObjectResult(new DefaultApiResult<string>
-                        {
-                            Result = "IM",
-                            Message = "validate error",
-                            Data = e1.Message
-                        });
-                    }
+                        Result = "IM",
+                        Message = "Model State Error",
+                        Data = array1
+                    };
+                    context.Result = new ObjectResult(ret);
+                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 }
                 else if (ex is ApiCodeException e2)
                 {
-                    context.Result = new ObjectResult(new DefaultApiResult
+                    var ret = new DefaultApiResult
                     {
                         Result = e2.Code,
                         Message = e2.Message,
                         Data = e2.ErrorData
-                    });
+                    };
+                    context.Result = new ObjectResult(ret);
+                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 }
                 else
                 {
-                    context.Result = new ObjectResult(new DefaultApiResult
+                    var ret = new DefaultApiResult
                     {
                         Result = "EX",
                         Message = ex.Message
-                    });
+                    };
+                    context.Result = new ObjectResult(ret);
+                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 }
             }
             // 執行正常
@@ -69,22 +71,24 @@ namespace EasyApiProxys.WebApis
                 // 有內容
                 if (context.Result is ObjectResult robj)
                 {
-                    context.Result = new ObjectResult(new DefaultApiResult
+                    var ret = new DefaultApiResult
                     {
                         Result = "OK",
-                        //Message = "Success",
                         Data = robj.Value
-                    });
-
+                    };
+                    context.Result = new ObjectResult(ret);
+                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 }
                 // 沒有內容
                 else if (context.Result is EmptyResult)
                 {
-                    context.Result = new ObjectResult(new DefaultApiResult
+                    var ret = new DefaultApiResult
                     {
                         Result = "OK",
-                        //Message = "Success"
-                    });
+                    };
+
+                    context.Result = new ObjectResult(ret);
+                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 }
             }
 
@@ -117,19 +121,22 @@ namespace EasyApiProxys.WebApis
                     })
                     .Select(x => new JsonObject
                     {
-                        [x.propName[..1].ToLower() + x.propName[1..]] = x.propError
+                        [x.propName] = x.propError
                     });
 
                 var errorsArray = new JsonArray();
                 foreach (var err in errors)
                     errorsArray.Add(err);
 
-                context.Result = new ObjectResult(new DefaultApiResult<JsonArray>
+                var ret = new DefaultApiResult<JsonArray>
                 {
                     Result = "IM",
                     Message = "Model State Error",
                     Data = errorsArray
-                });
+                };
+
+                context.Result = new ObjectResult(ret);
+                context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
             }
         }
     }

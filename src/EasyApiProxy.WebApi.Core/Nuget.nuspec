@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>EasyApiProxy.WebApi.Core</id>
-    <version>3.1.8.0</version>
+    <version>3.2.0.0</version>
     <title>EasyApiProxy.WebApi.Core</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -15,7 +15,7 @@
     <readme>docs\EasyApiProxy.md</readme>
     <dependencies>
       <group targetFramework="net8.0" >
-        <dependency id="EasyApiProxy.Core" version="3.1.6.0" />
+        <dependency id="EasyApiProxy.Core" version="3.2.0.0" />
       </group>
     </dependencies>
     <tags>WebAPI</tags>
