@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace EasyApiProxys.WebApis
@@ -11,7 +10,12 @@ namespace EasyApiProxys.WebApis
     /// </summary>
     public class DefaultApiResultAttribute : ActionFilterAttribute
     {
-        private const string ResultHeader = "X_Api_Result";
+        private const string ResultHeader = DefaultApiExtension.HeaderName_Result;
+
+        /// <summary>
+        /// 資料類型 {data}
+        /// </summary>
+        private const string DataTypeHeader = DefaultApiExtension.HeaderName_DataType;
 
         /// <summary>
         /// Action執行完成 封裝格式
@@ -42,6 +46,7 @@ namespace EasyApiProxys.WebApis
                     };
                     context.Result = new ObjectResult(ret);
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
+                    context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
                 }
                 else if (ex is ApiCodeException e2)
                 {
@@ -53,6 +58,8 @@ namespace EasyApiProxys.WebApis
                     };
                     context.Result = new ObjectResult(ret);
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
+                    if (ret.Data != null)
+                        context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
                 }
                 else
                 {
@@ -78,6 +85,8 @@ namespace EasyApiProxys.WebApis
                     };
                     context.Result = new ObjectResult(ret);
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
+                    if (ret.Data != null)
+                        context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
                 }
                 // 沒有內容
                 else if (context.Result is EmptyResult)
@@ -137,6 +146,8 @@ namespace EasyApiProxys.WebApis
 
                 context.Result = new ObjectResult(ret);
                 context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
+                if (ret.Data != null)
+                    context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
             }
         }
     }
