@@ -15,7 +15,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 異常資料
         /// </summary>
-        public object? ErrorData {get; set;}
+        public JsonNode? ErrorData {get; set;}
 
         /// <summary>
         /// API 發生異常
@@ -41,7 +41,7 @@ namespace EasyApiProxys
         /// API 發生異常
         /// 代號為Enum.ToString()
         /// </summary>
-        public ApiCodeException(Enum value, string? message, object? errorData)
+        public ApiCodeException(Enum value, string? message, JsonNode? errorData)
              :base(message)
         {
             Code = value.ToString();
@@ -65,7 +65,7 @@ namespace EasyApiProxys
         /// <param name="message">錯誤訊息</param>
         /// <param name="errorData">錯誤資料</param>
         /// </summary>
-        public ApiCodeException(string code, string? message, object? errorData)
+        public ApiCodeException(string code, string? message, JsonNode? errorData)
             : base(message)
         {
             Code = code;

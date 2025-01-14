@@ -1,7 +1,9 @@
+using System.Linq.Expressions;
 using System.Text.Json;
 using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using HawkNet;
+
 
 namespace Tests;
 
@@ -169,6 +171,50 @@ public class ApiProxyTest : BaseTest
         Assert.That(ex.Code, Is.EqualTo("IM"));
         Assert.That(ex.ErrorData is JsonElement, Is.True);
         //Assert.Catch<Exception>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
+    }
+
+    [Test]
+    public void GetTypeName001()
+    {
+        {
+            var type1 = typeof(IEnumerable<string>);
+            var type1name = GetTypeName(type1);
+            Assert.That(type1name, Is.EqualTo("IEnumerable<String>"));
+        }
+        {
+            var type1 = typeof(IEnumerable<KeyValuePair<string, DateTime>>);
+            var type1name = GetTypeName(type1);
+            Assert.That(type1name, Is.EqualTo("IEnumerable<KeyValuePair<String,DateTime>>"));
+        }
+    }
+
+    string GetTypeName(Type type)
+    {
+        if (type.IsGenericType)
+        {
+            using var sw = new StringWriter();
+            var pos = type.Name.IndexOf('`');
+            sw.Write(type.Name[..pos]);
+            sw.Write("<");
+
+            var targs = type.GenericTypeArguments;
+            var index = 0;
+            foreach (var targ in targs)
+            {
+                var typeName1 = GetTypeName(targ);
+                if (index > 0)
+                    sw.Write(",");
+                sw.Write(typeName1);
+                index++;
+            }
+            sw.Write(">");
+            return sw.ToString();
+        }
+        else
+        {
+            return type.Name;
+        }
+
     }
 
 }

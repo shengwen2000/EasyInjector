@@ -46,7 +46,7 @@ namespace EasyApiProxys.WebApis
                     };
                     context.Result = new ObjectResult(ret);
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
-                    context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
+                    context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
                 }
                 else if (ex is ApiCodeException e2)
                 {
@@ -59,7 +59,7 @@ namespace EasyApiProxys.WebApis
                     context.Result = new ObjectResult(ret);
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                     if (ret.Data != null)
-                        context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
+                        context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
                 }
                 else
                 {
@@ -86,7 +86,7 @@ namespace EasyApiProxys.WebApis
                     context.Result = new ObjectResult(ret);
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                     if (ret.Data != null)
-                        context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
+                        context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
                 }
                 // 沒有內容
                 else if (context.Result is EmptyResult)
@@ -147,7 +147,39 @@ namespace EasyApiProxys.WebApis
                 context.Result = new ObjectResult(ret);
                 context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 if (ret.Data != null)
-                    context.HttpContext.Response.Headers[DataTypeHeader] = ret.Data.GetType().FullName;
+                    context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
+            }
+        }
+
+        /// <summary>
+        /// 取得Type名稱簡單的提示，用來讓呼叫者知道是哪種數據
+        /// e.g. IEnumerables  Member ...
+        /// </summary>
+        static string GetTypeHint(Type type)
+        {
+            if (type.IsGenericType)
+            {
+                using var sw = new StringWriter();
+                var pos = type.Name.IndexOf('`');
+                sw.Write(type.Name[..pos]);
+                sw.Write("<");
+
+                var targs = type.GenericTypeArguments;
+                var index = 0;
+                foreach (var targ in targs)
+                {
+                    var typeName1 = GetTypeHint(targ);
+                    if (index > 0)
+                        sw.Write(",");
+                    sw.Write(typeName1);
+                    index++;
+                }
+                sw.Write(">");
+                return sw.ToString();
+            }
+            else
+            {
+                return type.Name;
             }
         }
     }

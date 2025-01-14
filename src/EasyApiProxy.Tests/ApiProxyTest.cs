@@ -21,13 +21,13 @@ namespace Tests
         /// <returns></returns>
 		[Test]
 		public async void ApiProxy001()
-		{   
+		{
             // 類視窗環境模擬
             Assert.IsNotNull(SynchronizationContext.Current);
 
             var factory = new ApiProxyBuilder()
                 .UseDemoApiServerMock()
-                .UseDefaultApiProtocol("http://localhost:8081/api/Demo")                
+                .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
                 .Build<IDemoApi>();
 
             var apiproxy = factory.Create();
@@ -65,7 +65,7 @@ namespace Tests
                 Algorithm = "sha256",
                 User = "Admin",
             };
-            
+
             {
                 var factory = new ApiProxyBuilder()
                     // Server 啟用Hawk驗證
@@ -76,7 +76,7 @@ namespace Tests
 
                 var proxy = factory.Create();
                 // 不存在的網址會觸發異常
-                Assert.Catch<HttpRequestException>(() => proxy.GetServerInfo());                
+                Assert.Catch<HttpRequestException>(() => proxy.GetServerInfo());
             }
 
             {
@@ -103,7 +103,7 @@ namespace Tests
 
                 var ex = Assert.Catch<ApiCodeException>(() => proxy.GetServerInfo());
                 Assert.True(ex.Code == "HAWK_FAIL");
-            }            
+            }
         }
 
         /// <summary>
@@ -146,5 +146,7 @@ namespace Tests
             {
             }
         }
+
+
 	}
 }

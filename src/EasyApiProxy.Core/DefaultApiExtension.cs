@@ -100,26 +100,6 @@ namespace EasyApiProxys
                 // 標題含有Result資訊 預先載入 如果沒有那應該是舊的Api可用 OK 兼容之
                 var resultCode = resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? "OK";
 
-                // 載入錯誤資料型別 如果有的話
-                Type? errorResultType = typeof(DefaultApiResult);
-                if (resultCode != "OK")
-                {
-                    var errTypeName = resp.Headers.GetValues(HeaderName_DataType).SingleOrDefault();
-                    if (errTypeName != null)
-                    {
-                        try
-                        {
-                            var errType = Type.GetType(errTypeName) ??
-                                throw new ApplicationException($"無法解析Api錯誤資料型別{errTypeName}");
-                            errorResultType = typeof(DefaultApiResult<>).MakeGenericType(errType);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new ApplicationException($"無法解析Api錯誤資料型別{errTypeName} 異常={ex.Message}");
-                        }
-                    }
-                }
-
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
@@ -129,7 +109,7 @@ namespace EasyApiProxys
                     // 確定非OK
                     if (resultCode != "OK")
                     {
-                        var ret = JsonSerializer.Deserialize(s1, errorResultType, _options.JsonOptions) as DefaultApiResult
+                        var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
                             ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
@@ -149,7 +129,7 @@ namespace EasyApiProxys
                     // 確定非OK
                     if (resultCode != "OK")
                     {
-                        var ret = JsonSerializer.Deserialize(s1, errorResultType, _options.JsonOptions) as DefaultApiResult
+                        var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
                             ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
@@ -177,7 +157,7 @@ namespace EasyApiProxys
                     // 確定非OK
                     if (resultCode != "OK")
                     {
-                        var ret = JsonSerializer.Deserialize(s1, errorResultType, _options.JsonOptions) as DefaultApiResult
+                        var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
                             ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
                         if (ret.Result != "OK")
                             throw new ApiCodeException(ret.Result, ret.Message, ret.Data as JsonNode);
