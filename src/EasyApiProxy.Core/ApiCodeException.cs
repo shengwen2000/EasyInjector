@@ -8,9 +8,9 @@ namespace EasyApiProxys
     public class ApiCodeException : Exception
     {
         /// <summary>
-        /// OK 是正常 其他為異常
+        /// ok 是正常 其他為異常
         /// </summary>
-        public string Code { get; set; }
+        public string Code { get; private set;}
 
         /// <summary>
         /// 異常資料
@@ -34,7 +34,7 @@ namespace EasyApiProxys
         public ApiCodeException(Enum value, string? message)
              :base(message)
         {
-            Code = value.ToString();
+            Code = value.ToString().ToLower();
         }
 
         /// <summary>
@@ -44,19 +44,19 @@ namespace EasyApiProxys
         public ApiCodeException(Enum value, string? message, JsonNode? errorData)
              :base(message)
         {
-            Code = value.ToString();
+            Code = value.ToString().ToLower();
             ErrorData = errorData;
         }
 
         /// <summary>
         /// API 發生的異常
-        /// <param name="code">錯誤代碼</param>
+        /// <param name="code">錯誤代碼(自動小寫)</param>
         /// <param name="message">錯誤訊息</param>
         /// </summary>
         public ApiCodeException(string code, string? message)
             : base(message)
         {
-            Code = code;
+            Code = code.ToLower();
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace EasyApiProxys
         public ApiCodeException(string code, string? message, JsonNode? errorData)
             : base(message)
         {
-            Code = code;
+            Code = code.ToLower();
             ErrorData = errorData;
         }
 

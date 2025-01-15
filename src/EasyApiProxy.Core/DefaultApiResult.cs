@@ -13,7 +13,7 @@ namespace EasyApiProxys
         /// </summary>
         public static DefaultApiResult FromOK()
         {
-            return new DefaultApiResult { Result = "OK" };
+            return new DefaultApiResult { Result = "ok" };
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace EasyApiProxys
         }
 
         /// <summary>
-        /// 回傳代碼 OK 正常 其他為例外代碼
+        /// 回傳代碼 ok 正常 其他為例外代碼
         /// </summary>
         [JsonPropertyOrder(1)]
         public string Result { get; set; } = default!;

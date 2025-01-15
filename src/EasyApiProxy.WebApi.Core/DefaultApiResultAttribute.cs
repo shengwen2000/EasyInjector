@@ -40,7 +40,7 @@ namespace EasyApiProxys.WebApis
                     array1.Add(err1);
                     var ret = new DefaultApiResult<JsonNode>
                     {
-                        Result = "IM",
+                        Result = "im",
                         Message = "Model State Error",
                         Data = array1
                     };
@@ -52,7 +52,7 @@ namespace EasyApiProxys.WebApis
                 {
                     var ret = new DefaultApiResult
                     {
-                        Result = e2.Code,
+                        Result = e2.Code.ToLower(),
                         Message = e2.Message,
                         Data = e2.ErrorData
                     };
@@ -65,7 +65,7 @@ namespace EasyApiProxys.WebApis
                 {
                     var ret = new DefaultApiResult
                     {
-                        Result = "EX",
+                        Result = "ex",
                         Message = ex.Message
                     };
                     context.Result = new ObjectResult(ret);
@@ -80,7 +80,7 @@ namespace EasyApiProxys.WebApis
                 {
                     var ret = new DefaultApiResult
                     {
-                        Result = "OK",
+                        Result = "ok",
                         Data = robj.Value
                     };
                     context.Result = new ObjectResult(ret);
@@ -93,7 +93,7 @@ namespace EasyApiProxys.WebApis
                 {
                     var ret = new DefaultApiResult
                     {
-                        Result = "OK",
+                        Result = "ok",
                     };
 
                     context.Result = new ObjectResult(ret);
@@ -139,7 +139,7 @@ namespace EasyApiProxys.WebApis
 
                 var ret = new DefaultApiResult<JsonArray>
                 {
-                    Result = "IM",
+                    Result = "im",
                     Message = "Model State Error",
                     Data = errorsArray
                 };
@@ -157,6 +157,13 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         static string GetTypeHint(Type type)
         {
+            //匿名型別
+            var isAnonymousType = type.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false)
+                && type.Name.Contains("AnonymousType")
+                && (type.Attributes & System.Reflection.TypeAttributes.NotPublic) == System.Reflection.TypeAttributes.NotPublic;
+            if (isAnonymousType)
+                return "AnonymousType";
+
             if (type.IsGenericType)
             {
                 using var sw = new StringWriter();

@@ -98,7 +98,7 @@ namespace EasyApiProxys
                 }
 
                 // 標題含有Result資訊 預先載入 如果沒有那應該是舊的Api可用 OK 兼容之
-                var resultCode = resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? "OK";
+                var resultCode = (resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? "ok").ToLower();
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -107,19 +107,21 @@ namespace EasyApiProxys
                 if (invocation.Method.ReturnType == typeof(void) || invocation.Method.ReturnType == typeof(Task))
                 {
                     // 確定非OK
-                    if (resultCode != "OK")
+                    if (resultCode != "ok")
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
+                        ToLowerResult(ret);
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                     // OK
                     else
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
+                        ToLowerResult(ret);
                         // 兼容舊的沒有 X_Api_Result Header 新的此值必定為OK
-                        if (ret.Result != "OK")
+                        if (ret.Result != "ok")
                             throw new ApiCodeException(ret.Result, ret.Message, ret.Data as JsonNode);
                     }
                 }
@@ -127,10 +129,11 @@ namespace EasyApiProxys
                 else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
                     // 確定非OK
-                    if (resultCode != "OK")
+                    if (resultCode != "ok")
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
+                        ToLowerResult(ret);
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                     // OK
@@ -141,10 +144,11 @@ namespace EasyApiProxys
                         var resultT1 = typeof(DefaultApiResult<>).MakeGenericType([t1]);
 
                         var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
+                        ToLowerResult(ret);
 
                         // 兼容舊的沒有 X_Api_Result Header 新的此值必定為OK
-                        if (ret.Result != "OK")
+                        if (ret.Result != "ok")
                             throw new ApiCodeException(ret.Result, ret.Message, ret.Data as JsonNode);
 
                         var data = ret.Data;
@@ -155,11 +159,12 @@ namespace EasyApiProxys
                 else
                 {
                     // 確定非OK
-                    if (resultCode != "OK")
+                    if (resultCode != "ok")
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
-                        if (ret.Result != "OK")
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
+                        ToLowerResult(ret);
+                        if (ret.Result != "ok")
                             throw new ApiCodeException(ret.Result, ret.Message, ret.Data as JsonNode);
                     }
                     else
@@ -169,16 +174,25 @@ namespace EasyApiProxys
                         var resultT1 = typeof(DefaultApiResult<>).MakeGenericType([t1]);
 
                         var ret = JsonSerializer.Deserialize(s1, resultT1, _options.JsonOptions) as DefaultApiResult
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
+                        ToLowerResult(ret);
 
                         // 兼容舊的沒有 X_Api_Result Header, 新的此值必定為OK
-                        if (ret.Result != "OK")
+                        if (ret.Result != "ok")
                             throw new ApiCodeException(ret.Result, ret.Message, ret.Data as JsonNode);
 
                         var data = ret.Data;
                         step.Result = data;
                     }
                 }
+            }
+
+            private void ToLowerResult(DefaultApiResult ret)
+            {
+#pragma warning disable CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+                if (ret.Result != ret.Result.ToLower())
+                    ret.Result = ret.Result.ToLower();
+#pragma warning restore CA1862 // Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
             }
         }
 
