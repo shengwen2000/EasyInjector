@@ -38,7 +38,7 @@ namespace EasyApiProxys.WebApis
                         fieldName = "$";
                     err1[fieldName] = e1.ValidationResult.ErrorMessage;
                     array1.Add(err1);
-                    var ret = new DefaultApiResult<JsonNode>
+                    var ret = new DefaultApiErrorResult<JsonNode>
                     {
                         Result = "im",
                         Message = "Model State Error",
@@ -50,7 +50,7 @@ namespace EasyApiProxys.WebApis
                 }
                 else if (ex is ApiCodeException e2)
                 {
-                    var ret = new DefaultApiResult
+                    var ret = new DefaultApiErrorResult
                     {
                         Result = e2.Code.ToLower(),
                         Message = e2.Message,
@@ -63,7 +63,7 @@ namespace EasyApiProxys.WebApis
                 }
                 else
                 {
-                    var ret = new DefaultApiResult
+                    var ret = new DefaultApiErrorResult
                     {
                         Result = "ex",
                         Message = ex.Message
@@ -78,26 +78,13 @@ namespace EasyApiProxys.WebApis
                 // 有內容
                 if (context.Result is ObjectResult robj)
                 {
-                    var ret = new DefaultApiResult
-                    {
-                        Result = "ok",
-                        Data = robj.Value
-                    };
-                    context.Result = new ObjectResult(ret);
-                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
-                    if (ret.Data != null)
-                        context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
+                    context.HttpContext.Response.Headers[ResultHeader] = "ok";
+                    context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(robj.Value?.GetType());
                 }
                 // 沒有內容
                 else if (context.Result is EmptyResult)
                 {
-                    var ret = new DefaultApiResult
-                    {
-                        Result = "ok",
-                    };
-
-                    context.Result = new ObjectResult(ret);
-                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
+                    context.HttpContext.Response.Headers[ResultHeader] = "ok";
                 }
             }
 
@@ -137,7 +124,7 @@ namespace EasyApiProxys.WebApis
                 foreach (var err in errors)
                     errorsArray.Add(err);
 
-                var ret = new DefaultApiResult<JsonArray>
+                var ret = new DefaultApiErrorResult<JsonArray>
                 {
                     Result = "im",
                     Message = "Model State Error",
@@ -155,8 +142,10 @@ namespace EasyApiProxys.WebApis
         /// 取得Type名稱簡單的提示，用來讓呼叫者知道是哪種數據
         /// e.g. IEnumerables  Member ...
         /// </summary>
-        static string GetTypeHint(Type type)
+        static string? GetTypeHint(Type? type)
         {
+            if(type == null) return null;
+
             //匿名型別
             var isAnonymousType = type.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false)
                 && type.Name.Contains("AnonymousType")

@@ -4,48 +4,40 @@ using System.Text.Json.Serialization;
 namespace EasyApiProxys
 {
     /// <summary>
-    /// Default Api Protocl 回應封裝格式
+    /// Default Api 錯誤回應格式
     /// </summary>
-    public class DefaultApiResult
+    public class DefaultApiErrorResult
     {
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult FromOK()
+        public static DefaultApiErrorResult From(string result, string? message)
         {
-            return new DefaultApiResult { Result = "ok" };
+            return new DefaultApiErrorResult { Result = result, Message = message };
         }
 
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult From(string result, string? message)
+        public static DefaultApiErrorResult From(string result, string? message, object? data)
         {
-            return new DefaultApiResult { Result = result, Message = message };
+            return new DefaultApiErrorResult { Result = result, Message = message, Data = data };
         }
 
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult From(string result, string? message, object? data)
+        public static DefaultApiErrorResult<T> From<T>(string result, string? message, T? data)
         {
-            return new DefaultApiResult { Result = result, Message = message, Data = data };
+            return new DefaultApiErrorResult<T> { Result = result, Message = message, Data = data };
         }
 
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult<T> From<T>(string result, string? message, T? data)
+        public static DefaultApiErrorResult FromException(ApiCodeException apiCodeException)
         {
-            return new DefaultApiResult<T> { Result = result, Message = message, Data = data };
-        }
-
-        /// <summary>
-        /// apiResult builder
-        /// </summary>
-        public static DefaultApiResult FromException(ApiCodeException apiCodeException)
-        {
-            return new DefaultApiResult { Result = apiCodeException.Code, Message = apiCodeException.Message };
+            return new DefaultApiErrorResult { Result = apiCodeException.Code, Message = apiCodeException.Message };
         }
 
         /// <summary>
@@ -76,9 +68,9 @@ namespace EasyApiProxys
     }
 
     /// <summary>
-    /// Default Api Protocl 回應封裝格式 (StrongTyped)
+    /// Default Api Protocol 錯誤回應封裝格式 (StrongTyped)
     /// </summary>
-    public class DefaultApiResult<T> : DefaultApiResult
+    public class DefaultApiErrorResult<T> : DefaultApiErrorResult
     {
         /// <summary>
         /// 回傳資料

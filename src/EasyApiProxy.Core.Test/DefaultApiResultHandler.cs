@@ -28,7 +28,7 @@ namespace Tests
                 if (ret.Content is JsonContent)
                 {
                     var robj = ret.Content as JsonContent;
-                    ret.Content = JsonContent.Create(new DefaultApiResult<object>
+                    ret.Content = JsonContent.Create(new DefaultApiErrorResult<object>
                     {
                         Result = "OK",
                         Message = "Success",
@@ -43,7 +43,7 @@ namespace Tests
                 else if (ret.Content == null || ret.Content.GetType().Name == "EmptyContent")
                 {
                     ret.StatusCode = HttpStatusCode.OK;
-                    ret.Content = JsonContent.Create(new DefaultApiResult
+                    ret.Content = JsonContent.Create(new DefaultApiErrorResult
                     {
                         Result = "OK",
                         Message = "Success"
@@ -60,7 +60,7 @@ namespace Tests
                     {
                         var errorJson = JsonSerializer.Deserialize<JsonNode>(e1.Message, DefaultApiExtension.DefaultJsonOptions);
 
-                        var c = JsonContent.Create(new DefaultApiResult<JsonNode>
+                        var c = JsonContent.Create(new DefaultApiErrorResult<JsonNode>
                         {
                             Result = "IM",
                             Message = "validate error",
@@ -75,7 +75,7 @@ namespace Tests
                     }
                     catch (JsonException)
                     {
-                        var c = JsonContent.Create(new DefaultApiResult<string>
+                        var c = JsonContent.Create(new DefaultApiErrorResult<string>
                         {
                             Result = "IM",
                             Message = "validate error",
@@ -92,7 +92,7 @@ namespace Tests
                 {
                     var resp = new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = JsonContent.Create(new DefaultApiResult
+                        Content = JsonContent.Create(new DefaultApiErrorResult
                         {
                             Result = e2.Code,
                             Message = e2.Message
@@ -104,7 +104,7 @@ namespace Tests
                 {
                     var resp = new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = JsonContent.Create(new DefaultApiResult
+                        Content = JsonContent.Create(new DefaultApiErrorResult
                         {
                             Result = "EX",
                             Message = ex.Message
