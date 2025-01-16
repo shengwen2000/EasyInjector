@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Text.Json.Nodes;
+using System.Net;
 
 namespace EasyApiProxys.WebApis
 {
@@ -78,13 +79,22 @@ namespace EasyApiProxys.WebApis
                 // 有內容
                 if (context.Result is ObjectResult robj)
                 {
-                    context.HttpContext.Response.Headers[ResultHeader] = "ok";
-                    context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(robj.Value?.GetType());
+                    // 有數值回傳
+                    if (robj.Value != null) {
+                        context.HttpContext.Response.Headers[ResultHeader] = "ok";
+                        context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(robj.Value?.GetType());
+                    }
+                    // 沒有數值
+                    else {
+                        context.HttpContext.Response.Headers[ResultHeader] = "ok";
+                        context.Result = new NoContentResult();
+                    }
                 }
                 // 沒有內容
                 else if (context.Result is EmptyResult)
                 {
                     context.HttpContext.Response.Headers[ResultHeader] = "ok";
+                    context.Result = new NoContentResult();
                 }
             }
 
