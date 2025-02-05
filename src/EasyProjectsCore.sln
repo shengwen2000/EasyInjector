@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyInjector.DependencyInje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyInjector.Core.Tests", "EasyInjector.Core.Tests\EasyInjector.Core.Tests.csproj", "{9634D440-DBC3-4AF1-91F5-CC821E8027BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyApiProxy.DemoApiWeb.Core.Kmuhome", "EasyApiProxy.DemoApiWeb.Core.Kmuhome\EasyApiProxy.DemoApiWeb.Core.Kmuhome.csproj", "{70B04584-AF24-4806-A55C-C68A7BFBA46B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{9634D440-DBC3-4AF1-91F5-CC821E8027BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9634D440-DBC3-4AF1-91F5-CC821E8027BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9634D440-DBC3-4AF1-91F5-CC821E8027BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70B04584-AF24-4806-A55C-C68A7BFBA46B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70B04584-AF24-4806-A55C-C68A7BFBA46B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70B04584-AF24-4806-A55C-C68A7BFBA46B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70B04584-AF24-4806-A55C-C68A7BFBA46B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
