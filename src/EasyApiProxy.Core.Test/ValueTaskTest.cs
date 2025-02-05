@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Tests
+﻿namespace Tests
 {
     public class ValueTaskTest
     {
@@ -21,7 +15,7 @@ namespace Tests
 
 
             await DoSomething1();
-            await DoSomething2();        
+            await DoSomething2();
         }
 
         public async ValueTask DoSomething1()

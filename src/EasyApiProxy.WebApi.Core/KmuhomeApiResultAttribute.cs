@@ -6,9 +6,9 @@ using System.Text.Json.Nodes;
 namespace EasyApiProxys.WebApis
 {
     /// <summary>
-    /// 預設的API回應封裝
+    /// KmuhomeAPI回應封裝
     /// </summary>
-    public class DefaultApiResultAttribute : ActionFilterAttribute
+    public class KmuhomeApiResultAttribute : ActionFilterAttribute
     {
         private const string ResultHeader = DefaultApiExtension.HeaderName_Result;
 
@@ -16,9 +16,9 @@ namespace EasyApiProxys.WebApis
         /// 資料類型 {data}
         /// </summary>
         private const string DataTypeHeader = DefaultApiExtension.HeaderName_DataType;
-        private const string RESULT_OK = "OK";
-        private const string RESULT_EX = "EX";
-        private const string RESULT_IM = "IM";
+        private const string RESULT_OK = "ok";
+        private const string RESULT_EX = "ex";
+        private const string RESULT_IM = "im";
 
         /// <summary>
         /// Action執行完成 封裝格式
@@ -83,7 +83,8 @@ namespace EasyApiProxys.WebApis
                 {
                     // 有數值回傳
                     if (robj.Value != null) {
-                        // 字串轉為 JSON
+
+                         // 字串轉為 JSON
                         if (robj.DeclaredType == typeof(string))
                             context.Result = new JsonResult(robj.Value);
 

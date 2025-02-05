@@ -12,9 +12,11 @@ public class JsonTest : BaseTest
     [Test]
     public void Json001()
     {
-        var opt = new JsonSerializerOptions();
-        opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        opt.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        var opt = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
 
         opt.Converters.Add(new DateTimeConverter());
 

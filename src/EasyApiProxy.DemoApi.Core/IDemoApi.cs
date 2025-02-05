@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
-using EasyApiProxys;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EasyApiProxys.DemoApis
 {
@@ -23,11 +20,17 @@ namespace EasyApiProxys.DemoApis
         /// </summary>
         /// <returns></returns>
         Task RaiseValidateError();
+
+        void NoResult();
+
+        Task NoResult2();
+
+        Task<string> HawkApi();
     }
 
     public class Login
     {
-        [StringLength(10), MaxLength(10)]
+        [StringLength(10)]
         public string Account { get; set; } = default!;
         [StringLength(10)]
         public string Password { get; set; } = default!;
@@ -41,6 +44,7 @@ namespace EasyApiProxys.DemoApis
 
         public DateTime Expired { get; set; }
 
+         public IEnumerable<Roles> Roles {get; set;} = [];
     }
 
     public class TokenInfo
@@ -51,5 +55,11 @@ namespace EasyApiProxys.DemoApis
     public class ProcInfo
     {
         public int ProcSeconds { get; set; }
+    }
+
+    public enum Roles {
+        AdminUser,
+        User,
+        Manager,
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Text.Json.Nodes;
 namespace EasyApiProxys
 {
     /// <summary>
@@ -8,14 +7,14 @@ namespace EasyApiProxys
     public class ApiCodeException : Exception
     {
         /// <summary>
-        /// ok 是正常 其他為異常
+        /// OK or ok 是正常 其他為異常
         /// </summary>
         public string Code { get; private set;}
 
         /// <summary>
         /// 異常資料
         /// </summary>
-        public JsonNode? ErrorData {get; set;}
+        public object? ErrorData {get; set;}
 
         /// <summary>
         /// API 發生異常
@@ -34,17 +33,17 @@ namespace EasyApiProxys
         public ApiCodeException(Enum value, string? message)
              :base(message)
         {
-            Code = value.ToString().ToLower();
+            Code = value.ToString();
         }
 
         /// <summary>
         /// API 發生異常
         /// 代號為Enum.ToString()
         /// </summary>
-        public ApiCodeException(Enum value, string? message, JsonNode? errorData)
+        public ApiCodeException(Enum value, string? message, object? errorData)
              :base(message)
         {
-            Code = value.ToString().ToLower();
+            Code = value.ToString();
             ErrorData = errorData;
         }
 
@@ -56,7 +55,7 @@ namespace EasyApiProxys
         public ApiCodeException(string code, string? message)
             : base(message)
         {
-            Code = code.ToLower();
+            Code = code;
         }
 
         /// <summary>
@@ -65,10 +64,10 @@ namespace EasyApiProxys
         /// <param name="message">錯誤訊息</param>
         /// <param name="errorData">錯誤資料</param>
         /// </summary>
-        public ApiCodeException(string code, string? message, JsonNode? errorData)
+        public ApiCodeException(string code, string? message, object? errorData)
             : base(message)
         {
-            Code = code.ToLower();
+            Code = code;
             ErrorData = errorData;
         }
 

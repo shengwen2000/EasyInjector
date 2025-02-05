@@ -1,17 +1,17 @@
 ﻿using EasyApiProxys.Options;
 using System.Text.Json;
 using System.Text;
-using System.Text.Json.Serialization;
-using System.Globalization;
-using System.Text.Json.Nodes;
 using System.Net;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using static EasyApiProxys.DefaultApiExtension;
 
 namespace EasyApiProxys
 {
     /// <summary>
-    /// 預設的API 協定
+    /// Kmuhome API 協定
     /// </summary>
-    public static class DefaultApiExtension
+    public static class KmuhomeApiExtension
     {
         /// <summary>
         /// Header Name 回應代號 X_Api_Result
@@ -25,13 +25,13 @@ namespace EasyApiProxys
 
         /// <summary>
         /// Default Api 預設 JsonSerializer Options
-        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 UnsafeRelaxedJsonEscaping Enum 為字串
+        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 UnsafeRelaxedJsonEscaping Enum 為小寫字串
         /// </summary>
         public static JsonSerializerOptions DefaultJsonOptions { get; private set; }
 
-        static DefaultApiExtension()
+        static KmuhomeApiExtension()
         {
-            DefaultJsonOptions = new JsonSerializerOptions
+             DefaultJsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -43,14 +43,14 @@ namespace EasyApiProxys
         }
 
         /// <summary>
-        /// 使用標準Api通訊方法
+        /// 使用KmuhomeApi通訊方法
         /// </summary>
         /// <param name="baseUrl">共用的HttpClient KeyName</param>
         /// <param name="builder">builder</param>
         /// <param name="defaltTimeoutSeconds">預設逾時秒數</param>
-        static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
+        static public ApiProxyBuilder UseKmuhomeApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
-            var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);
+            var hander = new KmuhomeApiHandler(builder.Options.Step2, builder.Options.Step3);
             builder.Options.JsonOptions = DefaultJsonOptions;
             builder.Options.Step2 = hander.Step2;
             builder.Options.Step3 = hander.Step3;
@@ -59,7 +59,7 @@ namespace EasyApiProxys
             return builder;
         }
 
-        internal class DefaultApiHandler(
+        internal class KmuhomeApiHandler(
             Func<StepContext, Task>? step2,
             Func<StepContext, Task>? step3)
         {
@@ -94,7 +94,7 @@ namespace EasyApiProxys
                 resp.EnsureSuccessStatusCode();
 
                 // 標題含有Result資訊 預先載入
-                var resultCode = resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? "OK";
+                var resultCode = (resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? "ok").ToLower();
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -103,19 +103,19 @@ namespace EasyApiProxys
                 if (invocation.Method.ReturnType == typeof(void) || invocation.Method.ReturnType == typeof(Task))
                 {
                     // ok
-                    if (resultCode.Equals("OK", StringComparison.OrdinalIgnoreCase))
+                    if (resultCode.Equals("ok", StringComparison.OrdinalIgnoreCase))
                         return;
                     // im
-                    if (resultCode.Equals("IM", StringComparison.OrdinalIgnoreCase))
+                    if (resultCode.Equals("im", StringComparison.OrdinalIgnoreCase))
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                     // not ok
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<object>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                 }
@@ -123,7 +123,7 @@ namespace EasyApiProxys
                 else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
                     // ok
-                    if (resultCode.Equals("OK", StringComparison.OrdinalIgnoreCase)) {
+                    if (resultCode.Equals("ok", StringComparison.OrdinalIgnoreCase)) {
                         // no content
                         if(resp.StatusCode == HttpStatusCode.NoContent)
                             return;
@@ -136,17 +136,17 @@ namespace EasyApiProxys
                     }
 
                     // im
-                    if (resultCode.Equals("IM", StringComparison.OrdinalIgnoreCase))
+                    if (resultCode.Equals("im", StringComparison.OrdinalIgnoreCase))
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                     // not ok
                     else
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<object>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                 }
@@ -154,7 +154,7 @@ namespace EasyApiProxys
                 else
                 {
                     // ok
-                    if (resultCode.Equals("OK", StringComparison.OrdinalIgnoreCase)) {
+                    if (resultCode.Equals("ok", StringComparison.OrdinalIgnoreCase)) {
                         // no content
                         if(resp.StatusCode == HttpStatusCode.NoContent)
                             return;
@@ -165,41 +165,19 @@ namespace EasyApiProxys
                         return;
                     }
                     // im
-                    if (resultCode.Equals("IM", StringComparison.OrdinalIgnoreCase))
+                    if (resultCode.Equals("im", StringComparison.OrdinalIgnoreCase))
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<JsonNode>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                     // not ok
                     {
                         var ret = JsonSerializer.Deserialize<DefaultApiResult<object>>(s1, _options.JsonOptions)
-                            ?? throw new ApiCodeException("NON_DEFAULT_API_RESULT", "回應內容非 DefaultApiResult 格式無法解析");
+                            ?? throw new ApiCodeException("non_default_api_result", "回應內容非 DefaultApiResult 格式無法解析");
                         throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// JSON日期格式
-        /// </summary>
-        public class DateTimeConverter : JsonConverter<DateTime>
-        {
-            /// <summary>
-            /// 讀取
-            /// </summary>
-            public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                return DateTime.Parse(reader.GetString()!, CultureInfo.InvariantCulture);
-            }
-
-            /// <summary>
-            /// 寫入
-            /// </summary>
-            public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
-            {
-                writer.WriteStringValue(value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture));
             }
         }
 
@@ -229,7 +207,7 @@ namespace EasyApiProxys
 
             public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
             {
-                writer.WriteStringValue(value.ToString());
+                writer.WriteStringValue(value.ToString().ToLower());
             }
         }
     }

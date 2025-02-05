@@ -1,23 +1,21 @@
-using System.Linq.Expressions;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using HawkNet;
 
-
 namespace Tests;
 
-public class ApiProxyTest : BaseTest
+public class DefaultApiTest : BaseTest
 {
     [Test, Apartment(ApartmentState.STA)]
-    public async Task ApiProxy001()
+    public async Task DefaultApiTest001()
     {
         // 類視窗環境模擬
         Assert.That(SynchronizationContext.Current, Is.Not.Null);
 
         var factory = new ApiProxyBuilder()
-              .UseDemoApiServerMock()
-              .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
+              .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
               .Build<IDemoApi>();
 
         var apiproxy = factory.Create();
@@ -28,6 +26,7 @@ public class ApiProxyTest : BaseTest
 
         var ret = await apiproxy.Login(new Login { Account = "david", Password = "123" });
         Assert.That(ret.Account, Is.EqualTo("david"));
+        Assert.That(ret.Roles.First(), Is.EqualTo(Roles.AdminUser));
 
         var email = await apiproxy.GetEmail(new TokenInfo { Token = ret.Token });
 
@@ -35,10 +34,38 @@ public class ApiProxyTest : BaseTest
 
         await apiproxy.Logout(new TokenInfo { Token = ret.Token });
 
+        // no result
+        apiproxy.NoResult();
+
+        // no result
+        await apiproxy.NoResult2();
+
+        // api exception
         var ex = Assert.Catch<ApiCodeException>(
             () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
             ?? throw new NullReferenceException();
         Assert.That(ex.Code, Is.EqualTo("EX"));
+        Assert.That(ex.Message, Is.EqualTo("The Token Not exists"));
+    }
+
+    /// <summary>
+    /// Hawk 驗證失敗
+    /// </summary>
+    /// <returns></returns>
+    [Test, Apartment(ApartmentState.STA)]
+    public async Task DefaultApiTest002_NoHawk()
+    {
+        await Task.FromResult(0);
+        // 沒有 Hawk驗證
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 60)
+                .Build<IDemoApi>();
+            var proxy = factory.Create();
+
+            var ex = Assert.CatchAsync<HttpRequestException>(proxy.HawkApi);
+            Assert.That(ex.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.Unauthorized));
+        }
     }
 
     /// <summary>
@@ -46,10 +73,8 @@ public class ApiProxyTest : BaseTest
     /// </summary>
     /// <returns></returns>
     [Test, Apartment(ApartmentState.STA)]
-    public async Task ApiProxy002()
+    public async Task DefaultApiTest002_Hawk()
     {
-        await Task.FromResult(0);
-
         var credential = new HawkCredential
         {
             Id = "123",
@@ -58,43 +83,16 @@ public class ApiProxyTest : BaseTest
             User = "Admin",
         };
 
+        // 啟用Hawk驗證
         {
             var factory = new ApiProxyBuilder()
-                // Server 啟用Hawk驗證
-                //.UseDemoApiServerMock(credential)
-                .UseDefaultApiProtocol("http://localhost:8081/api/notfound")
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 30)
                 .UseHawkAuthorize(credential)
                 .Build<IDemoApi>();
 
             var proxy = factory.Create();
-            // 不存在的網址會觸發異常
-            Assert.Catch<HttpRequestException>(() => proxy.GetServerInfo());
-        }
-
-        {
-            var factory = new ApiProxyBuilder()
-                // Server 啟用Hawk驗證
-                .UseDemoApiServerMock(credential)
-                .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
-                .UseHawkAuthorize(credential)
-                .Build<IDemoApi>();
-
-            var proxy = factory.Create();
-
-            var srvInfo = proxy.GetServerInfo();
-            Assert.That(srvInfo, Is.EqualTo("Demo Server"));
-        }
-
-        {
-            var factory = new ApiProxyBuilder()
-                // Server 啟用Hawk驗證
-                .UseDemoApiServerMock(credential)
-                .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
-                .Build<IDemoApi>();
-            var proxy = factory.Create();
-
-            var ex = Assert.Catch<ApiCodeException>(() => proxy.GetServerInfo());
-            Assert.That(ex?.Code, Is.EqualTo("HAWK_FAIL"));
+            var ret1 = await proxy.HawkApi();
+            Assert.That(ret1, Is.EqualTo("hawk api ok"));
         }
     }
 
@@ -103,22 +101,64 @@ public class ApiProxyTest : BaseTest
     /// </summary>
     /// <returns></returns>
     [Test]
-    public async Task ApiProxy003()
+    public async Task DefaultApiTest003()
     {
         var factory = new ApiProxyBuilder()
-            .UseDemoApiServerMock()
-            .UseDefaultApiProtocol("http://localhost:8081/api/Demo", 20)
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
         var proxy = factory.Create();
 
+        // RunProc 被指定 5秒Timout
         var msg1 = await proxy.RunProc(new ProcInfo { ProcSeconds = 2 });
+        // 通過
         Assert.That(msg1, Is.EqualTo("OK 2"));
 
-        Assert.Catch<Exception>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
+        // 觸發Timeout
+        Assert.Catch<TaskCanceledException>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
+    }
+
+    /// <summary>
+    /// Invalidate Model
+    /// </summary>
+    /// <returns></returns>
+    [Test]
+    public void DefaultApiTest003_Validate1()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
+            .Build<IDemoApi>();
+        var proxy = factory.Create();
+
+        // 觸發 IM Exception
+        var ex = Assert.CatchAsync<ApiCodeException>(() =>  proxy.Login(new Login { Account="A12345678910", Password="123"}));
+        Assert.That(ex.Code, Is.EqualTo("IM"));
+        Assert.That(ex.ErrorData, Is.Not.Null);
+        var errs = ex.ErrorData as JsonArray ?? throw new ApplicationException("No error data");
+        var e1 = errs.First() as JsonObject;
+        var err1 = e1?["Account"]?.GetValue<string>();
+        Assert.That(err1, Is.Not.Null);
+    }
+
+    [Test]
+    public void DefaultApiTest003_Validate2()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
+            .Build<IDemoApi>();
+        var proxy = factory.Create();
+
+        var ex = Assert.CatchAsync<ApiCodeException>(proxy.RaiseValidateError)
+            ?? throw new NullReferenceException();
+        Assert.That(ex.Code, Is.EqualTo("IM"));
+        Assert.That(ex.ErrorData is JsonArray, Is.True);
+         var errs = ex.ErrorData as JsonArray ?? throw new ApplicationException("No error data");
+        var e1 = errs.First() as JsonObject;
+        var err1 = e1?["Account"]?.GetValue<string>();
+        Assert.That(err1, Is.Not.Null);
     }
 
     [Test, Apartment(ApartmentState.STA)]
-    public async Task ApiProxy004()
+    public async Task DefaultApiTest004()
     {
         // 類視窗環境模擬
         Assert.That(SynchronizationContext.Current, Is.Not.Null);
@@ -155,22 +195,6 @@ public class ApiProxyTest : BaseTest
             () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
             ?? throw new NullReferenceException();
         Assert.That(ex.Code, Is.EqualTo("EX"));
-    }
-
-    [Test]
-    public void PorxyValidate001()
-    {
-        var factory = new ApiProxyBuilder()
-            .UseDemoApiServerMock()
-            .UseDefaultApiProtocol("http://localhost:8081/api/Demo", 20)
-            .Build<IDemoApi>();
-        var proxy = factory.Create();
-
-        var ex = Assert.CatchAsync<ApiCodeException>(proxy.RaiseValidateError)
-            ?? throw new NullReferenceException();
-        Assert.That(ex.Code, Is.EqualTo("IM"));
-        Assert.That(ex.ErrorData is JsonElement, Is.True);
-        //Assert.Catch<Exception>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
     }
 
     [Test]
@@ -214,7 +238,5 @@ public class ApiProxyTest : BaseTest
         {
             return type.Name;
         }
-
     }
-
 }

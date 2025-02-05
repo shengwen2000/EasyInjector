@@ -65,11 +65,11 @@ namespace Tests
                 {
                     throw new ApplicationException("Not Found");
                 }
-            
+
             }, cancellationToken).ConfigureAwait(false);
 
-            return ret1;            
-        }       
+            return ret1;
+        }
 
         public async Task<AccountInfo> Login(HttpRequestMessage request)
         {
@@ -89,7 +89,7 @@ namespace Tests
             var req = await GetContent<TokenInfo>(request).ConfigureAwait(false);
             if (req.Token == "123456789")
                 return;
-            throw new ApplicationException("The Token Not exits");
+            throw new ApplicationException("The Token Not exists");
         }
 
         public async Task<string> GetEmail(HttpRequestMessage request)
@@ -100,7 +100,7 @@ namespace Tests
             {
                 return "david@gmail.com";
             }
-            throw new ApplicationException("The Token Not exits");
+            throw new ApplicationException("The Token Not exists");
         }
 
         public async Task<string> RunProc_001(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -116,7 +116,7 @@ namespace Tests
         public string GetServerInfo()
         {
             return "Demo Server";
-        }       
+        }
 
         async Task<T> GetContent<T>(HttpRequestMessage request)
         {
@@ -125,7 +125,7 @@ namespace Tests
             using (var jr = new JsonTextReader(sr))
             {
                 return _jsonSerailizer.Deserialize<T>(jr);
-            }            
+            }
         }
     }
 }

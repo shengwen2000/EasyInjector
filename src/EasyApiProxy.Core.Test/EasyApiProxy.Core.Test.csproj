@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EasyApiProxy.Core\EasyApiProxy.Core.csproj" />
+    <ProjectReference Include="..\EasyApiProxy.DemoApi.Core\EasyApiProxy.DemoApi.Core.csproj" />
     <ProjectReference Include="..\EasyApiProxy.HawkAuth.Core\EasyApiProxy.HawkAuth.Core.csproj" />
   </ItemGroup>
 

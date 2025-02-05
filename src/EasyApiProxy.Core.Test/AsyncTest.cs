@@ -1,9 +1,4 @@
-﻿using EasyApiProxys;
-using EasyApiProxys.DemoApis;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Tests;
+﻿namespace Tests;
 
 [TestFixture]
 public class AsyncTest : BaseTest

@@ -64,7 +64,7 @@
             await Task.Delay(1000);
             if (req.Token == "123456789")
                 return;
-            throw new ApplicationException("The Token Not exits");
+            throw new ApplicationException("The Token Not exists");
         }
 
         [HttpPost]
@@ -75,7 +75,7 @@
             {
                 return "david@gmail.com";
             }
-            throw new ApplicationException("The Token Not exits");
+            throw new ApplicationException("The Token Not exists");
         }
 
         [HttpPost]
