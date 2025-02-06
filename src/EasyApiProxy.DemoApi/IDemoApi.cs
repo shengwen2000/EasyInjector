@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
-using EasyApiProxys;
 
 namespace EasyApiProxys.DemoApis
 {
@@ -16,12 +18,25 @@ namespace EasyApiProxys.DemoApis
 
         [ApiMethod(Name = "RunProc_001", TimeoutSeconds=5)]
         Task<string> RunProc(ProcInfo info);
+
+        /// <summary>
+        /// 呼叫會引發一個欄位異常
+        /// </summary>
+        /// <returns></returns>
+        Task RaiseValidateError();
+
+        void NoResult();
+
+        Task NoResult2();
+
+        Task<string> HawkApi();
     }
 
     public class Login
     {
-        [StringLength(20)]
+        [StringLength(10)]
         public string Account { get; set; }
+        [StringLength(10)]
         public string Password { get; set; }
     }
 
@@ -33,6 +48,12 @@ namespace EasyApiProxys.DemoApis
 
         public DateTime Expired { get; set; }
 
+        public IEnumerable<Roles> Roles {get; set;}
+
+        public AccountInfo()
+        {
+            Roles = Enumerable.Empty<Roles>();
+        }
     }
 
     public class TokenInfo
@@ -45,5 +66,11 @@ namespace EasyApiProxys.DemoApis
         public int ProcSeconds { get; set; }
     }
 
+    public enum Roles
+    {
+        AdminUser,
+        User,
+        Manager,
+    }
 
 }

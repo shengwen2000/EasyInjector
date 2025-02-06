@@ -53,5 +53,30 @@ namespace KmuApps.Controllers
         {
             return _api.RunProc(req);
         }
+
+        [HttpPost]
+        public Task RaiseValidateError()
+        {
+            return _api.RaiseValidateError();
+        }
+
+        [HttpPost]
+        public void NoResult()
+        {
+            _api.NoResult();
+        }
+
+        [HttpPost]
+        public Task NoResult2()
+        {
+            return _api.NoResult2();
+        }
+
+        [Authorize(Users="Admin")]
+        [HttpPost]
+        public Task<string> HawkApi()
+        {
+            return _api.HawkApi();
+        }
     }
 }

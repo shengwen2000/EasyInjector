@@ -42,7 +42,7 @@ namespace KmuApps.Services
         void WebEntry()
         {
             _webapp = Microsoft.Owin.Hosting.WebApp.Start(
-                   new Microsoft.Owin.Hosting.StartOptions("http://localhost:8081"),
+                   new Microsoft.Owin.Hosting.StartOptions("http://localhost:5249"),
                    appbuilder => _startup.Configuration(appbuilder));
         }
     }

@@ -12,9 +12,9 @@ using System.Web.Http.Filters;
 namespace EasyApiProxys.WebApis
 {
     /// <summary>
-    /// 預設的API回應封裝
+    /// KmuhomeAPI回應封裝
     /// </summary>
-    public class DefaultApiResultAttribute : ActionFilterAttribute
+    public class KmuhomeApiResultAttribute : ActionFilterAttribute
     {
         private const string ResultHeader = DefaultApiExtension.HeaderName_Result;
 
@@ -22,9 +22,9 @@ namespace EasyApiProxys.WebApis
         /// 資料類型 {data}
         /// </summary>
         private const string DataTypeHeader = DefaultApiExtension.HeaderName_DataType;
-        private const string RESULT_OK = "OK";
-        private const string RESULT_EX = "EX";
-        private const string RESULT_IM = "IM";
+        private const string RESULT_OK = "ok";
+        private const string RESULT_EX = "ex";
+        private const string RESULT_IM = "im";
 
         public override void OnActionExecuting(HttpActionContext context)
         {

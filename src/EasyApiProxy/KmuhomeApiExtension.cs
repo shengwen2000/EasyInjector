@@ -14,9 +14,9 @@ using System.Threading.Tasks;
 namespace EasyApiProxys
 {
     /// <summary>
-    /// 預設的API 協定
+    /// Kmuhome API 協定
     /// </summary>
-    public static class DefaultApiExtension
+    public static class KmuhomeApiExtension
     {
         /// <summary>
         /// Header Name 回應代號 X_Api_Result
@@ -35,11 +35,11 @@ namespace EasyApiProxys
 
         /// <summary>
         /// Default Api 預設 JsonSerializerSettings
-        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 Enum 字串
+        /// 驼峰命名 日期(無時區與毫秒) 2024-08-06T15:18:41 Enum 字串小寫
         /// </summary>
         public static JsonSerializerSettings DefaultJsonSerializerSettings { get; private set; }
 
-        static DefaultApiExtension()
+        static KmuhomeApiExtension()
         {
             DefaultJsonSerializerSettings = new JsonSerializerSettings
             {
@@ -55,20 +55,20 @@ namespace EasyApiProxys
                 DateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss"
             };
             DefaultJsonSerializerSettings.Converters.Add(dateConverter);
-            DefaultJsonSerializerSettings.Converters.Add(new StringEnumConverter());
+            DefaultJsonSerializerSettings.Converters.Add(new StringEnumConverter(new LowercaseNamingStrategy()));
 
             DefaultJsonSerializer = JsonSerializer.Create(DefaultJsonSerializerSettings);
         }
 
         /// <summary>
-        /// 使用標準Api通訊方法
+        /// 使用KmuhomeApi通訊方法
         /// </summary>
         /// <param name="baseUrl">共用的HttpClient KeyName</param>
         /// <param name="builder">builder</param>
         /// <param name="defaltTimeoutSeconds">預設逾時秒數</param>
-        static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
+        static public ApiProxyBuilder UseKmuhomeApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
-            var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);           
+            var hander = new KmuhomeApiHandler(builder.Options.Step2, builder.Options.Step3);           
 
             builder.Options.GetJsonSerializer = () => DefaultJsonSerializer;
             builder.Options.Step2 = hander.Step2;
@@ -78,16 +78,24 @@ namespace EasyApiProxys
             return builder;
         }
 
-        internal class DefaultApiHandler
+        internal class LowercaseNamingStrategy : NamingStrategy
         {
-            private const string RESULT_OK = "OK";
-            private const string RESULT_IM = "IM";
-            private const string RESULT_NON_DEFAULT_API_RESULT = "NON_DEFAULT_API_RESULT";
+            protected override string ResolvePropertyName(string name)
+            {
+                return name.ToLower();
+            }
+        }
+
+        internal class KmuhomeApiHandler
+        {
+            private const string RESULT_OK = "ok";
+            private const string RESULT_IM = "im";
+            private const string RESULT_NON_DEFAULT_API_RESULT = "non_default_api_result";
 
             Func<StepContext,Task> _step2;
             Func<StepContext, Task> _step3;
 
-            public DefaultApiHandler(
+            public KmuhomeApiHandler(
                 Func<StepContext, Task> step2,
                 Func<StepContext, Task> step3)
             {
@@ -129,7 +137,7 @@ namespace EasyApiProxys
                 resp.EnsureSuccessStatusCode();
 
                 // 標題含有Result資訊 預先載入
-                var resultCode = resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? RESULT_OK;
+                var resultCode = (resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? RESULT_OK).ToLower();
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -227,5 +235,7 @@ namespace EasyApiProxys
                 }
             }
         }
+
+        
     }
 }

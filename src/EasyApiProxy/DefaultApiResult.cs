@@ -10,14 +10,6 @@ namespace EasyApiProxys
         /// <summary>
         /// apiResult builder
         /// </summary>
-        public static DefaultApiResult FromOK()
-        {
-            return new DefaultApiResult { Result = "OK", Message = "Success" };
-        }
-
-        /// <summary>
-        /// apiResult builder
-        /// </summary>
         public static DefaultApiResult From(string result, string message)
         {
             return new DefaultApiResult { Result = result, Message = message };

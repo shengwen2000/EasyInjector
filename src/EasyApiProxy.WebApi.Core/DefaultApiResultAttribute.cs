@@ -55,7 +55,7 @@ namespace EasyApiProxys.WebApis
                 {
                     var ret = new DefaultApiResult
                     {
-                        Result = e2.Code.ToLower(),
+                        Result = e2.Code,
                         Message = e2.Message,
                         Data = e2.ErrorData
                     };

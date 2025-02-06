@@ -90,14 +90,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KmuhomeApiTest.cs" />
     <Compile Include="JsonTest.cs" />
     <Compile Include="AsyncTest.cs" />
     <Compile Include="NewTest.cs" />
-    <Compile Include="ApiProxyTest.cs" />
+    <Compile Include="DefaultApiTest.cs" />
     <Compile Include="BaseTest.cs" />
-    <Compile Include="DefaultApiResultHandler.cs" />
-    <Compile Include="DemoApiExtension.cs" />
-    <Compile Include="DemoApiServerMockHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -157,46 +157,6 @@ public class KmuhomeApiTest : BaseTest
         Assert.That(err1, Is.Not.Null);
     }
 
-    [Test, Apartment(ApartmentState.STA)]
-    public async Task KmuhomeApiTest004()
-    {
-        // 類視窗環境模擬
-        Assert.That(SynchronizationContext.Current, Is.Not.Null);
-
-        var credential = new HawkCredential
-        {
-            Id = "123",
-            Key = "werxhqb98rpaxn39848xrunpaw3489ruxnpa98w4rxn",
-            Algorithm = "sha256",
-            User = "Admin",
-        };
-
-        var factory = new ApiProxyBuilder()
-            .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo")
-            .UseHawkAuthorize(credential)
-            .Build<IDemoApi>();
-
-        var apiproxy = factory.Create();
-        //var api = apiproxy.Api;
-
-        var srvInfo = apiproxy.GetServerInfo();
-        Assert.That(srvInfo, Is.EqualTo("Demo Server"));
-
-        var ret = await apiproxy.Login(new Login { Account = "david", Password = "123" });
-        Assert.That(ret.Account, Is.EqualTo("david"));
-
-        var email = await apiproxy.GetEmail(new TokenInfo { Token = ret.Token });
-
-        Assert.That(email, Is.EqualTo("david@gmail.com"));
-
-        await apiproxy.Logout(new TokenInfo { Token = ret.Token });
-
-        var ex = Assert.Catch<ApiCodeException>(
-            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
-            ?? throw new NullReferenceException();
-        Assert.That(ex.Code, Is.EqualTo("ex"));
-    }
-
     [Test]
     public void GetTypeName001()
     {
