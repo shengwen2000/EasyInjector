@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Tests
 {
-    [Category("EasyApiProxy")]
+    [Category("EasyApiProxy_Kmuhome")]
     [TestFixture]
     public class KmuhomeApiTest : BaseTest
     {

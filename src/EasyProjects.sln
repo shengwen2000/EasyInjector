@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyInjector.WebMvc", "Easy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyInjector.Dev", "EasyInjector.Dev\EasyInjector.Dev.csproj", "{DFC64C7C-8E16-460A-AE03-9567FDCC620A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyApiProxy.DemoApiWeb.Kmuhome", "EasyApiProxy.DemoApiWeb.Kmuhome\EasyApiProxy.DemoApiWeb.Kmuhome.csproj", "{BA043C5B-5811-4CF5-BC15-0A8DA85B1234}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -109,6 +111,12 @@ Global
 		{DFC64C7C-8E16-460A-AE03-9567FDCC620A}.Publish|Any CPU.Build.0 = Release|Any CPU
 		{DFC64C7C-8E16-460A-AE03-9567FDCC620A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DFC64C7C-8E16-460A-AE03-9567FDCC620A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA043C5B-5811-4CF5-BC15-0A8DA85B1234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA043C5B-5811-4CF5-BC15-0A8DA85B1234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA043C5B-5811-4CF5-BC15-0A8DA85B1234}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{BA043C5B-5811-4CF5-BC15-0A8DA85B1234}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{BA043C5B-5811-4CF5-BC15-0A8DA85B1234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA043C5B-5811-4CF5-BC15-0A8DA85B1234}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -125,5 +133,6 @@ Global
 		{A2E5BA3C-E026-490A-81D8-5EA7F25A89FA} = {55A1B87C-7A25-4F05-9752-86232C2C8A55}
 		{A2E5BA3C-E026-490A-81D8-5EA7F25A1122} = {55A1B87C-7A25-4F05-9752-86232C2C8A55}
 		{DFC64C7C-8E16-460A-AE03-9567FDCC620A} = {55A1B87C-7A25-4F05-9752-86232C2C8A55}
+		{BA043C5B-5811-4CF5-BC15-0A8DA85B1234} = {D2B305D2-8CFD-45D0-BA09-81AC076901B6}
 	EndGlobalSection
 EndGlobal
