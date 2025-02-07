@@ -8,7 +8,7 @@ namespace EasyApiProxys
     /// 負責實際呼叫Api的實作
     /// </summary>
     /// <typeparam name="TAPI"></typeparam>
-    internal class ApiProxyInterceptor<TAPI> : DispatchProxy
+    public class ApiProxyInterceptor<TAPI> : DispatchProxy, IDisposable
     {
         /// <summary>
         /// Builder Options
@@ -16,14 +16,26 @@ namespace EasyApiProxys
         public ApiProxyBuilderOptions BuildOptions { get; set; } = default!;
 
         /// <summary>
-        /// 實例 Items
+        /// 實例變數
+        /// - 如果是針對單一實例的要求，而不是針對全體實例的要求可以放置在這裡
+        /// - 內容如果有 IDisposable 會於 Dispose時 一併銷毀
         /// </summary>
-        public Hashtable Items { get; set; } = default!;
+        public Hashtable InstanceItems { get; set; } = [];
 
         /// <summary>
         /// 共用的 httpClient
         /// </summary>
         public HttpClient Http { get; set; } = default!;
+
+        private bool disposed = false;
+
+        /// <summary>
+        /// dispose
+        /// </summary>
+        ~ApiProxyInterceptor()
+        {
+            Dispose(false);
+        }
 
         /// <summary>
         /// /// 被呼叫的方法與參數
@@ -98,7 +110,7 @@ namespace EasyApiProxys
             {
                 Invocation = invocation,
                 BuilderOptions = BuildOptions,
-                InstanceOptions = Items
+                InstanceItems = InstanceItems
             };
 
             // step1
@@ -138,6 +150,42 @@ namespace EasyApiProxys
 
             await BuildOptions.Step4(stepContext).ConfigureAwait(false);
             return stepContext.Result;
+        }
+
+        /// <summary>
+        /// dispose
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// dispose
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            // 先說已經disposed 避免底下可能呼叫到內含自身服務的Dispose()形成無限迴圈
+            disposed = true;
+
+            //正常Dispose，所有子項目一併施放
+            if (disposing)
+            {
+                foreach (var val1 in InstanceItems.Values)
+                {
+                    try {(val1 as IDisposable)?.Dispose(); }
+                    catch {}
+                }
+                InstanceItems.Clear();
+            }
+            //不正常Dispose只要確保自身資源釋放即可
+            else
+            {
+            }
         }
     }
 }

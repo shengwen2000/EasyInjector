@@ -50,10 +50,12 @@ namespace EasyApiProxys
         /// <param name="defaltTimeoutSeconds">預設逾時秒數</param>
         static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
-            var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);
+            var handler = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);
+            builder.Options.Handlers.Add(handler);
+
             builder.Options.JsonOptions = DefaultJsonOptions;
-            builder.Options.Step2 = hander.Step2;
-            builder.Options.Step3 = hander.Step3;
+            builder.Options.Step2 = handler.Step2;
+            builder.Options.Step3 = handler.Step3;
             builder.Options.BaseUrl = baseUrl;
             builder.Options.DefaultTimeout = TimeSpan.FromSeconds(defaltTimeoutSeconds);
             return builder;

@@ -47,6 +47,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiMethodAttribute.cs" />
+    <Compile Include="IApiProxy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InstanceCallExtension.cs" />
     <Compile Include="KmuhomeApiExtension.cs" />
     <Compile Include="IApiProxyFactory.cs" />
     <Compile Include="DefaultApiExtension.cs" />

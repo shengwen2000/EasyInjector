@@ -51,6 +51,12 @@ namespace EasyApiProxys
         public Func<StepContext, Task>? Step4 { get; set; }
 
         /// <summary>
+        /// Request Handler 註冊後會放在這裡
+        /// - Proxy Factory Dispose 時 會一併釋放
+        /// </summary>
+        public List<object> Handlers { get; set; } = [];
+
+        /// <summary>
         /// Api Proxy 建立選項
         /// </summary>
         public ApiProxyBuilderOptions()
@@ -77,9 +83,10 @@ namespace EasyApiProxys
             public ApiProxyBuilderOptions BuilderOptions { get; set; } = default!;
 
             /// <summary>
-            /// 實例選項(每個Proxy自己一份)
+            /// 實例變數
+            /// - 如果是針對單一實例的要求，而不是針對全體實例的要求可以放置在這裡
             /// </summary>
-            public Hashtable InstanceOptions { get; set; } = default!;
+            public Hashtable InstanceItems { get; set; } = default!;
 
             /// <summary>
             /// Request (2)準備送出HttpRequest之前
@@ -95,11 +102,6 @@ namespace EasyApiProxys
             /// 回傳值 (3)當取得HttpResponse時
             /// </summary>
             public object? Result { get; set; }
-
-            /// <summary>
-            /// 每次Request進行時都一份 (預設為 null)
-            /// </summary>
-            public Hashtable Items { get; set; } = default!;
         }
     }
 }

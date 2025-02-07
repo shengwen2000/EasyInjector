@@ -14,34 +14,47 @@ namespace EasyApiProxys
     /// 負責實際呼叫Api的實作
     /// </summary>
     /// <typeparam name="TAPI"></typeparam>
-    public class ApiProxyInterceptor<TAPI> : IInterceptor
+    public class ApiProxyInterceptor<TAPI> : IInterceptor, IDisposable
     {
         /// <summary>
         /// 建立選項
         /// </summary>
-        private ApiProxyBuilderOptions BuildOptions { get; set; }
+        public ApiProxyBuilderOptions BuildOptions { get; set; }
 
         /// <summary>
-        /// Items
+        /// 實例變數
+        /// - 如果是針對單一實例的要求，而不是針對全體實例的要求可以放置在這裡
+        /// - 內容如果有 IDisposable 會於 Dispose時 一併銷毀
         /// </summary>
-        private Hashtable Items { get; set; }
+        public Hashtable InstanceItems { get; set; }
 
         /// <summary>
         /// 共用的 httpClient
         /// </summary>
-        private HttpClient Http { get; set; }
+        public HttpClient Http { get; set; }
+
+        private bool disposed = false;
 
         /// <summary>
         /// 負責實際呼叫Api的實作
         /// </summary>
         /// <param name="http">HttpClient</param>
-        /// <param name="options">代理Builder選項</param>        
+        /// <param name="options">代理Builder選項</param>
         public ApiProxyInterceptor(HttpClient http, ApiProxyBuilderOptions options)
         {
             BuildOptions = options;
-            Items = new Hashtable();
+            InstanceItems = new Hashtable();
             Http = http;
         }
+
+        /// <summary>
+        /// dispose
+        /// </summary>
+        ~ApiProxyInterceptor()
+        {
+            Dispose(false);
+        }
+
 
         /// <summary>
         /// 攔截介面方法進入點
@@ -73,7 +86,7 @@ namespace EasyApiProxys
             }
             // 非Async Method
             else
-            {               
+            {
                 var ret = CallWebApi(invocation).GetAwaiter().GetResult();
                 invocation.ReturnValue = ret;
                 return;
@@ -99,11 +112,12 @@ namespace EasyApiProxys
         /// <returns>回傳內容</returns>
         private async Task<object> CallWebApi(IInvocation invocation)
         {
-            var stepContext = new StepContext { 
+            var stepContext = new StepContext
+            {
                 Invocation = invocation,
                 BuilderOptions = BuildOptions,
-                InstanceOptions = Items
-            };            
+                InstanceItems = InstanceItems
+            };
 
             // step1
             if (BuildOptions.Step1 != null)
@@ -134,7 +148,7 @@ namespace EasyApiProxys
                 // 進行呼叫
                 using (var resp = await Http.SendAsync(req, cts.Token).ConfigureAwait(false))
                 {
-                    stepContext.Response = resp;                    
+                    stepContext.Response = resp;
 
                     if (BuildOptions.Step3 != null)
                         await BuildOptions.Step3(stepContext).ConfigureAwait(false);
@@ -145,6 +159,45 @@ namespace EasyApiProxys
                     await BuildOptions.Step4(stepContext).ConfigureAwait(false);
                     return stepContext.Result;
                 }
+            }
+        }
+
+        /// <summary>
+        /// dispose
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// dispose
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            // 先說已經disposed 避免底下可能呼叫到內含自身服務的Dispose()形成無限迴圈
+            disposed = true;
+
+            //正常Dispose，所有子項目一併施放
+            if (disposing)
+            {
+                foreach (var val1 in InstanceItems.Values)
+                {
+                    if (val1 != null && val1 is IDisposable)
+                    {
+                        try { (val1 as IDisposable).Dispose(); }
+                        catch { }
+                    }
+                }
+                InstanceItems.Clear();
+            }
+            //不正常Dispose只要確保自身資源釋放即可
+            else
+            {
             }
         }
     }

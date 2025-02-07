@@ -148,7 +148,6 @@
     <Compile Include="Controllers\DemoController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\DemoApiService.cs" />
     <Compile Include="Services\IOwinWebService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

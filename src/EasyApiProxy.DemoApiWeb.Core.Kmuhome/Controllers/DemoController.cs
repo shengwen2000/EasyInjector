@@ -111,6 +111,17 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             return "hawk api ok";
         }
 
+        [HttpPost]
+        public Task<string> GetBearerToken()
+        {
+            if(Request.Headers.Authorization.Any(x => x?.StartsWith("Bearer ") == true)) {
+                var token = Request.Headers.Authorization.Where(x => x?.StartsWith("Bearer ") == true)
+                    .First();
+                return Task.FromResult(token![7..]);
+            }
+            return Task.FromResult("");
+        }
+
          /// <summary>
         /// 產生屬性驗證錯誤
         /// - thorw ValidationException

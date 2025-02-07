@@ -1,6 +1,9 @@
 ﻿
 using EasyApiProxys.DemoApis;
 using EasyApiProxys.WebApis;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -12,71 +15,112 @@ namespace KmuApps.Controllers
     [DefaultApiResult]
     public partial class DemoController : ApiController, IDemoApi
     {
-        private readonly IDemoApi _api;
-        public DemoController(IDemoApi api)
+        [HttpPost]
+        public async Task<AccountInfo> Login(Login req)
         {
-            _api = api;
+            await Task.Delay(1000);
+            if (req.Account == "david" && req.Password == "123")
+            {
+                return new AccountInfo
+                {
+                    Account = req.Account,
+                    Token = "123456789",
+                    Expired = DateTime.Now.AddHours(1),
+                    Roles = new Roles[] { Roles.AdminUser }
+                };
+            }
+            throw new NotImplementedException();
         }
 
         [HttpPost]
-        public Task<AccountInfo> Login(Login req)
+        public async Task Logout(TokenInfo req)
         {
-            return _api.Login(req);
+            await Task.Delay(1000);
+            if (req.Token == "123456789")
+                return;
+            throw new ApplicationException("The Token Not exists");
         }
 
         [HttpPost]
-        public Task Logout(TokenInfo req)
+        public async Task<string> GetEmail(TokenInfo req)
         {
-            return _api.Logout(req);
-        }
-
-        [HttpPost]
-        public Task<string> GetEmail(TokenInfo req)
-        {
-            return _api.GetEmail(req);
+            await Task.Delay(1000);
+            if (req.Token == "123456789")
+            {
+                return "david@gmail.com";
+            }
+            throw new ApplicationException("The Token Not exists");
         }
 
         [HttpPost]
         public string GetServerInfo()
         {
-            return _api.GetServerInfo();
+            return "Demo Server";
         }
 
         [HttpPost]
-        public Task<string> RunProc(ProcInfo req)
+        public async Task<string> RunProc(ProcInfo req)
         {
-            return _api.RunProc(req);
+            if (req.ProcSeconds > 0)
+                await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds));
+            return string.Format("OK {0}", req.ProcSeconds);
         }
 
         [HttpPost]
         public Task<string> RunProc_001(ProcInfo req)
         {
-            return _api.RunProc(req);
+            return RunProc(req);
         }
 
         [HttpPost]
         public Task RaiseValidateError()
         {
-            return _api.RaiseValidateError();
+            var info = new AccountInfo();
+            throw GenPropError(info, o => o.Account, "帳號為必要");
         }
 
         [HttpPost]
         public void NoResult()
-        {
-            _api.NoResult();
+        {            
         }
 
         [HttpPost]
         public Task NoResult2()
         {
-            return _api.NoResult2();
+            return Task.FromResult(0);
         }
 
         [Authorize(Users="Admin")]
         [HttpPost]
-        public Task<string> HawkApi()
+        public async Task<string> HawkApi()
         {
-            return _api.HawkApi();
+            await Task.FromResult(0);
+            return "hawk api ok";
+        }
+
+        [HttpPost]
+        public Task<string> GetBearerToken()
+        {
+            if (this.Request.Headers.Authorization != null && this.Request.Headers.Authorization.Scheme == "Bearer")
+                return Task.FromResult(this.Request.Headers.Authorization.Parameter);
+            return Task.FromResult("");
+        }
+
+        /// <summary>
+        /// 產生屬性驗證錯誤
+        /// - thorw ValidationException
+        /// </summary>
+        static public ValidationException GenPropError<T>(T obj, Expression<Func<T, object>> theProp, string errorMessage)
+        {
+
+            if (theProp.Body is MemberExpression)
+            {
+                var mb1 = theProp.Body as MemberExpression;
+                var result = new ValidationResult(errorMessage, new string[] { mb1.Member.Name });
+                return new ValidationException(result, null, obj);
+            }
+            else
+                throw new ApplicationException("theProp 必須選擇成員屬性");
         }
     }
 }

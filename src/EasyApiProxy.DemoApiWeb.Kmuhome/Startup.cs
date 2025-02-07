@@ -41,8 +41,7 @@ namespace KmuApps
                 logger.WriteInformation(string.Format("HTTP>{0} {1} Status={2}", ctx.Request.Method, ctx.Request.Path, ctx.Response.StatusCode));
             });
 
-            var injector = new EasyInjector();
-            injector.AddSingleton<IDemoApi, DemoApiService>();
+            var injector = new EasyInjector();            
 
             // hawk authoreize
             app.UseHawkAuthentication(new HawkAuthenticationOptions

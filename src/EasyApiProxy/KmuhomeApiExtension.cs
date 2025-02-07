@@ -47,7 +47,7 @@ namespace EasyApiProxys
                 DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat,
                 DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Unspecified,
                 //ContractResolver = new DefaultContractResolver()
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),               
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
 
             var dateConverter = new Newtonsoft.Json.Converters.IsoDateTimeConverter
@@ -68,7 +68,8 @@ namespace EasyApiProxys
         /// <param name="defaltTimeoutSeconds">預設逾時秒數</param>
         static public ApiProxyBuilder UseKmuhomeApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
-            var hander = new KmuhomeApiHandler(builder.Options.Step2, builder.Options.Step3);           
+            var hander = new KmuhomeApiHandler(builder.Options.Step2, builder.Options.Step3);
+            builder.Options.Handlers.Add(hander);
 
             builder.Options.GetJsonSerializer = () => DefaultJsonSerializer;
             builder.Options.Step2 = hander.Step2;
@@ -92,7 +93,7 @@ namespace EasyApiProxys
             private const string RESULT_IM = "im";
             private const string RESULT_NON_DEFAULT_API_RESULT = "non_default_api_result";
 
-            Func<StepContext,Task> _step2;
+            Func<StepContext, Task> _step2;
             Func<StepContext, Task> _step3;
 
             public KmuhomeApiHandler(
@@ -110,7 +111,7 @@ namespace EasyApiProxys
 
                 var req = step.Request;
                 var _options = step.BuilderOptions;
-             
+
                 req.Method = HttpMethod.Post;
 
                 // 方法的第一個參數 會當成Json內容進行傳送
@@ -121,7 +122,7 @@ namespace EasyApiProxys
                         _options.GetJsonSerializer().Serialize(sw, step.Invocation.Arguments[0]);
                         req.Content = new StringContent(sw.ToString(), Encoding.UTF8, "application/json");
                     }
-                }                
+                }
             }
 
             public async Task Step3(StepContext step)
@@ -236,6 +237,6 @@ namespace EasyApiProxys
             }
         }
 
-        
+
     }
 }

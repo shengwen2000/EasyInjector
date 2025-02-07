@@ -17,31 +17,31 @@ public class DefaultApiTest : BaseTest
               .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
               .Build<IDemoApi>();
 
-        var apiproxy = factory.Create();
-        //var api = apiproxy.Api;
+        var proxy1 = factory.Create();
+        var api1 = proxy1.Api;
 
-        var srvInfo = apiproxy.GetServerInfo();
+        var srvInfo = api1.GetServerInfo();
         Assert.That(srvInfo, Is.EqualTo("Demo Server"));
 
-        var ret = await apiproxy.Login(new Login { Account = "david", Password = "123" });
+        var ret = await api1.Login(new Login { Account = "david", Password = "123" });
         Assert.That(ret.Account, Is.EqualTo("david"));
         Assert.That(ret.Roles.First(), Is.EqualTo(Roles.AdminUser));
 
-        var email = await apiproxy.GetEmail(new TokenInfo { Token = ret.Token });
+        var email = await api1.GetEmail(new TokenInfo { Token = ret.Token });
 
         Assert.That(email, Is.EqualTo("david@gmail.com"));
 
-        await apiproxy.Logout(new TokenInfo { Token = ret.Token });
+        await api1.Logout(new TokenInfo { Token = ret.Token });
 
         // no result
-        apiproxy.NoResult();
+        api1.NoResult();
 
         // no result
-        await apiproxy.NoResult2();
+        await api1.NoResult2();
 
         // api exception
         var ex = Assert.Catch<ApiCodeException>(
-            () => apiproxy.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
+            () => api1.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
             ?? throw new NullReferenceException();
         Assert.That(ex.Code, Is.EqualTo("EX"));
         Assert.That(ex.Message, Is.EqualTo("The Token Not exists"));
@@ -60,9 +60,10 @@ public class DefaultApiTest : BaseTest
             var factory = new ApiProxyBuilder()
                 .UseDefaultApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 60)
                 .Build<IDemoApi>();
-            var proxy = factory.Create();
+            var proxy1 = factory.Create();
+            var api1 = proxy1.Api;
 
-            var ex = Assert.CatchAsync<HttpRequestException>(proxy.HawkApi);
+            var ex = Assert.CatchAsync<HttpRequestException>(api1.HawkApi);
             Assert.That(ex.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.Unauthorized));
         }
     }
@@ -89,8 +90,9 @@ public class DefaultApiTest : BaseTest
                 .UseHawkAuthorize(credential)
                 .Build<IDemoApi>();
 
-            var proxy = factory.Create();
-            var ret1 = await proxy.HawkApi();
+            var proxy1 = factory.Create();
+            var api1 = proxy1.Api;
+            var ret1 = await api1.HawkApi();
             Assert.That(ret1, Is.EqualTo("hawk api ok"));
         }
     }
@@ -105,15 +107,16 @@ public class DefaultApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy = factory.Create();
+        var proxy1 = factory.Create();
+        var api1 = proxy1.Api;
 
         // RunProc 被指定 5秒Timout
-        var msg1 = await proxy.RunProc(new ProcInfo { ProcSeconds = 2 });
+        var msg1 = await api1.RunProc(new ProcInfo { ProcSeconds = 2 });
         // 通過
         Assert.That(msg1, Is.EqualTo("OK 2"));
 
         // 觸發Timeout
-        Assert.Catch<TaskCanceledException>(() => proxy.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
+        Assert.Catch<TaskCanceledException>(() => api1.RunProc(new ProcInfo { ProcSeconds = 10 }).GetAwaiter().GetResult());
     }
 
     /// <summary>
@@ -126,10 +129,11 @@ public class DefaultApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy = factory.Create();
+        var proxy1 = factory.Create();
+        var api1 = proxy1.Api;
 
         // 觸發 IM Exception
-        var ex = Assert.CatchAsync<ApiCodeException>(() =>  proxy.Login(new Login { Account="A12345678910", Password="123"}));
+        var ex = Assert.CatchAsync<ApiCodeException>(() => api1.Login(new Login { Account = "A12345678910", Password = "123" }));
         Assert.That(ex.Code, Is.EqualTo("IM"));
         Assert.That(ex.ErrorData, Is.Not.Null);
         var errs = ex.ErrorData as JsonArray ?? throw new ApplicationException("No error data");
@@ -144,16 +148,52 @@ public class DefaultApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy = factory.Create();
-
-        var ex = Assert.CatchAsync<ApiCodeException>(proxy.RaiseValidateError)
+        var proxy1 = factory.Create();
+        var api1 = proxy1.Api;
+        var ex = Assert.CatchAsync<ApiCodeException>(api1.RaiseValidateError)
             ?? throw new NullReferenceException();
         Assert.That(ex.Code, Is.EqualTo("IM"));
         Assert.That(ex.ErrorData is JsonArray, Is.True);
-         var errs = ex.ErrorData as JsonArray ?? throw new ApplicationException("No error data");
+        var errs = ex.ErrorData as JsonArray ?? throw new ApplicationException("No error data");
         var e1 = errs.First() as JsonObject;
         var err1 = e1?["Account"]?.GetValue<string>();
         Assert.That(err1, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task DefaultApiTest004_BearerToken()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
+            .Build<IDemoApi>();
+
+        var proxy1 = factory.Create();
+        var api1 = proxy1.Api;
+
+        var token1 = "BEARERTOKEN1";
+        proxy1.SetBearer(token1);
+
+        bool before1 = false;
+        proxy1.BeforeHttpPost = ctx =>
+        {
+            before1 = true;
+            Assert.That(ctx.Request!.Headers.Authorization!.Scheme, Is.EqualTo("Bearer"));
+            Assert.That(ctx.Request.Headers.Authorization.Parameter, Is.EqualTo(token1));
+        };
+
+        bool after1 = false;
+        proxy1.AfterHttpPost = ctx =>
+        {
+            after1 = true;
+            Assert.That(ctx.Response, Is.Not.Null);
+            Assert.That(ctx.Result, Is.EqualTo(token1));
+        };
+
+        var token2 = await api1.GetBearerToken();
+        Assert.That(token1, Is.EqualTo(token2));
+
+        Assert.That(before1, Is.True);
+        Assert.That(after1, Is.True);
     }
 
     [Test]

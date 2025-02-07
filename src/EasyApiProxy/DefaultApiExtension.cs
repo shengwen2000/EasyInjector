@@ -47,7 +47,7 @@ namespace EasyApiProxys
                 DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat,
                 DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Unspecified,
                 //ContractResolver = new DefaultContractResolver()
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),               
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
             };
 
             var dateConverter = new Newtonsoft.Json.Converters.IsoDateTimeConverter
@@ -68,13 +68,15 @@ namespace EasyApiProxys
         /// <param name="defaltTimeoutSeconds">預設逾時秒數</param>
         static public ApiProxyBuilder UseDefaultApiProtocol(this ApiProxyBuilder builder, string baseUrl, int defaltTimeoutSeconds = 15)
         {
-            var hander = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);           
+            var handler = new DefaultApiHandler(builder.Options.Step2, builder.Options.Step3);
+            builder.Options.Handlers.Add(handler);
 
             builder.Options.GetJsonSerializer = () => DefaultJsonSerializer;
-            builder.Options.Step2 = hander.Step2;
-            builder.Options.Step3 = hander.Step3;
+            builder.Options.Step2 = handler.Step2;
+            builder.Options.Step3 = handler.Step3;
             builder.Options.BaseUrl = baseUrl;
             builder.Options.DefaultTimeout = TimeSpan.FromSeconds(defaltTimeoutSeconds);
+
             return builder;
         }
 
@@ -84,7 +86,7 @@ namespace EasyApiProxys
             private const string RESULT_IM = "IM";
             private const string RESULT_NON_DEFAULT_API_RESULT = "NON_DEFAULT_API_RESULT";
 
-            Func<StepContext,Task> _step2;
+            Func<StepContext, Task> _step2;
             Func<StepContext, Task> _step3;
 
             public DefaultApiHandler(
@@ -102,7 +104,7 @@ namespace EasyApiProxys
 
                 var req = step.Request;
                 var _options = step.BuilderOptions;
-             
+
                 req.Method = HttpMethod.Post;
 
                 // 方法的第一個參數 會當成Json內容進行傳送
@@ -113,7 +115,7 @@ namespace EasyApiProxys
                         _options.GetJsonSerializer().Serialize(sw, step.Invocation.Arguments[0]);
                         req.Content = new StringContent(sw.ToString(), Encoding.UTF8, "application/json");
                     }
-                }                
+                }
             }
 
             public async Task Step3(StepContext step)

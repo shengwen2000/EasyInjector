@@ -26,6 +26,9 @@ namespace EasyApiProxys
         /// </summary>
         public IApiProxyFactory<TAPI> Build<TAPI>() where TAPI : class
         {
+            // 預設最後套用 InstanceCall Handler
+            InstanceCallExtension.UseInstanceCallHandler(this);
+
             return new ApiProxyFactory<TAPI>(Options);
         }
     }

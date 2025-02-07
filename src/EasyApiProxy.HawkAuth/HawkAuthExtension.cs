@@ -17,8 +17,10 @@ namespace EasyApiProxys
         /// <param name="credential">Hawk憑證</param>
         static public ApiProxyBuilder UseHawkAuthorize(this ApiProxyBuilder builder, HawkCredential credential)
         {
-            var hander = new MethodHandler(credential, builder.Options.GetHttpMessageHandler);
-            builder.Options.GetHttpMessageHandler = hander.GetHandler;         
+            var handler = new MethodHandler(credential, builder.Options.GetHttpMessageHandler);
+            builder.Options.Handlers.Add(handler);
+            builder.Options.GetHttpMessageHandler = handler.GetHandler;            
+
             return builder;
         }
 
