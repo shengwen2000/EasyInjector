@@ -60,14 +60,14 @@ namespace KmuApps
                 // use attibute routes
                 config.MapHttpAttributeRoutes();
 
-                // json serialize setting
-                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
-
                 config.Routes.MapHttpRoute(
-                    name: "DefaultApi",
-                    routeTemplate: "api/{controller}/{action}/{id}",
-                    defaults: new { id = RouteParameter.Optional }
+                   name: "DefaultApi",
+                   routeTemplate: "api/{controller}/{action}/{id}",
+                   defaults: new { id = RouteParameter.Optional }
                 );
+
+                // json serialize setting
+                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;               
 
                 //use webapi
                 app.UseWebApi(config);

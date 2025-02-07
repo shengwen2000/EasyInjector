@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using EasyApiProxys;
 using EasyApiProxys.DemoApis;
@@ -195,6 +196,32 @@ public class DefaultApiTest : BaseTest
         Assert.That(before1, Is.True);
         Assert.That(after1, Is.True);
     }
+
+    [Test]
+        public void DefaultApiTest005_ApiException()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
+                .Build<IDemoApi>();
+            var proxy1 = factory.Create();
+            var api1 = proxy1.Api;
+            var data1 = new { a = 123, b = "abc" };
+            var req1 = new DefaultApiResult {
+                Result = "DEMO1",
+                Message = "DEMO1MSG",
+                Data = data1
+            };
+            var ex1 = Assert.Catch<ApiCodeException>(() =>
+                api1.ThrowApiException(req1));
+
+            Assert.That(ex1.Code, Is.EqualTo(req1.Result));
+            Assert.That(ex1.Message, Is.EqualTo(req1.Message));
+            Assert.That(ex1.ErrorData, Is.Not.Null);
+            var data2 = (JsonElement)ex1!.ErrorData!;
+            // 這個因為使用不同的Json庫 所以有差異 .net framework 會得到匿名類別
+            Assert.That(data2.GetProperty("a").GetInt32() == data1.a, Is.True);
+            Assert.That(data2.GetProperty("b").GetString()== data1.b, Is.True);
+        }
 
     [Test]
     public void GetTypeName001()

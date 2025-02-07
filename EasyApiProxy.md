@@ -1,31 +1,42 @@
 ﻿# EasyApiProxy
 
 * 簡單的 Web Api 代理類別產生
-* 支援Hawk驗證
+* 支援Hawk驗證 與 BearerToken驗證
 * [Nuget Package Install](https://www.nuget.org/packages/EasyApiProxy/)
-* [詳細內容](./EasyApiProxy.md)
-* 提供 DefaultApi 實作支援 於套件 EasyApiProxy.WebApi
+* 提供 DefaultApi協定 實作支援 於套件 EasyApiProxy.WebApi
 * 提供 用戶端 Hawk驗證 於套件 EasyApiProxy.HawkAuth
 
 ## 呼叫範例
 ``` C#
     // 建立API 代理物件 Factory 必須重複使用 因為其實做包含一個專用的 HttpClient
-    // HttpClinet 微軟官方明確的說必須公用 否則回有tcp/ip資源不足的問題
+    // HttpClient 微軟官方明確的說必須公用 否則回有tcp/ip資源不足的問題
     var factory = new ApiProxyBuilder()
-        // 預設的Api Protocol 就是異常錯誤如何封裝的方式
+        // 套用 DefaultApi 通訊協議
         .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
         .Build<IDemoApi>();
 
 	// 建立代理物件
-	var proxy = factory.Create();
+	using (var proxy = factory.Create()) {
 
-    // 呼叫Api
-    var ret = await proxy.Login(new Login { Account = "david", Password = "123" });
+        var api = proxy.Api;
+
+        // 呼叫Api
+        var ret1 = await api.Login(new Login { Account = "david", Password = "123" });
+
+        // 傳遞Bearer Token 後續呼叫會自動帶上
+        proxy.SetBearer(ret1.Token);
+
+    }
+
+
 ```
+
+
 
 ## Api 介面定義
 ``` C#
-	// support async
+	// 展示Api 定義
+    // 注意 DefaultApi協定 輸入參數只能0或1個。
     public interface IDemoApi
     {
         Task<AccountInfo> Login(Login req);
@@ -38,13 +49,13 @@
     }
 ```
 
-## 後台實作範例
+## 後台實作範例 Microsoft.AspNet.WebApi.Owin
 - 參考套件 EasyApiProxy.WebApi 提供 DefaultApiResult 實作
 ``` C#
     /// <summary>
-    /// backendapi
+    /// 範例API
     /// </summary>
-    [DefaultApiResult]
+    [DefaultApiResult] // 套用DefaultApi 通訊封裝
     public partial class DemoApiController : ApiController, IDemoApi
     {
         [HttpPost]
@@ -84,6 +95,33 @@
             return "Demo Server";
         }
     }
+
+    // Startup 啟動規劃WebApi
+    public class Startup
+    {
+        public void Configuration(IAppBuilder app) {
+
+            var apiConfig = new System.Web.Http.HttpConfiguration();
+
+            // 啟用WebApi
+            {
+                // use attibute routes
+                config.MapHttpAttributeRoutes();
+
+                config.Routes.MapHttpRoute(
+                   name: "DefaultApi",
+                   routeTemplate: "api/{controller}/{action}/{id}",
+                   defaults: new { id = RouteParameter.Optional }
+                );
+
+                // 必須套用 DefaultApi Json 設定
+                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
+
+                //use webapi
+                app.UseWebApi(apiConfig);
+            }
+        }
+    }
 ```
 
 ## 用戶端啟用HAWK驗證
@@ -97,6 +135,7 @@
 
     // proxy factory
     var factory = new ApiProxyBuilder()
+        // 套用 DefaultApi 通訊協議
         .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
         // 啟用Hawk驗證
         .UseHawkAuthorize(credential)
@@ -104,28 +143,23 @@
 
 	// 建立代理物件
 	var proxy = factory.Create();
+    var api = proxy.Api;
 
     // 呼叫Api
-    var ret = await proxy.Login(new Login { Account = "david", Password = "123" });
+    var ret = await api.Login(new Login { Account = "david", Password = "123" });
 ```
 
-## 後台API端啟用HAWK驗證 範例
+## 後台API端啟用HAWK驗證 範例 Microsoft.AspNet.WebApi.Owin
 - 引用套件 HawkNet.Owin
 ``` C#
+    // Startup 啟動規劃WebApi 與 Hawk驗證
     public class Startup
     {
         public void Configuration(IAppBuilder app) {
 
             var apiConfig = new System.Web.Http.HttpConfiguration();
 
-             // use api 預設路由
-            apiConfig.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{action}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
-
-            // use hawk auth
+            // 啟用Hawk驗證
             {
                 var credential = new HawkCredential();
                 credential.Id = "API";
@@ -140,18 +174,31 @@
                     TimeskewInSeconds = 120
                 });
             }
+            // 啟用WebApi
+            {
+                // use attibute routes
+                config.MapHttpAttributeRoutes();
 
-            //use webapi
-            app.UseWebApi(apiConfig);
+                config.Routes.MapHttpRoute(
+                   name: "DefaultApi",
+                   routeTemplate: "api/{controller}/{action}/{id}",
+                   defaults: new { id = RouteParameter.Optional }
+                );
+
+                // 必須套用 DefaultApi Json 設定
+                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
+
+                //use webapi
+                app.UseWebApi(apiConfig);
+            }
         }
     }
 
-     /// <summary>
-    /// backendapi
+    /// <summary>
+    /// 範例API
     /// </summary>
-    [DefaultApiResult]
-    // 要求授權通過
-    [Authorize(Users="API")]
+    [DefaultApiResult] //套用DefaultApi 回傳格式
+    [Authorize(Users="API")] // 要求授權通過
     public partial class DemoApiController : ApiController, IDemoApi {
         ...
     }

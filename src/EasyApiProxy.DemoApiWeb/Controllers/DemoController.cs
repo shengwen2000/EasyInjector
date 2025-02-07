@@ -1,4 +1,5 @@
 ﻿
+using EasyApiProxys;
 using EasyApiProxys.DemoApis;
 using EasyApiProxys.WebApis;
 using System;
@@ -11,7 +12,7 @@ namespace KmuApps.Controllers
 {
     /// <summary>
     /// backendapi
-    /// </summary>
+    /// </summary>    
     [DefaultApiResult]
     public partial class DemoController : ApiController, IDemoApi
     {
@@ -106,6 +107,12 @@ namespace KmuApps.Controllers
             return Task.FromResult("");
         }
 
+        [HttpPost]
+        public void ThrowApiException(DefaultApiResult req)
+        {
+            throw new ApiCodeException(req.Result, req.Message, req.Data);
+        }
+
         /// <summary>
         /// 產生屬性驗證錯誤
         /// - thorw ValidationException
@@ -122,5 +129,7 @@ namespace KmuApps.Controllers
             else
                 throw new ApplicationException("theProp 必須選擇成員屬性");
         }
+
+        
     }
 }

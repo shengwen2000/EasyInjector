@@ -28,6 +28,8 @@ namespace EasyApiProxys.DemoApis
         Task<string> HawkApi();
 
         Task<string> GetBearerToken();
+
+        void ThrowApiException(DefaultApiResult req);
     }
 
     public class Login

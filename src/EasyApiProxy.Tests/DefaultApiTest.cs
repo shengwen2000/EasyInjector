@@ -186,32 +186,61 @@ namespace Tests
                 .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
                 .Build<IDemoApi>();
 
+            using (var proxy1 = factory.Create())
+            {
+                var api1 = proxy1.Api;
+
+                var token1 = "BEARERTOKEN1";
+                proxy1.SetBearer(token1);
+
+                bool before1 = false;
+                proxy1.BeforeHttpPost = ctx =>
+                {
+                    before1 = true;
+                    Assert.That(ctx.Request.Headers.Authorization.Scheme, Is.EqualTo("Bearer"));
+                    Assert.That(ctx.Request.Headers.Authorization.Parameter, Is.EqualTo(token1));
+                };
+
+                bool after1 = false;
+                proxy1.AfterHttpPost = ctx =>
+                {
+                    after1 = true;
+                    Assert.That(ctx.Response, Is.Not.Null);
+                    Assert.That(ctx.Result, Is.EqualTo(token1));
+                };
+
+                var token2 = await api1.GetBearerToken();
+                Assert.That(token1, Is.EqualTo(token2));
+
+                Assert.That(before1, Is.True);
+                Assert.That(after1, Is.True);
+            }            
+        }
+
+        [Test]
+        public void DefaultApiTest005_ApiException()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
+                .Build<IDemoApi>();
             var proxy1 = factory.Create();
             var api1 = proxy1.Api;
-
-            var token1 = "BEARERTOKEN1";
-            proxy1.SetBearer(token1);
-
-            bool before1 = false;
-            proxy1.BeforeHttpPost = ctx => {
-                before1 = true;
-                Assert.That(ctx.Request.Headers.Authorization.Scheme, Is.EqualTo("Bearer"));
-                Assert.That(ctx.Request.Headers.Authorization.Parameter, Is.EqualTo(token1));
+            var data1 = new { a = 123, b = "abc" };
+            var req1 = new DefaultApiResult { 
+                Result = "DEMO1",
+                Message = "DEMO1MSG",
+                Data = data1
             };
+            var ex1 = Assert.Catch<ApiCodeException>(() =>
+                api1.ThrowApiException(req1));
 
-            bool after1 = false;
-            proxy1.AfterHttpPost = ctx =>
-            {
-                after1 = true;
-                Assert.That(ctx.Response, Is.Not.Null);
-                Assert.That(ctx.Result, Is.EqualTo(token1));
-            };
+            Assert.That(ex1.Code, Is.EqualTo(req1.Result));
+            Assert.That(ex1.Message, Is.EqualTo(req1.Message));
+            Assert.That(ex1.ErrorData, Is.Not.Null);
+            dynamic a = ex1.ErrorData;
+            Assert.That(a.a == data1.a, Is.True);
+            Assert.That(a.b == data1.b, Is.True);
 
-            var token2 = await api1.GetBearerToken();
-            Assert.That(token1, Is.EqualTo(token2));
-
-            Assert.That(before1, Is.True);
-            Assert.That(after1, Is.True);
         }
 
     }

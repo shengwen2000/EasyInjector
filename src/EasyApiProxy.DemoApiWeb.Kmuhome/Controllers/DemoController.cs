@@ -1,4 +1,5 @@
-﻿using EasyApiProxys.DemoApis;
+﻿using EasyApiProxys;
+using EasyApiProxys.DemoApis;
 using EasyApiProxys.WebApis;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -105,6 +106,12 @@ namespace KmuApps.Controllers
             if (this.Request.Headers.Authorization != null && this.Request.Headers.Authorization.Scheme == "Bearer")
                 return Task.FromResult(this.Request.Headers.Authorization.Parameter);
             return Task.FromResult("");
+        }
+
+        [HttpPost]
+        public void ThrowApiException(DefaultApiResult req)
+        {
+            throw new ApiCodeException(req.Result, req.Message, req.Data);
         }
 
         /// <summary>

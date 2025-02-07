@@ -122,6 +122,12 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             return Task.FromResult("");
         }
 
+        [HttpPost]
+        public void ThrowApiException(DefaultApiResult req)
+        {
+            throw new ApiCodeException(req.Result, req.Message, req.Data);
+        }
+
          /// <summary>
         /// 產生屬性驗證錯誤
         /// - thorw ValidationException
