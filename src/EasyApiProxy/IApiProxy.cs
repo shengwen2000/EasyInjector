@@ -50,8 +50,14 @@ namespace EasyApiProxys
         private readonly ApiProxyInterceptor<TAPI> _interceptor;
         private bool disposed = false;
 
+        /// <summary>
+        /// Http Post 前攔截事件
+        /// </summary>
         public Action<StepContext> BeforeHttpPost { get; set; }
 
+        /// <summary>
+        /// Http Post 後攔截事件
+        /// </summary>
         public Action<StepContext> AfterHttpPost { get; set; }
 
         Func<string> _getBearerToken;

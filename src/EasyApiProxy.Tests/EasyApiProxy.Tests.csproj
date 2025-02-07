@@ -94,6 +94,7 @@
     <Compile Include="KmuhomeApiTest.cs" />
     <Compile Include="JsonTest.cs" />
     <Compile Include="AsyncTest.cs" />
+    <Compile Include="DITest.cs" />
     <Compile Include="NewTest.cs" />
     <Compile Include="DefaultApiTest.cs" />
     <Compile Include="BaseTest.cs" />
@@ -122,6 +123,10 @@
     <ProjectReference Include="..\EasyApiProxy\EasyApiProxy.csproj">
       <Project>{d9a14b19-f407-4312-b7e8-7ed6371b93bd}</Project>
       <Name>EasyApiProxy</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EasyInjector\EasyInjector.csproj">
+      <Project>{045a8f59-51ee-4d48-aad9-a02f3508899f}</Project>
+      <Name>EasyInjector</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />

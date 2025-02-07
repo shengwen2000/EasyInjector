@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyTitle>EasyApiProxys .net</AssemblyTitle>
-    <AssemblyVersion>4.0.0.0</AssemblyVersion>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
     <Company>shengwen2000</Company>
     <Description>WebApi 的快速代理類別</Description>
 
@@ -14,5 +14,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DocumentationFile>bin\Release\net8.0\EasyApiProxy.Core.XML</DocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+  </ItemGroup>
 
 </Project>

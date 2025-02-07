@@ -28,7 +28,7 @@ namespace EasyInjectors
         InstanceCaches _caches = new InstanceCaches();
 
         public EasyInjector()
-        {
+        {  
             
 #pragma warning disable 0618
             // add IFactory 服務

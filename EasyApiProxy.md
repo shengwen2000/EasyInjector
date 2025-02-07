@@ -204,3 +204,23 @@
     }
 
 ```
+
+## EasyInjector 整合
+``` C#
+    var injector = new EasyInjector();
+
+    new ApiProxyBuilder()
+        .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
+        // 建置整合到注入依賴
+        .Build<IDemoApi>(injector);
+
+    using (var scope = injector.CreateScope()) {
+
+        // 取得Proxy
+        var proxy1 = scope.ServiceProvider.GetRequiredService<IApiProxy<IDemoApi>>();
+
+        // 取得Api = proxy1.Api
+        var api1 = scope.ServiceProvider.GetRequiredService<IDemoApi>();
+    }
+
+```
