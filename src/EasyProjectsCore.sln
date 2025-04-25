@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyInjector.Core.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyApiProxy.DemoApiWeb.Core.Kmuhome", "EasyApiProxy.DemoApiWeb.Core.Kmuhome\EasyApiProxy.DemoApiWeb.Core.Kmuhome.csproj", "{70B04584-AF24-4806-A55C-C68A7BFBA46B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicAuth.AspNetCore", "BasicAuth.AspNetCore\BasicAuth.AspNetCore.csproj", "{F4A372B6-DE3B-4308-8DD4-6FCAEA6F75C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{70B04584-AF24-4806-A55C-C68A7BFBA46B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70B04584-AF24-4806-A55C-C68A7BFBA46B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70B04584-AF24-4806-A55C-C68A7BFBA46B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4A372B6-DE3B-4308-8DD4-6FCAEA6F75C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4A372B6-DE3B-4308-8DD4-6FCAEA6F75C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4A372B6-DE3B-4308-8DD4-6FCAEA6F75C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4A372B6-DE3B-4308-8DD4-6FCAEA6F75C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

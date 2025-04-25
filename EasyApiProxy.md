@@ -205,6 +205,90 @@
 
 ```
 
+## 用戶端啟用Basic驗證
+- 內建支援
+``` C#
+    // basic 證書
+    var credential = new BasicCredential
+    {
+        Account = "API",
+        PassCode = "XXXXXXXX",
+    };
+
+    // proxy factory
+    var factory = new ApiProxyBuilder()
+        // 套用 DefaultApi 通訊協議
+        .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
+        // 啟用Basic驗證
+        .UseBasicAuthorize(credential)
+        .Build<IDemoApi>();
+
+	// 建立代理物件
+	var proxy = factory.Create();
+    var api = proxy.Api;
+
+    // 呼叫Api
+    var ret = await api.Login(new Login { Account = "david", Password = "123" });
+```
+
+## 後台API端啟用Basic驗證 範例 Microsoft.AspNet.WebApi.Owin
+- 引用套件 Thinktecture.IdentityModel.Owin.BasicAuthentication
+``` C#
+    // Startup 啟動規劃WebApi 與 Hawk驗證
+    public class Startup
+    {
+        public void Configuration(IAppBuilder app) {
+
+            var apiConfig = new System.Web.Http.HttpConfiguration();
+
+            // 啟用Basic驗證
+            app.UseBasicAuthentication(new BasicAuthenticationOptions(
+                "DefaultApi",
+                async (user, secret) => await GetBasicUser(user, secret)));
+
+            // 啟用WebApi
+            {
+                // use attibute routes
+                config.MapHttpAttributeRoutes();
+
+                config.Routes.MapHttpRoute(
+                   name: "DefaultApi",
+                   routeTemplate: "api/{controller}/{action}/{id}",
+                   defaults: new { id = RouteParameter.Optional }
+                );
+
+                // 必須套用 DefaultApi Json 設定
+                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
+
+                //use webapi
+                app.UseWebApi(apiConfig);
+            }
+        }
+
+        async Task<IEnumerable<Claim>> GetBasicUser(string account, string secret)
+        {
+            await Task.FromResult(0);
+            if (account == "API" && secret == "XXXXXXXX")
+            {
+                var c1 = new Claim(ClaimTypes.Name, account);
+                return new Claim[] { c1};
+            }
+            else
+                return null;
+        }
+    }
+
+    /// <summary>
+    /// 範例API
+    /// </summary>
+    [DefaultApiResult] //套用DefaultApi 回傳格式
+    [Authorize(Users="API")] // 要求授權通過
+    public partial class DemoApiController : ApiController, IDemoApi {
+        ...
+    }
+
+```
+
 ## EasyInjector 整合
 ``` C#
     var injector = new EasyInjector();

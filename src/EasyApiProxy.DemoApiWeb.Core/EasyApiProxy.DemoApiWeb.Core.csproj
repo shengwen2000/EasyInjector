@@ -17,6 +17,7 @@
     <ProjectReference Include="..\EasyApiProxy.WebApi.Core\EasyApiProxy.WebApi.Core.csproj" />
     <ProjectReference Include="..\EasyApiProxy.DemoApi.Core\EasyApiProxy.DemoApi.Core.csproj" />
     <ProjectReference Include="..\HawkNet.AspNetCore\HawkNet.AspNetCore.csproj" />
+    <ProjectReference Include="..\BasicAuth.AspNetCore\BasicAuth.AspNetCore.csproj" />
   </ItemGroup>
 
 </Project>

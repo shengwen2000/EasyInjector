@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("EasyApiProxy.HawkAuth")]
-[assembly: AssemblyDescription("HttpClient 呼叫時使用 Hawk驗證")]
+[assembly: AssemblyDescription("WebApi 的快速代理類別 HAWK驗證")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Shengwen")]
+[assembly: AssemblyCompany("shengwen2000")]
 [assembly: AssemblyProduct("EasyApiProxy.HawkAuth")]
 [assembly: AssemblyCopyright("Copyright ©  2024")]
 [assembly: AssemblyTrademark("")]

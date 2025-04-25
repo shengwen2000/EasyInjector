@@ -21,3 +21,9 @@
 * 支援 asp.net core 8 提供 Hawk驗證。
 * [Nuget Package Install](https://www.nuget.org/packages/HawkNet.AspNetCore/)
 * [詳細內容](./HawkNet.AspNetCore.md)
+
+# BasicAuth.AspNetCore
+
+* 支援 asp.net core 8 提供 Basic驗證。
+* [Nuget Package Install](https://www.nuget.org/packages/BasicAuth.AspNetCore/)
+* [詳細內容](./BasicAuth.AspNetCore.md)

@@ -47,6 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiMethodAttribute.cs" />
+    <Compile Include="BasicAuth\BasicAuthExtension.cs" />
+    <Compile Include="BasicAuth\BasicClientMessageHandler.cs" />
+    <Compile Include="BasicAuth\BasicCredential.cs" />
     <Compile Include="IApiProxy.cs">
       <SubType>Code</SubType>
     </Compile>

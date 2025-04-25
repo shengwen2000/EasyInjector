@@ -1,4 +1,5 @@
 ﻿using EasyApiProxys;
+using EasyApiProxys.BasicAuth;
 using EasyApiProxys.DemoApis;
 using HawkNet;
 using Newtonsoft.Json.Linq;
@@ -116,6 +117,60 @@ namespace Tests
         }
 
         /// <summary>
+        /// Basic 驗證失敗
+        /// </summary>
+        /// <returns></returns>
+        [Test]
+        public async void DefaultApiTest002_NoBasic()
+        {
+            await Task.FromResult(0);
+            {
+                var factory = new ApiProxyBuilder()
+                    // Server 啟用Hawk驗證                    
+                    .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
+                    .Build<IDemoApi>();
+
+                var proxy1 = factory.Create();
+                var api1 = proxy1.Api;
+
+                // api exception
+                var ex = Assert.Catch<HttpRequestException>(() => api1.BasicApi()
+                    .GetAwaiter().GetResult());
+                Assert.That(ex.Message, Is.StringContaining("401"));
+            }
+        }
+
+        /// <summary>
+        /// Basic 驗證
+        /// </summary>
+        /// <returns></returns>
+        [Test]
+        public async void DefaultApiTest002_Basic()
+        {
+            await Task.FromResult(0);
+
+            var credential = new BasicCredential
+            {
+                Account = "admin",
+                PassCode = "admin1234",
+            };
+
+            {
+                var factory = new ApiProxyBuilder()
+                    // Server 啟用Basic驗證                    
+                    .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
+                    .UseBasicAuthorize(credential)
+                    .Build<IDemoApi>();
+
+                var proxy1 = factory.Create();
+                var api1 = proxy1.Api;
+
+                var ret1 = await api1.BasicApi();
+                Assert.AreEqual(ret1, "basic api ok");
+            }
+        }      
+
+        /// <summary>
         /// 指定 Mehtod 與 Timeout
         /// </summary>
         /// <returns></returns>
@@ -134,6 +189,8 @@ namespace Tests
             Assert.Catch<Exception>(() => api1.RunProc(new ProcInfo { ProcSeconds = 10 })
                 .GetAwaiter().GetResult());
         }
+
+
 
         /// <summary>
         /// Invalidate Model

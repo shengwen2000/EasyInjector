@@ -1,6 +1,6 @@
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using EasyApiProxys;
+using EasyApiProxys.BasicAuth;
 using EasyApiProxys.DemoApis;
 using HawkNet;
 
@@ -95,6 +95,53 @@ public class KmuhomeApiTest : BaseTest
             var api1 = proxy1.Api;
             var ret1 = await api1.HawkApi();
             Assert.That(ret1, Is.EqualTo("hawk api ok"));
+        }
+    }
+
+    /// <summary>
+    /// Basic 驗證失敗
+    /// </summary>
+    [Test, Apartment(ApartmentState.STA)]
+    public async Task KmuhomeApiTest002_NoBasic()
+    {
+        await Task.FromResult(0);
+        // 沒有 Basic驗證
+        {
+            var factory = new ApiProxyBuilder()
+                .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 60)
+                .Build<IDemoApi>();
+            var proxy1 = factory.Create();
+            var api1 = proxy1.Api;
+
+            var ex = Assert.CatchAsync<HttpRequestException>(api1.BasicApi);
+            Assert.That(ex.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.Unauthorized));
+        }
+    }
+
+    /// <summary>
+    /// Basic 驗證
+    /// </summary>
+    /// <returns></returns>
+    [Test, Apartment(ApartmentState.STA)]
+    public async Task KmuhomeApiTest002_Basic()
+    {
+        var credential = new BasicCredential
+        {
+            Account = "admin",
+            PassCode = "admin1234"
+        };
+
+        // 啟用Basic驗證
+        {
+            var factory = new ApiProxyBuilder()
+                .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 30)
+                .UseBasicAuthorize(credential)
+                .Build<IDemoApi>();
+
+            var proxy1 = factory.Create();
+            var api1 = proxy1.Api;
+            var ret1 = await api1.BasicApi();
+            Assert.That(ret1, Is.EqualTo("basic api ok"));
         }
     }
 

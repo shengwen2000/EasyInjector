@@ -116,6 +116,7 @@
 			],
 			"problemMatcher": "$msCompile"
 		},
+
 		{
 			"label": "hawknet/nuget",
 			"type": "process",
@@ -126,6 +127,40 @@
 			"problemMatcher": "$msCompile",
 			"options": {
 				"cwd": "${workspaceFolder}/src/HawkNet.AspNetCore"
+			},
+			"args": [
+				"pack",
+				"Nuget.nuspec",
+				"-OutputDirectory",
+				"../../nugets"
+			]
+		},
+
+		{
+			"label": "basicAuth/publish",
+			"type": "process",
+			"command": "dotnet",
+			"options": {
+				"cwd": "${workspaceFolder}/src/BasicAuth.AspNetCore"
+			},
+			"args": [
+				"publish",
+				"-c",
+				"Release"
+			],
+			"problemMatcher": "$msCompile"
+		},
+
+		{
+			"label": "basicAuth/nuget",
+			"type": "process",
+			"command": "nuget.exe",
+			"dependsOn": [
+				"basicAuth/publish"
+			],
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/BasicAuth.AspNetCore"
 			},
 			"args": [
 				"pack",

@@ -111,6 +111,14 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             return "hawk api ok";
         }
 
+        [Authorize(AuthenticationSchemes = "Basic", Roles = "Admins")]
+        [HttpPost]
+        public async Task<string> BasicApi()
+        {
+            await Task.FromResult(0);
+            return "basic api ok";
+        }
+
         [HttpPost]
         public Task<string> GetBearerToken()
         {

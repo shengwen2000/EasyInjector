@@ -21,9 +21,24 @@ builder.Services.AddAuthentication()
             User = "Admin",
             Roles = ["Admins"]
         });
-
         // 也可以自行實作取得證書方法
         //opt.GetCredentialFunc = (id) => Task.FromResult(new HawkNet.AspNetCore.HawkCredential());
+    })
+    // 註冊 Basic 驗證
+    .AddBasicAuthorize(opt =>
+    {
+        // 設定證書
+        opt.Credentials.Add(new BasicAuth.AspNetCore.BasicCredential
+        {
+            Account = "admin",
+            PassCode = "admin1234",
+            User = "Admin",
+            Roles = [ "Admins" ]
+        });
+
+        // 也可以自行實作取得證書方法
+        //opt.GetCredentialFunc = (acct) => Task.FromResult(new BasicAuth.AspNetCore.BasicCredential());
+
     });
 
 builder.Services.AddControllers()

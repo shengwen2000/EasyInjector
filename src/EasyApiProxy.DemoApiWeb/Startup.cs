@@ -7,8 +7,11 @@ using KmuApps.Services;
 using Microsoft.Owin.Cors;
 using Microsoft.Owin.Logging;
 using Owin;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Thinktecture.IdentityModel.Owin;
 //[assembly: OwinStartup(typeof(KMUH.ServiceDiagTool.UI.MVC.Startup))]
 
 namespace KmuApps
@@ -51,6 +54,11 @@ namespace KmuApps
                 TimeskewInSeconds = 60
             });
 
+            // basic authroize
+            app.UseBasicAuthentication(new BasicAuthenticationOptions(
+                "DefaultApi", 
+                async (user, secret) => await GetBasicUser(user, secret)));
+
             // webapi register
             {
                 var config = new System.Web.Http.HttpConfiguration();
@@ -84,6 +92,18 @@ namespace KmuApps
             if (userId == _admin.Id)
                 return _admin;
             return null;
+        }
+
+        async Task<IEnumerable<Claim>> GetBasicUser(string account, string secret)
+        {
+            await Task.FromResult(0);
+            if (account == "admin" && secret == "admin1234")
+            {
+                var c1 = new Claim(ClaimTypes.Name, "Admin");               
+                return new Claim[] { c1};
+            }
+            else
+                return null;           
         }
     }
 }
