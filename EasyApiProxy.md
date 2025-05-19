@@ -31,6 +31,23 @@
 
 ```
 
+## 呼叫範例 整合 .net core
+``` C#
+   var services = new ServiceCollection();
+   services.AddDefaultApiProxy<IDemoApi>("http://localhost:5249/api/Demo",
+        configApiAction: builder =>
+        builder.UseBasicAuthorize(new BasicCredential
+        {
+            Account = "admin",
+            PassCode = "admin1234"
+        }));
+
+    var provider = services.BuildServiceProvider();
+    using var scope = provider.CreateScope();
+    var proxy1 = scope.ServiceProvider.GetRequiredService<IApiProxy<IDemoApi>>();
+    var api1 = scope.ServiceProvider.GetRequiredService<IDemoApi>();
+```
+
 
 
 ## Api 介面定義

@@ -3,6 +3,7 @@ using EasyApiProxys;
 using EasyApiProxys.BasicAuth;
 using EasyApiProxys.DemoApis;
 using HawkNet;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests;
 
@@ -243,6 +244,30 @@ public class KmuhomeApiTest : BaseTest
 
         Assert.That(before1, Is.True);
         Assert.That(after1, Is.True);
+    }
+
+     [Test]
+    public void AddApiTest()
+    {
+        var services = new ServiceCollection();
+
+        services.AddKmuhomeApiProxy<IDemoApi>("http://localhost:5249/api/Demo",
+            configApiAction: builder =>
+            builder.UseBasicAuthorize(new BasicCredential
+            {
+                Account = "admin",
+                PassCode = "admin1234"
+            }));
+
+        var provider = services.BuildServiceProvider();
+        var factory = provider.GetRequiredService<IApiProxyFactory<IDemoApi>>();
+        Assert.That(factory, Is.Not.Null);
+
+        using var scope = provider.CreateScope();
+        var proxy1 = scope.ServiceProvider.GetRequiredService<IApiProxy<IDemoApi>>();
+        var api1 = scope.ServiceProvider.GetRequiredService<IDemoApi>();
+        Assert.That(proxy1, Is.Not.Null);
+        Assert.That(api1, Is.Not.Null);
     }
 
     [Test]
