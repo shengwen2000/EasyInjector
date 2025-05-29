@@ -293,13 +293,19 @@ public class DefaultApiTest : BaseTest
     {
         var services = new ServiceCollection();
 
-        services.AddDefaultApiProxy<IDemoApi>("http://localhost:5249/api/Demo",
-            configApiAction: builder =>
-            builder.UseBasicAuthorize(new BasicCredential
+        services.AddApiProxy<IDemoApi>(
+            configApiAction: (sp, builder) =>
             {
-                Account = "admin",
-                PassCode = "admin1234"
-            }));
+                // 設定 ApiProxy 的預設協定
+                builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo",
+                    defaltTimeoutSeconds: 30);
+                // 設定 Basic 驗證
+                builder.UseBasicAuthorize(new BasicCredential
+                {
+                    Account = "admin",
+                    PassCode = "admin1234"
+                });
+            });
 
         var provider = services.BuildServiceProvider();
         var factory = provider.GetRequiredService<IApiProxyFactory<IDemoApi>>();

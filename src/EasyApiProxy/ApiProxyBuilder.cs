@@ -1,5 +1,4 @@
-﻿using EasyInjectors;
-
+﻿
 namespace EasyApiProxys
 {
     /// <summary>
@@ -29,30 +28,14 @@ namespace EasyApiProxys
         /// - 可以取得Singleton服務 IApiProxyFactory(TAPI)
         /// - 可以取得Scope服務 IApiProxy(TAPI)
         /// - 可以取得Scope服務 TAPI
-        /// </summary>
-        /// <param name="easyInjector">如果要註冊到EasyInjector的話傳入此參數</param>
-        public IApiProxyFactory<TAPI> Build<TAPI>(EasyInjector easyInjector = null) where TAPI : class
+        /// </summary>      
+        public IApiProxyFactory<TAPI> Build<TAPI>() where TAPI : class
         {
             // 預設最後套用 InstanceCall Handler
             InstanceCallExtension.UseInstanceCallHandler(this);
 
             var factory = new ApiProxyFactory<TAPI>(Options);
-
-            // 需要整合注入依賴的話
-            if (easyInjector != null)
-                RegisterService(easyInjector, factory);
-
             return factory;
-        }
-
-        /// <summary>
-        /// 整合EasyInjector注入依賴的話
-        /// </summary>
-        private static void RegisterService<TAPI>(EasyInjector injector, ApiProxyFactory<TAPI> factory) where TAPI : class
-        {
-            injector.AddSingleton<IApiProxyFactory<TAPI>>(sp => factory);
-            injector.AddScoped<IApiProxy<TAPI>>(sp => sp.GetRequiredService<IApiProxyFactory<TAPI>>().Create());
-            injector.AddScoped<TAPI>(sp => sp.GetRequiredService<IApiProxy<TAPI>>().Api);
         }
     }
 }

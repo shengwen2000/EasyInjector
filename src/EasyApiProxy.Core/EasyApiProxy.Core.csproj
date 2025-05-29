@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyTitle>EasyApiProxys .net</AssemblyTitle>
-    <AssemblyVersion>4.2.1.0</AssemblyVersion>
+    <AssemblyVersion>4.3.0.0</AssemblyVersion>
     <Company>shengwen2000</Company>
     <Description>WebApi 的快速代理類別</Description>
 

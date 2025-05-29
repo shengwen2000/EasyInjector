@@ -10,47 +10,38 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class SetupExtensions
 {
     /// <summary>
-    /// 加入 ApiProxy 使用 DefaultApi 協定
+    /// 加入 ApiProxy
     /// - 可以取得 Singleton 服務 IApiProxyFactory<TService>
     /// - 可以取得 Scoped 服務 IApiProxy<TService>
     /// - 可以取得 Scoped 服務 TService
     /// </summary>
-    static public IServiceCollection AddDefaultApiProxy<TService>(
+    static public IServiceCollection AddApiProxy<TService>(
         this IServiceCollection services,
-        string apiBaseUrl,
-        int timeoutSeconds = 30,
-        Action<ApiProxyBuilder>? configApiAction = null)
+        Action<IServiceProvider, ApiProxyBuilder> configApiAction
+      )
         where TService : class
     {
-        var builder = new ApiProxyBuilder()
-            .UseDefaultApiProtocol(apiBaseUrl, timeoutSeconds);
+        // 註冊 singleton factory
+        services.AddSingleton<IApiProxyFactory<TService>>(sp =>
+        {
+            var builder = new ApiProxyBuilder();
+            configApiAction(sp, builder);
+            return builder.Build<TService>();
+        });
 
-        configApiAction?.Invoke(builder);
+        // 註冊 scoped api proxy
+        services.AddScoped<IApiProxy<TService>>((sp) =>
+        {
+            var factory = sp.GetRequiredService<IApiProxyFactory<TService>>();
+            return factory.Create();
+        });
 
-        builder.Build<TService>(services);
+        // 註冊 scoped api proxy
+        services.AddScoped<TService>((sp) =>
+        {
+            var proxy = sp.GetRequiredService<IApiProxy<TService>>();
+            return proxy.Api;
+        });
         return services;
     }
-
-    /// <summary>
-    /// 加入 ApiProxy 使用 KmuhomeApi 協定
-    /// - 可以取得 Singleton 服務 IApiProxyFactory<TService>
-    /// - 可以取得 Scoped 服務 IApiProxy<TService>
-    /// - 可以取得 Scoped 服務 TService
-    /// </summary>
-    static public IServiceCollection AddKmuhomeApiProxy<TService>(
-        this IServiceCollection services,
-        string apiBaseUrl,
-        int timeoutSeconds = 30,
-        Action<ApiProxyBuilder>? configApiAction = null)
-        where TService : class
-    {
-        var builder = new ApiProxyBuilder()
-            .UseKmuhomeApiProtocol(apiBaseUrl, timeoutSeconds);
-
-        configApiAction?.Invoke(builder);
-
-        builder.Build<TService>(services);
-        return services;
-    }
-
 }

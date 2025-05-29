@@ -246,18 +246,21 @@ public class KmuhomeApiTest : BaseTest
         Assert.That(after1, Is.True);
     }
 
-     [Test]
+    [Test]
     public void AddApiTest()
     {
         var services = new ServiceCollection();
 
-        services.AddKmuhomeApiProxy<IDemoApi>("http://localhost:5249/api/Demo",
-            configApiAction: builder =>
-            builder.UseBasicAuthorize(new BasicCredential
-            {
-                Account = "admin",
-                PassCode = "admin1234"
-            }));
+        services.AddApiProxy<IDemoApi>((sp, builder) =>
+        {
+            builder
+                .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo")
+                .UseBasicAuthorize(new BasicCredential
+                {
+                    Account = "admin",
+                    PassCode = "admin1234"
+                });
+        });
 
         var provider = services.BuildServiceProvider();
         var factory = provider.GetRequiredService<IApiProxyFactory<IDemoApi>>();

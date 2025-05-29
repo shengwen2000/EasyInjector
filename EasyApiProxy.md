@@ -34,13 +34,19 @@
 ## 呼叫範例 整合 .net core
 ``` C#
    var services = new ServiceCollection();
-   services.AddDefaultApiProxy<IDemoApi>("http://localhost:5249/api/Demo",
-        configApiAction: builder =>
-        builder.UseBasicAuthorize(new BasicCredential
+   services.AddApiProxy<IDemoApi>(
+        configApiAction: (sp, builder) =>
         {
-            Account = "admin",
-            PassCode = "admin1234"
-        }));
+            // 設定 ApiProxy 的預設協定
+            builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo",
+                defaltTimeoutSeconds: 30);
+            // 設定 Basic 驗證
+            builder.UseBasicAuthorize(new BasicCredential
+            {
+                Account = "admin",
+                PassCode = "admin1234"
+            });
+        });
 
     var provider = services.BuildServiceProvider();
     using var scope = provider.CreateScope();
@@ -310,10 +316,9 @@
 ``` C#
     var injector = new EasyInjector();
 
-    new ApiProxyBuilder()
-        .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
-        // 建置整合到注入依賴
-        .Build<IDemoApi>(injector);
+    // 建置整合到注入依賴
+    injector.AddApiProxy<IDemoApi>((sp, builder) =>
+        builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo"));
 
     using (var scope = injector.CreateScope()) {
 

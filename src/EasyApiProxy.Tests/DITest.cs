@@ -18,10 +18,9 @@ namespace Tests
         {
             var injector = new EasyInjector();
 
-            new ApiProxyBuilder()
-                .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
-                // 建置整合到注入依賴
-                .Build<IDemoApi>(injector);
+            // 建置整合到注入依賴
+            injector.AddApiProxy<IDemoApi>((sp, builder) => 
+                builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo"));
 
             var factory1 = injector.GetRequiredService<IApiProxyFactory<IDemoApi>>();
             Assert.That(factory1, Is.Not.Null);

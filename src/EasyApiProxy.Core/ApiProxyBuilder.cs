@@ -37,29 +37,14 @@ namespace EasyApiProxys
         /// - 可以取得Scope服務 IApiProxy(TAPI)
         /// - 可以取得Scope服務 TAPI
         /// </summary>
-        /// <param name="services">如果要註冊到注入依賴服務傳入此參數</param>
-        public IApiProxyFactory<TAPI> Build<TAPI>(IServiceCollection? services = null) where TAPI : class
+        public IApiProxyFactory<TAPI> Build<TAPI>() where TAPI : class
         {
             // 預設最後套用 InstanceCall Handler
             InstanceCallExtension.UseInstanceCallHandler(this);
 
             var factory = new ApiProxyFactory<TAPI>(Options);
 
-            // 需要整合注入依賴的話
-            if (services != null)
-                RegisterService(services, factory);
-
             return factory;
-        }
-
-        /// <summary>
-        /// 整合注入依賴的話
-        /// </summary>
-        private static void RegisterService<TAPI>(IServiceCollection services, ApiProxyFactory<TAPI> factory) where TAPI : class
-        {
-            services.AddSingleton<IApiProxyFactory<TAPI>>(sp => factory);
-            services.AddScoped<IApiProxy<TAPI>>(sp => sp.GetRequiredService<IApiProxyFactory<TAPI>>().Create());
-            services.AddScoped<TAPI>(sp => sp.GetRequiredService<IApiProxy<TAPI>>().Api);
         }
     }
 }

@@ -15,10 +15,13 @@ public class DITest : BaseTest
     {
         var services = new ServiceCollection();
 
-        new ApiProxyBuilder()
-            .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
-            // 建置整合到注入依賴
-            .Build<IDemoApi>(services);
+        services.AddApiProxy<IDemoApi>((sp, builder) =>
+        {
+            // 設定 ApiProxy 的選項
+            builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo");
+            // 可以設定其他選項
+            // builder.Options.Timeout = TimeSpan.FromSeconds(10);
+        });
 
         using var injector = services.BuildServiceProvider();
         var factory1 = injector.GetRequiredService<IApiProxyFactory<IDemoApi>>();
