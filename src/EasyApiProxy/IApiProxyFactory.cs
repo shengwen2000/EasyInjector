@@ -14,7 +14,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立Proxy實例
         /// </summary>
-        IApiProxy<TAPI> Create();
+        IApiProxy<TAPI> Create(IServiceProvider sp);
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立Proxy實例
         /// </summary>
-        public IApiProxy<TAPI> Create()
+        public IApiProxy<TAPI> Create(IServiceProvider sp)
         {
             var generator = new ProxyGenerator();
             var inteceptor1 = new ApiProxyInterceptor<TAPI>(_http, _options);

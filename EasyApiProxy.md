@@ -254,6 +254,19 @@
     var ret = await api.Login(new Login { Account = "david", Password = "123" });
 ```
 
+## 用戶端啟用驗證(直接指定Http Authroization Header)
+- 內建支援
+``` C#   
+
+    // proxy factory
+    var factory = new ApiProxyBuilder()
+        // 套用 DefaultApi 通訊協議
+        .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
+        // 直接指定Http Authroization Header(Basic驗證)
+        .UseAuthorizationHeader("Basic YWRtaW46YWRtaW4xMjM0")
+        .Build<IDemoApi>();
+```
+
 ## 後台API端啟用Basic驗證 範例 Microsoft.AspNet.WebApi.Owin
 - 引用套件 Thinktecture.IdentityModel.Owin.BasicAuthentication
 ``` C#
@@ -329,4 +342,21 @@
         var api1 = scope.ServiceProvider.GetRequiredService<IDemoApi>();
     }
 
+```
+
+
+## 服務遠端或本地 (依據選項)
+``` C#
+    var injector = new EasyInjector();
+
+    // 建置整合到注入依賴
+    injector.AddApiProxy<IDemoApi>((sp, builder) => {
+		var opt = sp.GetRequiredService<DemoOpt>();
+		// 選項沒有Url代表使用本地服務
+		if (opt.ApiUrl == null)
+			builder.UseLocalApi<IDemoApi>(sp => new DempApiLocal())
+		// 否則使用遠端服務
+		else
+			builder.UseDefaultApiProtocol(opt.ApiUrl);
+	});
 ```

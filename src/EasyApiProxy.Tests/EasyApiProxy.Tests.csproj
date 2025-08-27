@@ -91,6 +91,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LocalApiTest.cs" />
     <Compile Include="KmuhomeApiTest.cs" />
     <Compile Include="JsonTest.cs" />
     <Compile Include="AsyncTest.cs" />

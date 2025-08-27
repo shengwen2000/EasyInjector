@@ -30,7 +30,7 @@ namespace Tests
                 .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo")
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null);
             var api1 = proxy1.Api;
 
             var srvInfo = api1.GetServerInfo();
@@ -74,7 +74,7 @@ namespace Tests
                     .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo")
                     .Build<IDemoApi>();
 
-                var proxy1 = factory.Create();
+                var proxy1 = factory.Create(null);
                 var api1 = proxy1.Api;
 
                 // api exception
@@ -108,7 +108,7 @@ namespace Tests
                     .UseHawkAuthorize(credential)
                     .Build<IDemoApi>();
 
-                var proxy1 = factory.Create();
+                var proxy1 = factory.Create(null);
                 var api1 = proxy1.Api;
 
                 var ret1 = await api1.HawkApi();
@@ -130,7 +130,7 @@ namespace Tests
                     .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo")
                     .Build<IDemoApi>();
 
-                var proxy1 = factory.Create();
+                var proxy1 = factory.Create(null);
                 var api1 = proxy1.Api;
 
                 // api exception
@@ -162,7 +162,7 @@ namespace Tests
                     .UseBasicAuthorize(credential)
                     .Build<IDemoApi>();
 
-                var proxy1 = factory.Create();
+                var proxy1 = factory.Create(null);
                 var api1 = proxy1.Api;
 
                 var ret1 = await api1.BasicApi();
@@ -181,7 +181,7 @@ namespace Tests
                 .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null);
             var api1 = proxy1.Api;
 
             var msg1 = await api1.RunProc(new ProcInfo { ProcSeconds = 2 });
@@ -202,7 +202,7 @@ namespace Tests
                 .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null);
             var api1 = proxy1.Api;
 
             // 觸發 IM Exception
@@ -224,7 +224,7 @@ namespace Tests
                 .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null);
             var api1 = proxy1.Api;
 
             var ex = Assert.Catch<ApiCodeException>(() => api1.RaiseValidateError()
@@ -244,7 +244,7 @@ namespace Tests
                 .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null);
             var api1 = proxy1.Api;
 
             var token1 = "BEARERTOKEN1";

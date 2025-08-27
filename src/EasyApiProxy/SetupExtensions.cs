@@ -37,7 +37,7 @@ namespace EasyApiProxys
             injector.AddScoped<IApiProxy<TService>>(sp =>
             {
                 var factory = sp.GetRequiredService<IApiProxyFactory<TService>>();
-                return factory.Create();
+                return factory.Create(sp);
             });
 
             // 註冊 scoped api proxy

@@ -60,7 +60,7 @@ namespace EasyApiProxys
         /// </summary>
         public List<object> Handlers { get; set; }
 
-        JsonSerializer _serializer = new JsonSerializer();
+        JsonSerializer _serializer = new JsonSerializer();        
 
         /// <summary>
         /// Api Proxy 建立選項
