@@ -20,7 +20,7 @@ public class DefaultApiTest : BaseTest
               .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
               .Build<IDemoApi>();
 
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         var srvInfo = api1.GetServerInfo();
@@ -63,7 +63,7 @@ public class DefaultApiTest : BaseTest
             var factory = new ApiProxyBuilder()
                 .UseDefaultApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 60)
                 .Build<IDemoApi>();
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
 
             var ex = Assert.CatchAsync<HttpRequestException>(api1.HawkApi);
@@ -93,7 +93,7 @@ public class DefaultApiTest : BaseTest
                 .UseHawkAuthorize(credential)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
             var ret1 = await api1.HawkApi();
             Assert.That(ret1, Is.EqualTo("hawk api ok"));
@@ -112,7 +112,7 @@ public class DefaultApiTest : BaseTest
             var factory = new ApiProxyBuilder()
                 .UseDefaultApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 60)
                 .Build<IDemoApi>();
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
 
             var ex = Assert.CatchAsync<HttpRequestException>(api1.BasicApi);
@@ -140,8 +140,32 @@ public class DefaultApiTest : BaseTest
                 .UseBasicAuthorize(credential)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
+            var ret1 = await api1.BasicApi();
+            Assert.That(ret1, Is.EqualTo("basic api ok"));
+        }
+    }
+
+    /// <summary>
+    /// Basic 驗證
+    /// </summary>
+    /// <returns></returns>
+    [Test, Apartment(ApartmentState.STA)]
+    public async Task DefaultApiTest002_AuthHeader()
+    {
+        await Task.FromResult(0);
+
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
+                // Server 直接使用 Basic驗證 Header admin:admin1234
+                .UseAuthorizationHeader("Basic YWRtaW46YWRtaW4xMjM0")
+                .Build<IDemoApi>();
+
+            var proxy1 = factory.Create(null!);
+            var api1 = proxy1.Api;
+
             var ret1 = await api1.BasicApi();
             Assert.That(ret1, Is.EqualTo("basic api ok"));
         }
@@ -157,7 +181,7 @@ public class DefaultApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         // RunProc 被指定 5秒Timout
@@ -179,7 +203,7 @@ public class DefaultApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         // 觸發 IM Exception
@@ -198,7 +222,7 @@ public class DefaultApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
         var ex = Assert.CatchAsync<ApiCodeException>(api1.RaiseValidateError)
             ?? throw new NullReferenceException();
@@ -217,7 +241,7 @@ public class DefaultApiTest : BaseTest
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
 
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         var token1 = "BEARERTOKEN1";
@@ -252,7 +276,7 @@ public class DefaultApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseDefaultApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
         var data1 = new { a = 123, b = "abc" };
         var req1 = new DefaultApiResult

@@ -19,7 +19,7 @@ public class KmuhomeApiTest : BaseTest
             .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo")
             .Build<IDemoApi>();
 
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         var srvInfo = api1.GetServerInfo();
@@ -62,7 +62,7 @@ public class KmuhomeApiTest : BaseTest
             var factory = new ApiProxyBuilder()
                 .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 60)
                 .Build<IDemoApi>();
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
 
             var ex = Assert.CatchAsync<HttpRequestException>(api1.HawkApi);
@@ -92,7 +92,7 @@ public class KmuhomeApiTest : BaseTest
                 .UseHawkAuthorize(credential)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
             var ret1 = await api1.HawkApi();
             Assert.That(ret1, Is.EqualTo("hawk api ok"));
@@ -111,7 +111,7 @@ public class KmuhomeApiTest : BaseTest
             var factory = new ApiProxyBuilder()
                 .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", defaltTimeoutSeconds: 60)
                 .Build<IDemoApi>();
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
 
             var ex = Assert.CatchAsync<HttpRequestException>(api1.BasicApi);
@@ -139,7 +139,7 @@ public class KmuhomeApiTest : BaseTest
                 .UseBasicAuthorize(credential)
                 .Build<IDemoApi>();
 
-            var proxy1 = factory.Create();
+            var proxy1 = factory.Create(null!);
             var api1 = proxy1.Api;
             var ret1 = await api1.BasicApi();
             Assert.That(ret1, Is.EqualTo("basic api ok"));
@@ -156,7 +156,7 @@ public class KmuhomeApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         // RunProc 被指定 5秒Timout
@@ -178,7 +178,7 @@ public class KmuhomeApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         // 觸發 IM Exception
@@ -197,7 +197,7 @@ public class KmuhomeApiTest : BaseTest
         var factory = new ApiProxyBuilder()
             .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         var ex = Assert.CatchAsync<ApiCodeException>(api1.RaiseValidateError)
@@ -217,7 +217,7 @@ public class KmuhomeApiTest : BaseTest
             .UseKmuhomeApiProtocol("http://localhost:5249/api/Demo", 20)
             .Build<IDemoApi>();
 
-        var proxy1 = factory.Create();
+        var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
         var token1 = "BEARERTOKEN1";

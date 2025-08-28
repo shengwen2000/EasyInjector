@@ -11,7 +11,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立Proxy實例
         /// </summary>
-        IApiProxy<TAPI> Create();
+        IApiProxy<TAPI> Create(IServiceProvider sp);
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ namespace EasyApiProxys
         /// <summary>
         /// 建立實例
         /// </summary>
-        public IApiProxy<TAPI> Create()
+        public IApiProxy<TAPI> Create(IServiceProvider sp)
         {
             var api = DispatchProxy.Create<TAPI, ApiProxyInterceptor<TAPI>>();
 
