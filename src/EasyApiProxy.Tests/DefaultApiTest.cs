@@ -58,6 +58,9 @@ namespace Tests
 
             Assert.AreEqual(ex.Message, "The Token Not exists");
 
+            var token1 = api1.GetTokenInfo();
+            Assert.That(token1 == null);
+
         }
 
         /// <summary>

@@ -16,6 +16,8 @@ namespace EasyApiProxys.DemoApis
 
         string GetServerInfo();
 
+        TokenInfo GetTokenInfo();
+
         [ApiMethod(Name = "RunProc_001", TimeoutSeconds=5)]
         Task<string> RunProc(ProcInfo info);
 

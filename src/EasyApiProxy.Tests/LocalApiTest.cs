@@ -127,6 +127,11 @@ namespace Tests
             {
                 throw new NotImplementedException();
             }
+
+            public TokenInfo GetTokenInfo()
+            {
+                throw new NotImplementedException();
+            }
         }        
 
     }

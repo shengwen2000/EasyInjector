@@ -154,6 +154,7 @@ namespace EasyApiProxys.WebApis
                     else
                     {
                         context.Response.Headers.Add(ResultHeader, RESULT_OK);
+                        context.Response.Content = null;
                     }
                 }
                 // 沒有內容

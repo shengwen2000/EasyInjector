@@ -138,6 +138,10 @@ namespace KmuApps.Controllers
                 throw new ApplicationException("theProp 必須選擇成員屬性");
         }
 
-        
+        [HttpPost]
+        public TokenInfo GetTokenInfo()
+        {
+            return null;
+        }
     }
 }
