@@ -40,6 +40,60 @@ namespace Tests
 
                 Assert.That(proxy1.Api, Is.EqualTo(api1));
             }
-        }       
+        }
+
+        [Test]
+        public void DITest002()
+        {
+            var injector = new EasyInjector();
+
+            // 建置整合到注入依賴
+            injector.AddApiProxyNamed<IDemoApi>((sp, builder, name) =>
+            {
+                if (name == "A")
+                {
+                    builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo/A");
+                }
+                else if (name == "B") {
+                    builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo/B");
+                }
+                else
+                    throw new System.NotSupportedException("Not Support Named Instance =" + name);
+            });            
+
+            var factory1 = injector.GetRequiredService<INamed<IApiProxyFactory<IDemoApi>>>().GetByName("A");
+            Assert.That(factory1 != null);
+            Assert.That(factory1.Options.BaseUrl == "http://localhost:5249/api/Demo/A");
+            
+            using (var scope = injector.CreateScope())
+            {
+                var srv1 = scope.ServiceProvider.GetRequiredService<INamed<IApiProxy<IDemoApi>>>()
+                    .GetByName("A");
+                Assert.That(srv1 != null);
+                Assert.That(srv1.Factory == factory1);                
+
+                var srv2 = scope.ServiceProvider.GetRequiredService<INamed<IDemoApi>>()
+                    .GetByName("A");
+                Assert.That(srv2 != null);
+            }
+
+            var factory2 = injector.GetRequiredService<INamed<IApiProxyFactory<IDemoApi>>>().GetByName("B");
+            Assert.That(factory2 != null);
+            Assert.That(factory2.Options.BaseUrl == "http://localhost:5249/api/Demo/B");
+
+            using (var scope = injector.CreateScope())
+            {
+                var srv1 = scope.ServiceProvider.GetRequiredService<INamed<IApiProxy<IDemoApi>>>()
+                   .GetByName("B");
+
+                Assert.That(srv1 != null);
+                Assert.That(srv1.Factory == factory2);            
+                var srv2 = scope.ServiceProvider.GetRequiredService<INamed<IDemoApi>>()
+                    .GetByName("B");
+                Assert.That(srv2 != null);
+            }
+
+            Assert.That(factory1 != factory2);            
+        }  
 	}
 }

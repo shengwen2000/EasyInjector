@@ -1,6 +1,5 @@
 ﻿using Castle.DynamicProxy;
 using System;
-using System.Collections;
 using System.Net.Http;
 
 namespace EasyApiProxys
@@ -15,6 +14,11 @@ namespace EasyApiProxys
         /// 建立Proxy實例
         /// </summary>
         IApiProxy<TAPI> Create(IServiceProvider sp);
+
+        /// <summary>
+        /// Factory 選項
+        /// </summary>
+        ApiProxyBuilderOptions Options { get;  }
     }
 
     /// <summary>
@@ -26,6 +30,14 @@ namespace EasyApiProxys
         private readonly ApiProxyBuilderOptions _options;
         private readonly HttpClient _http;
         private bool disposed = false;
+
+        /// <summary>
+        /// Builder 選項
+        /// </summary>
+        public ApiProxyBuilderOptions Options
+        {
+            get { return _options; }
+        }
 
         /// <summary>
         /// 建立Proxy實例
@@ -51,7 +63,7 @@ namespace EasyApiProxys
             var inteceptor1 = new ApiProxyInterceptor<TAPI>(_http, _options);
             var api = generator.CreateInterfaceProxyWithoutTarget<TAPI>(inteceptor1);
 
-            var proxy = new ApiProxy<TAPI>(inteceptor1, api);
+            var proxy = new ApiProxy<TAPI>(inteceptor1, api, this);
             return proxy;
         }
 
@@ -96,6 +108,9 @@ namespace EasyApiProxys
             {
             }
         }
+
+
+       
     }
 }
  

@@ -15,6 +15,12 @@ namespace EasyApiProxys
         where TAPI : class
     {
         /// <summary>
+        /// Factory 
+        /// - singleton 每一種Proxy 都有單一Factory
+        /// </summary>
+        IApiProxyFactory<TAPI> Factory { get; }
+
+        /// <summary>
         /// API的代理物件        
         /// </summary>
         TAPI Api { get; }
@@ -28,6 +34,16 @@ namespace EasyApiProxys
         /// 指定 BearerToken Provider
         /// </summary>        
         void SetBearerProvider(Func<string> getBearerToken);
+
+        /// <summary>
+        /// 指定 AuthorizationHeader
+        /// </summary>      
+        void SetAuthorization(string headerValue);
+
+        /// <summary>
+        /// 指定 AuthorizationHeader Provider
+        /// </summary>      
+        void SetAuthorizationProvider(Func<string> getHeaderValue);
 
         /// <summary>
         /// Http Post 前攔截事件
@@ -51,6 +67,11 @@ namespace EasyApiProxys
         private bool disposed = false;
 
         /// <summary>
+        /// Factory
+        /// </summary>
+        public IApiProxyFactory<TAPI> Factory { get; private set; }
+
+        /// <summary>
         /// Http Post 前攔截事件
         /// </summary>
         public Action<StepContext> BeforeHttpPost { get; set; }
@@ -60,17 +81,21 @@ namespace EasyApiProxys
         /// </summary>
         public Action<StepContext> AfterHttpPost { get; set; }
 
-        Func<string> _getBearerToken;
+        /// <summary>
+        /// 指定Auth Header        
+        /// </summary>
+        Func<string> _getAuthHeader;
 
         /// <summary>
         /// Api 代理物件
         /// </summary>       
-        public ApiProxy(ApiProxyInterceptor<TAPI> interceptor, TAPI api)
+        public ApiProxy(ApiProxyInterceptor<TAPI> interceptor, TAPI api, IApiProxyFactory<TAPI> factory)
         {
             _api = api;
             _interceptor = interceptor;
             _interceptor.InstanceItems["InstanceCall_Step2"] = new Func<StepContext, Task>(Step2InstanceCall);
             _interceptor.InstanceItems["InstanceCall_Step3"] = new Func<StepContext, Task>(Step3InstanceCall);
+            Factory = factory;
         }
 
         /// <summary>
@@ -107,8 +132,26 @@ namespace EasyApiProxys
         /// <param name="getToken"></param>
         public void SetBearerProvider(Func<string> getToken)
         {
-            _getBearerToken = getToken;
+            _getAuthHeader = () => "Bearer " + getToken();
 
+        }
+
+        /// <summary>
+        /// 指定 Auth Header
+        /// </summary>
+        /// <param name="headerValue">Authorization Header Value</param>
+        public void SetAuthorization(string headerValue)
+        {
+            SetAuthorizationProvider(() => headerValue);
+        }
+
+        /// <summary>
+        /// 指定 Auth Header Provider
+        /// </summary>
+        /// <param name="getHeaderValue">Authorization Header Value Provider</param>
+        public void SetAuthorizationProvider(Func<string> getHeaderValue)
+        {
+            _getAuthHeader = getHeaderValue;
         }
 
         /// <summary>
@@ -123,11 +166,11 @@ namespace EasyApiProxys
         async Task Step2InstanceCall(StepContext context)
         {
             await Task.FromResult(0);
-            if (_getBearerToken != null)
+            if (_getAuthHeader != null)
             {
-                var token = _getBearerToken();
-                if (token != null && string.IsNullOrEmpty(token) == false)
-                    context.Request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var headerValue = _getAuthHeader();
+                if (headerValue != null && string.IsNullOrEmpty(headerValue) == false)
+                    context.Request.Headers.Authorization = AuthenticationHeaderValue.Parse(headerValue);
             }
             if (BeforeHttpPost != null)
                 BeforeHttpPost(context);

@@ -91,7 +91,12 @@ namespace EasyApiProxys
                 if (tapi == null)
                     throw new ApplicationException(string.Format("建立服務實例{0}回傳空值", typeof(TAPI).Name));
 
-                return new ApiProxyLocal<TAPI>(tapi);
+                return new ApiProxyLocal<TAPI>(tapi, this);
+            }
+
+            public ApiProxyBuilderOptions Options
+            {
+                get { return null; }
             }
         }
 
@@ -102,9 +107,16 @@ namespace EasyApiProxys
             where TAPI : class
         {
             private readonly TAPI _api;
-            public ApiProxyLocal(TAPI api)
+
+            /// <summary>
+            /// Factory
+            /// </summary>
+            public IApiProxyFactory<TAPI> Factory { get; private set; }
+
+            public ApiProxyLocal(TAPI api, IApiProxyFactory<TAPI> factory)
             {
                 _api = api;
+                Factory = factory;
             }
 
             public TAPI Api { get { return _api; } }
@@ -117,6 +129,14 @@ namespace EasyApiProxys
             {
             }
 
+            public void SetAuthorization(string headerValue)
+            {               
+            }
+
+            public void SetAuthorizationProvider(Func<string> getHeaderValue)
+            {             
+            }
+
             public Action<Options.StepContext> BeforeHttpPost { get; set; }
 
             public Action<Options.StepContext> AfterHttpPost { get; set; }
@@ -124,6 +144,7 @@ namespace EasyApiProxys
             public void Dispose()
             {              
             }
+            
         }
     }
 }
