@@ -67,8 +67,8 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EasyInjectorControllerActivator.cs" />
     <Compile Include="EasyInjectorMvcExtensions.cs" />
-    <Compile Include="EasyInjectorControllerFactory.cs" />
     <Compile Include="EasyInjectorDependencyResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

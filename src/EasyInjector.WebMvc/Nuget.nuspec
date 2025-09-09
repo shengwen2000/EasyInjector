@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>EasyInjector.WebMvc</id>
-    <version>1.5.2.0</version>
+    <version>1.6.0</version>
     <title>EasyInjector.WebMvc</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -15,7 +15,7 @@
     <readme>docs\EasyInjector.md</readme>
     <dependencies>
       <group targetFramework=".NETFramework4.5.1">
-        <dependency id="EasyInjector" version="1.5.0" />
+        <dependency id="EasyInjector" version="1.6.0" />
         <dependency id="Microsoft.AspNet.Mvc" version="5.2.3" />
       </group>
 

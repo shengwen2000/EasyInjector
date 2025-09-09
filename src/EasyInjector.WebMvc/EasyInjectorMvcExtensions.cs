@@ -8,7 +8,10 @@ namespace EasyInjectors
     /// </summary>
     public static class EasyInjectorMvcExtension
     {
-        internal static string SCOPE_ITEM_NAME = "EasyInjectorScope";
+        /// <summary>
+        /// HttpContext Item 中 存放 IServiceScope 的KeyName
+        /// </summary>
+        public static string SCOPE_ITEM_NAME = "EasyInjectorScope";
 
         /// <summary>
         /// 使用 EasyInjector 作為注入器
