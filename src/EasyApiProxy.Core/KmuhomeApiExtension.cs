@@ -31,7 +31,7 @@ namespace EasyApiProxys
 
         static KmuhomeApiExtension()
         {
-             DefaultJsonOptions = new JsonSerializerOptions
+            DefaultJsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -128,9 +128,10 @@ namespace EasyApiProxys
                 else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
                     // ok
-                    if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase)) {
+                    if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
+                    {
                         // no content
-                        if(resp.StatusCode == HttpStatusCode.NoContent)
+                        if (resp.StatusCode == HttpStatusCode.NoContent)
                             return;
 
                         // Task<t1>
@@ -159,9 +160,10 @@ namespace EasyApiProxys
                 else
                 {
                     // ok
-                    if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase)) {
+                    if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
+                    {
                         // no content
-                        if(resp.StatusCode == HttpStatusCode.NoContent)
+                        if (resp.StatusCode == HttpStatusCode.NoContent)
                             return;
 
                         var dataType = invocation.Method.ReturnType;
@@ -188,6 +190,14 @@ namespace EasyApiProxys
 
         public class JsonEnumFactory : JsonConverterFactory
         {
+            /// <summary>
+            /// 確定此轉換器是否可以轉換指定類型的物件。
+            /// </summary>
+            /// <param name="typeToConvert">要檢查轉換能力的類型。</param>
+            /// <returns>
+            /// 如果轉換器可以轉換指定的類型，則為 <c>true</c>；否則為 <c>false</c>。
+            /// 在此實現中，如果類型是列舉，則返回 <c>true</c>。
+            /// </returns>
             public override bool CanConvert(Type typeToConvert)
             {
                 return typeToConvert.IsEnum;

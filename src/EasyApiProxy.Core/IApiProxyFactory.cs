@@ -12,6 +12,11 @@ namespace EasyApiProxys
         /// 建立Proxy實例
         /// </summary>
         IApiProxy<TAPI> Create(IServiceProvider sp);
+
+        /// <summary>
+        /// Factory 選項
+        /// </summary>
+        ApiProxyBuilderOptions Options { get; }
     }
 
     /// <summary>
@@ -22,6 +27,11 @@ namespace EasyApiProxys
         private readonly ApiProxyBuilderOptions _options;
         private readonly HttpClient _http;
         private bool disposed = false;
+
+        /// <summary>
+        /// Builder 選項
+        /// </summary>
+        public ApiProxyBuilderOptions Options => _options;
 
         /// <summary>
         /// 建立Proxy實例
@@ -45,15 +55,15 @@ namespace EasyApiProxys
         {
             var api = DispatchProxy.Create<TAPI, ApiProxyInterceptor<TAPI>>();
 
-            var inteceptor1 =  api as ApiProxyInterceptor<TAPI> ?? throw new Exception("convert faild");
+            var inteceptor1 = api as ApiProxyInterceptor<TAPI> ?? throw new Exception("convert faild");
             inteceptor1.Http = _http;
             inteceptor1.BuildOptions = _options;
 
-            var proxy = new ApiProxy<TAPI>(inteceptor1, api);
+            var proxy = new ApiProxy<TAPI>(inteceptor1, api, this);
             return proxy;
         }
 
-         /// <summary>
+        /// <summary>
         /// Dispose
         /// </summary>
         public void Dispose()
@@ -81,7 +91,7 @@ namespace EasyApiProxys
                     foreach (var handler1 in _options.Handlers)
                     {
                         try { (handler1 as IDisposable)?.Dispose(); }
-                        catch {}
+                        catch { }
                     }
                     _options.Handlers.Clear();
                 }

@@ -28,11 +28,6 @@ namespace EasyApiProxys
             Options = new ApiProxyBuilderOptions();
         }
 
-        public ApiProxyBuilder(IServiceCollection services)
-        {
-            Options = new ApiProxyBuilderOptions();
-        }
-
         /// <summary>
         /// 直接建立本地服務實例
         /// - 情境:如果服務可以是遠端或是本地提供時，如果選則為本地 則可以使用此方法。
@@ -78,6 +73,8 @@ namespace EasyApiProxys
         internal class ApiProxyFactoryLocal<TAPI>(Func<IServiceProvider, object> createInstacne) : IApiProxyFactory<TAPI>
             where TAPI : class
         {
+            ApiProxyBuilderOptions _options = new();
+
             public void Dispose()
             {
             }
@@ -87,17 +84,24 @@ namespace EasyApiProxys
                 var api = createInstacne(sp) ?? throw new ApplicationException(string.Format("建立服務實例{0}回傳空值", typeof(TAPI).Name));
                 if (api is not TAPI tapi)
                     throw new ApplicationException(string.Format("建立服務實例{0}回傳空值", typeof(TAPI).Name));
-                return new ApiProxyLocal<TAPI>(tapi);
+                return new ApiProxyLocal<TAPI>(tapi, this);
             }
+
+            public ApiProxyBuilderOptions Options => _options;
         }
 
         /// <summary>
         /// (直接建立本地服務實例) 專用 ApiProxy
         /// </summary>
-        internal class ApiProxyLocal<TAPI>(TAPI api) : IApiProxy<TAPI>
+        internal class ApiProxyLocal<TAPI>(TAPI api, IApiProxyFactory<TAPI> factory) : IApiProxy<TAPI>
             where TAPI : class
         {
             public TAPI Api { get { return api; } }
+
+            /// <summary>
+            /// Factory
+            /// </summary>
+            public IApiProxyFactory<TAPI> Factory => factory;
 
             public Action<StepContext>? BeforeHttpPost { get; set; }
             public Action<StepContext>? AfterHttpPost { get; set; }
@@ -111,6 +115,14 @@ namespace EasyApiProxys
             }
 
             public void SetBearerProvider(Func<string?> getBearerToken)
+            {
+            }
+
+            public void SetAuthorization(string headerValue)
+            {
+            }
+
+            public void SetAuthorizationProvider(Func<string> getHeaderValue)
             {
             }
         }
