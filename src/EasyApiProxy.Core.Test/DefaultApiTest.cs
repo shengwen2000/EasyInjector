@@ -291,10 +291,10 @@ public class DefaultApiTest : BaseTest
         Assert.That(ex1.Code, Is.EqualTo(req1.Result));
         Assert.That(ex1.Message, Is.EqualTo(req1.Message));
         Assert.That(ex1.ErrorData, Is.Not.Null);
-        var data2 = (JsonElement)ex1!.ErrorData!;
+        var data2 = (JsonObject) ex1!.ErrorData!;
         // 這個因為使用不同的Json庫 所以有差異 .net framework 會得到匿名類別
-        Assert.That(data2.GetProperty("a").GetInt32() == data1.a, Is.True);
-        Assert.That(data2.GetProperty("b").GetString() == data1.b, Is.True);
+        Assert.That(data2["a"]?.GetValue<int>() == data1.a, Is.True);
+        Assert.That(data2["b"]?.GetValue<string>() == data1.b, Is.True);
     }
 
     [Test]
@@ -368,5 +368,23 @@ public class DefaultApiTest : BaseTest
         {
             return type.Name;
         }
+    }
+
+    [Test]
+    public async Task DefaultApiTest006_HttpStatusCode()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+            .Build<IDemoApi>();
+        var proxy1 = factory.Create(null!);
+        var api1 = proxy1.Api;
+
+        var ex1 = Assert.CatchAsync<ApiCodeException>( () => api1.Login(new Login { Account = "david", Password = "pwd" }));
+        Assert.That(ex1.Code, Is.EqualTo("InvalidAccount"));
+        Assert.That(ex1.StatusCode, Is.EqualTo(401));
+        Assert.That(ex1.TargetUrl, Is.EqualTo("http://localhost:5249/api/Demo2/Login"));
+        Assert.That(ex1.HttpMethod, Is.EqualTo("POST"));
+        Assert.That(ex1.ErrorData, Is.Null);
+        Console.WriteLine(ex1.ToString());
     }
 }

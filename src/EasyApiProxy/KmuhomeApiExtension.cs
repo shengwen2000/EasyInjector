@@ -4,6 +4,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -134,106 +135,126 @@ namespace EasyApiProxys
                 var invocation = step.Invocation;
                 var _options = step.BuilderOptions;
 
-                // NOT OK 拋送 HttpRequestException
-                resp.EnsureSuccessStatusCode();
+                // 如果沒有回應標頭 那應該是沒有授權或是404之類的錯誤
+                if (!resp.Headers.Contains(HeaderName_Result))
+                {
+                    // 有http錯誤碼 拋出 HttpRequestException
+                    resp.EnsureSuccessStatusCode();
+                    // 沒有http錯誤碼 但沒有標頭 拋出無法解析錯誤
+                    var ex1 = new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非協議格式無法解析");
+                    SetDebugInfo(ex1, resp);
+                    throw ex1;                    
+                }
 
                 // 標題含有Result資訊 預先載入
                 var resultCode = (resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? RESULT_OK).ToLower();
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                using (var sr = new StreamReader(s1))
+                // 方法沒有回傳值(void | task)
+                if (invocation.Method.ReturnType == typeof(void) || invocation.Method.ReturnType == typeof(Task))
+                {
+                    // ok
+                    if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
+                        return;
+                    // not ok
+                    await HandleException(resp, _options, resultCode, s1).ConfigureAwait(false);
+                }
+                // 方法有回傳值Task<T>
+                else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                {
+                    // ok
+                    if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // no content
+                        if (resp.StatusCode == HttpStatusCode.NoContent)
+                            return;
+
+                        // Task<t1>
+                        var dataType = invocation.Method.ReturnType.GetGenericArguments()[0];
+                        using (new StreamReader(s1))
+                        using (var sr = new StreamReader(s1))
+                        using (var jsonTextReader = new JsonTextReader(sr))
+                        {
+                            var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, dataType);
+                            step.Result = ret;
+                        }
+                        return;
+                    }
+
+                    // not ok
+                    await HandleException(resp, _options, resultCode, s1).ConfigureAwait(false);
+                }
+                // 方法有回傳值(string Account ...)
+                else
+                {
+                    // ok
+                    if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // no content
+                        if (resp.StatusCode == HttpStatusCode.NoContent)
+                            return;
+
+                        var dataType = invocation.Method.ReturnType;
+                        using (new StreamReader(s1))
+                        using (var sr = new StreamReader(s1))
+                        using (var jsonTextReader = new JsonTextReader(sr))
+                        {
+                            var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, dataType);
+                            step.Result = ret;
+                        }
+                        return;
+                    }
+                    // not ok
+                    await HandleException(resp, _options, resultCode, s1).ConfigureAwait(false);
+                }
+            }
+
+            /// <summary>
+            /// 處理錯誤回應
+            /// - 明確收到非OK 回應 將以 ApiCodeException 拋出
+            /// </summary>
+            private static async Task HandleException(HttpResponseMessage resp, ApiProxyBuilderOptions options, string resultCode, Stream s1)
+            {
+                ApiCodeException retEx;
+
+                // 將s1 讀取為字串
+                var respText = await new StreamReader(s1).ReadToEndAsync().ConfigureAwait(false);
+                DefaultApiResult<JToken> ret = null;
+                using (var sr = new StringReader(respText))
                 using (var jsonTextReader = new JsonTextReader(sr))
                 {
-                    // 方法沒有回傳值(void | task)
-                    if (invocation.Method.ReturnType == typeof(void) || invocation.Method.ReturnType == typeof(Task))
-                    {
-                        // ok
-                        if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
-                            return;
-
-                        // im
-                        if (resultCode.Equals(RESULT_IM, StringComparison.OrdinalIgnoreCase))
-                        {
-                            var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult<JToken>>(jsonTextReader);
-                            if (ret == null)
-                                throw new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非 DefaultApiResult 格式無法解析");
-                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
-                        }
-                        // not ok
-                        {
-                            var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult<object>>(jsonTextReader);
-                            if (ret == null)
-                                throw new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非 DefaultApiResult 格式無法解析");
-                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
-                        }
-                    }
-                    // 方法有回傳值Task<T>
-                    else if (invocation.Method.ReturnType.IsGenericType && invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
-                    {
-                        // ok
-                        if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // no content
-                            if (resp.StatusCode == HttpStatusCode.NoContent)
-                                return;
-
-                            // Task<t1>
-                            var dataType = invocation.Method.ReturnType.GetGenericArguments()[0];
-                            var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, dataType);
-                            step.Result = ret;
-                            return;
-                        }
-
-                        // im
-                        if (resultCode.Equals(RESULT_IM, StringComparison.OrdinalIgnoreCase))
-                        {
-                            var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult<JToken>>(jsonTextReader);
-                            if (ret == null)
-                                throw new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非 DefaultApiResult 格式無法解析");
-                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
-                        }
-                        // not ok
-                        else
-                        {
-                            var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult<object>>(jsonTextReader);
-                            if (ret == null)
-                                throw new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非 DefaultApiResult 格式無法解析");
-                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
-                        }
-                    }
-                    // 方法有回傳值(string Account ...)
-                    else
-                    {
-                        // ok
-                        if (resultCode.Equals(RESULT_OK, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // no content
-                            if (resp.StatusCode == HttpStatusCode.NoContent)
-                                return;
-
-                            var dataType = invocation.Method.ReturnType;
-                            var ret = _options.GetJsonSerializer().Deserialize(jsonTextReader, dataType);
-                            step.Result = ret;
-                            return;
-                        }
-                        // im
-                        if (resultCode.Equals(RESULT_IM, StringComparison.OrdinalIgnoreCase))
-                        {
-                            var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult<JToken>>(jsonTextReader);
-                            if (ret == null)
-                                throw new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非 DefaultApiResult 格式無法解析");
-                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
-                        }
-                        // not ok
-                        {
-                            var ret = _options.GetJsonSerializer().Deserialize<DefaultApiResult<object>>(jsonTextReader);
-                            if (ret == null)
-                                throw new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非 DefaultApiResult 格式無法解析");
-                            throw new ApiCodeException(ret.Result, ret.Message, ret.Data);
-                        }
-                    }
+                    ret = options.GetJsonSerializer().Deserialize<DefaultApiResult<JToken>>(jsonTextReader);
                 }
+                if (ret == null)
+                    retEx = new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, string.Format("回應內容預期為JSON回應無法解析 {0}", respText));
+                else
+                    retEx = new ApiCodeException(ret.Result, ret.Message, ret.Data);
+
+                SetDebugInfo(retEx, resp);
+
+                throw retEx;
+            }
+
+            /// <summary>
+            /// 設定偵錯資訊
+            /// </summary>
+            private static void SetDebugInfo(ApiCodeException retEx, HttpResponseMessage resp)
+            {
+                string traceId = null;
+                IEnumerable<string> values;
+                // 嘗試取得常用的 Trace ID Header
+                if (resp.Headers.TryGetValues("X-Trace-Id", out values) ||
+                    resp.Headers.TryGetValues("X-Request-Id", out values) ||
+                    resp.Headers.TryGetValues("X-Correlation-Id", out values))
+                {
+                    traceId = values.FirstOrDefault();
+                }
+
+                retEx.StatusCode = (int)resp.StatusCode;
+                retEx.HttpMethod = resp.RequestMessage.Method.Method;
+                retEx.TargetUrl = resp.RequestMessage.RequestUri.ToString();
+                retEx.TraceId = traceId;
             }
         }
 

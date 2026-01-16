@@ -5,6 +5,27 @@ using System.Linq;
 namespace EasyApiProxys
 {
     /// <summary>
+    /// 指定 API 異常對應的 Http 狀態碼
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field)]
+    public class ApiStatusCodeAttribute : Attribute
+    {
+        /// <summary>
+        /// 指定 Http 狀態碼
+        /// </summary>
+        public int StatusCode { get; set; }
+
+        /// <summary>
+        /// 指定 API 異常對應的 Http 狀態碼
+        /// </summary>
+        /// <param name="statusCode">Http 狀態碼</param>
+        public ApiStatusCodeAttribute(int statusCode)
+        {
+            StatusCode = statusCode;
+        }
+    }
+
+    /// <summary>
     /// API 發生的異常
     /// </summary>
     public class ApiCodeException : System.Exception
@@ -15,9 +36,45 @@ namespace EasyApiProxys
         public string Code { get; set; }
 
         /// <summary>
+        /// 指定的 HTTP 狀態碼
+        /// </summary>
+        public int? StatusCode { get; set; }
+
+        /// <summary>
         /// 異常資料
         /// </summary>
         public object ErrorData { get; set; }
+
+        /// <summary>
+        /// 實際呼叫的 URL
+        /// </summary>
+        public string TargetUrl { get; set; }
+
+        /// <summary>
+        /// 呼叫的方法 (GET/POST...)
+        /// </summary>
+        public string HttpMethod { get; set; }
+
+        /// <summary>
+        /// 伺服器回傳的追蹤 ID
+        /// </summary>
+        public string TraceId { get; set; }      
+
+        /// <summary>
+        /// 是否為模型驗證錯誤 (IM)
+        /// </summary>
+        public bool IsValidationError
+        {
+            get { return string.Equals(Code, "IM", StringComparison.OrdinalIgnoreCase); }
+        }
+
+        /// <summary>
+        /// 是否為系統異常 (EX)
+        /// </summary>
+        public bool IsSystemError
+        {
+            get { return string.Equals(Code, "EX", StringComparison.OrdinalIgnoreCase); }
+        }
 
         /// <summary>
         /// API 發生異常 
@@ -37,6 +94,7 @@ namespace EasyApiProxys
             : base(message)
         {
             Code = value.ToString();
+            StatusCode = GetHttpStatusCode(value);
         }
 
         /// <summary>
@@ -48,6 +106,7 @@ namespace EasyApiProxys
         {
             Code = value.ToString();
             ErrorData = errorData;
+            StatusCode = GetHttpStatusCode(value);
         }
 
 
@@ -67,10 +126,12 @@ namespace EasyApiProxys
         /// </summary>
         public override string ToString()
         {
-            if (ErrorData != null)
-                return string.Format("{0}->{1} {2}", Code, Message, ErrorData);
-            else
-                return string.Format("{0}->{1}", Code, Message);
+            var sb = new System.Text.StringBuilder();
+            sb.AppendFormat("{0}->{1}", Code, Message);
+            if (ErrorData != null) sb.AppendFormat(" Data:{0}", ErrorData);
+            if (!string.IsNullOrEmpty(TargetUrl)) sb.AppendFormat(" Url:[{0}]{1}", HttpMethod, TargetUrl);
+            if (!string.IsNullOrEmpty(TraceId)) sb.AppendFormat(" TraceId:{0}", TraceId);
+            return sb.ToString();
         }
 
         /// <summary>
@@ -100,6 +161,22 @@ namespace EasyApiProxys
             if (attr != null)
                 return attr.Description;
             return value.ToString();
+        }
+
+        /// <summary>
+        /// 取得 HttpStatusCode
+        /// </summary>
+        static public int? GetHttpStatusCode(Enum value)
+        {
+            var fieldInfo = value.GetType().GetField(value.ToString());
+            if (fieldInfo == null) return null;
+
+            var attr = fieldInfo.GetCustomAttributes(typeof(ApiStatusCodeAttribute), false)
+                .OfType<ApiStatusCodeAttribute>()
+                .FirstOrDefault();
+            if (attr != null)
+                return attr.StatusCode;
+            return null;
         }
     }
 }

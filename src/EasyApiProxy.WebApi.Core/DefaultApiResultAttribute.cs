@@ -59,7 +59,17 @@ namespace EasyApiProxys.WebApis
                         Message = e2.Message,
                         Data = e2.ErrorData
                     };
-                    context.Result = new ObjectResult(ret);
+                    var objResult = new ObjectResult(ret);
+                    // 1.設定狀態碼
+                    if (e2.StatusCode.HasValue)
+                        objResult.StatusCode = e2.StatusCode.Value;
+
+                    // 2.設定 Trace ID
+                    if (e2.TraceId != null)
+                        context.HttpContext.Response.Headers["X-Trace-Id"] = e2.TraceId;
+
+                    context.Result = objResult;
+
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                     if (ret.Data != null)
                         context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());

@@ -121,6 +121,13 @@ namespace EasyApiProxys.WebApis
                         Data = e2.ErrorData
                     };
                     context.Response.Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater);
+                    // 1.設定狀態碼
+                    if (e2.StatusCode.HasValue)
+                        context.Response.StatusCode = (HttpStatusCode)e2.StatusCode.Value;
+                    // 2.設定 Trace ID
+                    if (e2.TraceId != null)
+                        context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
+
                     context.Response.Headers.Add(ResultHeader, ret.Result);
                     if (ret.Data != null)
                         context.Response.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
