@@ -21,6 +21,16 @@ namespace EasyApiProxys.WebApis
         private const string RESULT_IM = "IM";
 
         /// <summary>
+        /// 預設發生系統異常(EX)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
+        /// </summary>
+        public int ExStatusCode { get; set; }
+
+        /// <summary>
+        /// 預設發生驗證錯誤(IM)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
+        /// </summary>
+        public int ImStatusCode { get; set; }
+
+        /// <summary>
         /// Action執行完成 封裝格式
         /// </summary>
         /// <param name="context"></param>
@@ -48,6 +58,9 @@ namespace EasyApiProxys.WebApis
                         Data = array1
                     };
                     context.Result = new ObjectResult(ret);
+                    if (ImStatusCode > 0)
+                        ((ObjectResult)context.Result).StatusCode = ImStatusCode;
+
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                     context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
                 }
@@ -63,6 +76,10 @@ namespace EasyApiProxys.WebApis
                     // 1.設定狀態碼
                     if (e2.StatusCode.HasValue)
                         objResult.StatusCode = e2.StatusCode.Value;
+                    else if (e2.IsSystemError && ExStatusCode > 0)
+                        objResult.StatusCode = ExStatusCode;
+                    else if (e2.IsValidationError && ImStatusCode > 0)
+                        objResult.StatusCode = ImStatusCode;
 
                     // 2.設定 Trace ID
                     if (e2.TraceId != null)
@@ -82,6 +99,9 @@ namespace EasyApiProxys.WebApis
                         Message = ex.Message
                     };
                     context.Result = new ObjectResult(ret);
+                    if (ExStatusCode > 0)
+                        ((ObjectResult)context.Result).StatusCode = ExStatusCode;
+
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 }
             }
@@ -158,6 +178,9 @@ namespace EasyApiProxys.WebApis
                 };
 
                 context.Result = new ObjectResult(ret);
+                if (ImStatusCode > 0)
+                    ((ObjectResult)context.Result).StatusCode = ImStatusCode;
+
                 context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 if (ret.Data != null)
                     context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());

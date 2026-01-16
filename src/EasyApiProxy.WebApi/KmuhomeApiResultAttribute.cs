@@ -26,6 +26,16 @@ namespace EasyApiProxys.WebApis
         private const string RESULT_EX = "ex";
         private const string RESULT_IM = "im";
 
+        /// <summary>
+        /// 預設發生系統異常(EX)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
+        /// </summary>
+        public int ExStatusCode { get; set; }
+
+        /// <summary>
+        /// 預設發生驗證錯誤(IM)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
+        /// </summary>
+        public int ImStatusCode { get; set; }
+
         public override void OnActionExecuting(HttpActionContext context)
         {
             // Model 檢查
@@ -63,7 +73,8 @@ namespace EasyApiProxys.WebApis
 
                 var jsonMediaTypeFormater = context.ControllerContext.Configuration.Formatters.OfType<JsonMediaTypeFormatter>().First();
 
-                var response1 = new HttpResponseMessage(HttpStatusCode.OK)
+                var statusCode = ImStatusCode > 0 ? (HttpStatusCode)ImStatusCode : HttpStatusCode.OK;
+                var response1 = new HttpResponseMessage(statusCode)
                 {
                     Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater)
                 };
@@ -108,6 +119,9 @@ namespace EasyApiProxys.WebApis
                         Data = array1
                     };
                     context.Response.Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater);
+                    if (ImStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)ImStatusCode;
+
                     context.Response.Headers.Add(ResultHeader, ret.Result);
                     context.Response.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
                 }
@@ -124,6 +138,10 @@ namespace EasyApiProxys.WebApis
                     // 1.設定狀態碼
                     if (e2.StatusCode.HasValue)
                         context.Response.StatusCode = (HttpStatusCode)e2.StatusCode.Value;
+                    else if (e2.IsSystemError && ExStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
+                    else if (e2.IsValidationError && ImStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)ImStatusCode;
                     // 2.設定 Trace ID
                     if (e2.TraceId != null)
                         context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
@@ -140,6 +158,9 @@ namespace EasyApiProxys.WebApis
                         Message = ex.Message
                     };
                     context.Response.Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater);
+                    if (ExStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
+
                     context.Response.Headers.Add(ResultHeader, ret.Result);
                 }
             }
