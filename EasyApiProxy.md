@@ -360,3 +360,70 @@
 			builder.UseDefaultApiProtocol(opt.ApiUrl);
 	});
 ```
+
+## 異常處理與診斷 (Exception Handling & Diagnostics)
+
+### ApiCodeException 診斷資訊
+當遠端 API 回傳非成功邏輯時，用戶端會拋出 `ApiCodeException`，現在包含更豐富的診斷資訊：
+
+*   **`TargetUrl`**: 發生錯誤的實際 API 位址。
+*   **`HttpMethod`**: 調用的 HTTP 方法 (GET/POST...)。
+*   **`TraceId`**: 伺服器回傳的追蹤 ID (自動從 Header `X-Trace-Id`, `X-Request-Id` 等擷取)。
+*   **`StatusCode`**: 實際的 HTTP 狀態碼。
+*   **`IsValidationError`**: 是否為模型驗證錯誤 (`Code == "IM"`)。
+*   **`IsSystemError`**: 是否為系統異常 (`Code == "EX"`)。
+
+### 指定 Enum 錯誤的 Http 狀態碼
+您可以在定義錯誤代碼 Enum 時，使用 `[ApiStatusCode]` 指定特定的 Http 狀態碼：
+
+```csharp
+public enum MyErrorCode {
+    [Description("查無資料")]
+    [ApiStatusCode(404)]
+    UserNotFound,
+    
+    [Description("權限不足")]
+    [ApiStatusCode(403)]
+    NoPermission
+}
+
+// 拋出時會自動帶出狀態碼 404
+throw new ApiCodeException(MyErrorCode.UserNotFound);
+```
+
+### 後台 API 狀態碼對應 (A + C 方案)
+在後台 API 使用 `[DefaultApiResult]` 時，可以更精確地控制 Http 狀態碼：
+
+#### 1. 預設分類狀態碼
+可以統一設定系統異常 (EX) 或驗證錯誤 (IM) 的預設狀態碼：
+```csharp
+// 設定驗證失敗回傳 400，系統錯誤回傳 500
+[DefaultApiResult(ImStatusCode = 400, ExStatusCode = 500)]
+public class MyApiController : ApiController { ... }
+```
+
+#### 2. 全域異常對應表 (方案 A)
+在程式啟動時，針對特定系統異常類型進行全域對應：
+```csharp
+// 所有 UnauthorizedAccessException 都回傳 401
+DefaultApiResultAttribute.ExceptionMap[typeof(UnauthorizedAccessException)] = 401;
+```
+
+#### 3. 特定 Action 異常標註 (方案 C)
+針對特定 Action 上的異常進行轉碼，支援泛型 (.NET Core 6+)：
+```csharp
+// .NET Core 6+ 語法
+[ExceptionStatus<KeyNotFoundException>(404)]
+public Task<User> GetUser(long id) { ... }
+
+// 傳統 .NET 語法
+[ExceptionStatus(typeof(KeyNotFoundException), 404)]
+public Task<User> GetUser(long id) { ... }
+```
+
+**優先順序：**
+1. 異常本身指定的 StatusCode (ApiCodeException)。
+2. Action/Controller 上的 `[ExceptionStatus]` 標註。
+3. `ExceptionMap` 全域對應表。
+4. 預設的 `ImStatusCode` / `ExStatusCode`。
+5. 原始的 200 OK。
