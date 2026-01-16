@@ -36,6 +36,11 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public int ImStatusCode { get; set; }
 
+        /// <summary>
+        /// 全域異常對應表 (方案 A)
+        /// </summary>
+        public static System.Collections.Generic.Dictionary<Type, int> ExceptionMap { get; } = new System.Collections.Generic.Dictionary<Type, int>();
+
         public override void OnActionExecuting(HttpActionContext context)
         {
             // Model 檢查
@@ -92,6 +97,8 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            // 嘗試取得對應的狀態碼
+            var mappedStatusCode = GetMappedStatusCode(context);
             var jsonMediaTypeFormater = context.ActionContext.ControllerContext.Configuration.Formatters.OfType<JsonMediaTypeFormatter>().First();
 
             // 執行過程有異常 回傳格式處理
@@ -119,7 +126,9 @@ namespace EasyApiProxys.WebApis
                         Data = array1
                     };
                     context.Response.Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater);
-                    if (ImStatusCode > 0)
+                    if (mappedStatusCode.HasValue)
+                        context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
+                    else if (ImStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ImStatusCode;
 
                     context.Response.Headers.Add(ResultHeader, ret.Result);
@@ -138,6 +147,8 @@ namespace EasyApiProxys.WebApis
                     // 1.設定狀態碼
                     if (e2.StatusCode.HasValue)
                         context.Response.StatusCode = (HttpStatusCode)e2.StatusCode.Value;
+                    else if (mappedStatusCode.HasValue)
+                        context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
                     else if (e2.IsSystemError && ExStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
                     else if (e2.IsValidationError && ImStatusCode > 0)
@@ -158,7 +169,9 @@ namespace EasyApiProxys.WebApis
                         Message = ex.Message
                     };
                     context.Response.Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater);
-                    if (ExStatusCode > 0)
+                    if (mappedStatusCode.HasValue)
+                        context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
+                    else if (ExStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
 
                     context.Response.Headers.Add(ResultHeader, ret.Result);
@@ -237,6 +250,32 @@ namespace EasyApiProxys.WebApis
             {
                 return type.Name;
             }
+        }
+
+        /// <summary>
+        /// 取得對應的 Http 狀態碼 (方案 A + C)
+        /// </summary>
+        private int? GetMappedStatusCode(HttpActionExecutedContext context)
+        {
+            var ex = context.Exception;
+            if (ex == null) return null;
+
+            var exType = ex.GetType();
+
+            // 1. 優先從 Action/Controller 特性查找 (方案 C 的替代方案)
+            var actionAttr = context.ActionContext.ActionDescriptor.GetCustomAttributes<ExceptionStatusAttribute>()
+                .FirstOrDefault(a => a.ExceptionType == exType);
+            if (actionAttr != null) return actionAttr.StatusCode;
+
+            var controllerAttr = context.ActionContext.ControllerContext.ControllerDescriptor.GetCustomAttributes<ExceptionStatusAttribute>()
+                .FirstOrDefault(a => a.ExceptionType == exType);
+            if (controllerAttr != null) return controllerAttr.StatusCode;
+
+            // 2. 從全域對應表查找 (方案 A)
+            if (ExceptionMap.TryGetValue(exType, out int statusCode))
+                return statusCode;
+
+            return null;
         }
     }
 }

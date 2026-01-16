@@ -31,6 +31,11 @@ namespace EasyApiProxys.WebApis
         public int ImStatusCode { get; set; }
 
         /// <summary>
+        /// 全域異常對應表 (方案 A)
+        /// </summary>
+        public static Dictionary<Type, int> ExceptionMap { get; } = new();
+
+        /// <summary>
         /// Action執行完成 封裝格式
         /// </summary>
         /// <param name="context"></param>
@@ -40,6 +45,8 @@ namespace EasyApiProxys.WebApis
             if (context.Exception != null)
             {
                 var ex = context.Exception;
+                // 嘗試取得對應的狀態碼
+                var mappedStatusCode = GetMappedStatusCode(context);
                 context.Exception = null;
 
                 if (ex is ValidationException e1)
@@ -57,10 +64,13 @@ namespace EasyApiProxys.WebApis
                         Message = "Model State Error",
                         Data = array1
                     };
-                    context.Result = new ObjectResult(ret);
-                    if (ImStatusCode > 0)
-                        ((ObjectResult)context.Result).StatusCode = ImStatusCode;
+                    var objResult = new ObjectResult(ret);
+                    if (mappedStatusCode.HasValue)
+                        objResult.StatusCode = mappedStatusCode.Value;
+                    else if (ImStatusCode > 0)
+                        objResult.StatusCode = ImStatusCode;
 
+                    context.Result = objResult;
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                     context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
                 }
@@ -76,6 +86,8 @@ namespace EasyApiProxys.WebApis
                     // 1.設定狀態碼
                     if (e2.StatusCode.HasValue)
                         objResult.StatusCode = e2.StatusCode.Value;
+                    else if (mappedStatusCode.HasValue)
+                        objResult.StatusCode = mappedStatusCode.Value;
                     else if (e2.IsSystemError && ExStatusCode > 0)
                         objResult.StatusCode = ExStatusCode;
                     else if (e2.IsValidationError && ImStatusCode > 0)
@@ -98,10 +110,13 @@ namespace EasyApiProxys.WebApis
                         Result = RESULT_EX,
                         Message = ex.Message
                     };
-                    context.Result = new ObjectResult(ret);
-                    if (ExStatusCode > 0)
-                        ((ObjectResult)context.Result).StatusCode = ExStatusCode;
+                    var objResult = new ObjectResult(ret);
+                    if (mappedStatusCode.HasValue)
+                        objResult.StatusCode = mappedStatusCode.Value;
+                    else if (ExStatusCode > 0)
+                        objResult.StatusCode = ExStatusCode;
 
+                    context.Result = objResult;
                     context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
                 }
             }
@@ -226,6 +241,42 @@ namespace EasyApiProxys.WebApis
             {
                 return type.Name;
             }
+        }
+
+        /// <summary>
+        /// 取得對應的 Http 狀態碼 (方案 A + C)
+        /// </summary>
+        private int? GetMappedStatusCode(ActionExecutedContext context)
+        {
+            var ex = context.Exception;
+            if (ex == null) return null;
+
+            var exType = ex.GetType();
+
+            // 1. 優先從 Action/Controller 特性查找 (方案 C)
+            // 由於泛型特性在執行期需要反射處理
+            var attr = context.ActionDescriptor.EndpointMetadata
+                .FirstOrDefault(m =>
+                {
+                    var t = m.GetType();
+                    if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ExceptionStatusAttribute<>))
+                    {
+                        var targetExType = t.GetProperty("ExceptionType")?.GetValue(m) as Type;
+                        return targetExType == exType;
+                    }
+                    return false;
+                });
+
+            if (attr != null)
+            {
+                return (int?)attr.GetType().GetProperty("StatusCode")?.GetValue(attr);
+            }
+
+            // 2. 從全域對應表查找 (方案 A)
+            if (ExceptionMap.TryGetValue(exType, out int statusCode))
+                return statusCode;
+
+            return null;
         }
     }
 }
