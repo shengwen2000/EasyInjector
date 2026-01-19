@@ -43,6 +43,9 @@ namespace EasyApiProxys.WebApis
 
         public override void OnActionExecuting(HttpActionContext context)
         {
+            if (context.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
+                return;
+
             // Model 檢查
             if (!context.ModelState.IsValid)
             {
@@ -97,6 +100,9 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            if (context.ActionContext.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
+                return;
+
             // 嘗試取得對應的狀態碼
             var mappedStatusCode = GetMappedStatusCode(context);
             var jsonMediaTypeFormater = context.ActionContext.ControllerContext.Configuration.Formatters.OfType<JsonMediaTypeFormatter>().First();

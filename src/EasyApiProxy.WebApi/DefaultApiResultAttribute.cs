@@ -16,15 +16,9 @@ namespace EasyApiProxys.WebApis
     /// </summary>
     public class DefaultApiResultAttribute : ActionFilterAttribute
     {
-        private const string ResultHeader = DefaultApiExtension.HeaderName_Result;
-
-        /// <summary>
-        /// 資料類型 {data}
-        /// </summary>
-        private const string DataTypeHeader = DefaultApiExtension.HeaderName_DataType;
-        private const string RESULT_OK = "OK";
-        private const string RESULT_EX = "EX";
-        private const string RESULT_IM = "IM";
+        private const string RESULT_OK = DefaultApiConstants.Code_OK;
+        private const string RESULT_EX = DefaultApiConstants.Code_EX;
+        private const string RESULT_IM = DefaultApiConstants.Code_IM;
 
         /// <summary>
         /// 預設發生系統異常(EX)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
@@ -37,12 +31,20 @@ namespace EasyApiProxys.WebApis
         public int ImStatusCode { get; set; }
 
         /// <summary>
+        /// 是否向後相容輸出舊版底線 Header (預設 false)
+        /// </summary>
+        public static bool CompatibleLegacyHeader { get; set; } = false;
+
+        /// <summary>
         /// 全域異常對應表 (方案 A)
         /// </summary>
         public static System.Collections.Generic.Dictionary<Type, int> ExceptionMap { get; } = new System.Collections.Generic.Dictionary<Type, int>();
 
         public override void OnActionExecuting(HttpActionContext context)
         {
+            if (context.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
+                return;
+
             // Model 檢查
             if (!context.ModelState.IsValid)
             {
@@ -83,8 +85,7 @@ namespace EasyApiProxys.WebApis
                 {
                     Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater)
                 };
-                response1.Headers.Add(ResultHeader, ret.Result);
-                response1.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
+                AddHeaders(response1, ret.Result, GetTypeHint(ret.Data.GetType()));
                 context.Response = response1;     
             }
             else
@@ -97,6 +98,9 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            if (context.ActionContext.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
+                return;
+
             // 嘗試取得對應的狀態碼
             var mappedStatusCode = GetMappedStatusCode(context);
             var jsonMediaTypeFormater = context.ActionContext.ControllerContext.Configuration.Formatters.OfType<JsonMediaTypeFormatter>().First();
@@ -131,8 +135,7 @@ namespace EasyApiProxys.WebApis
                     else if (ImStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ImStatusCode;
 
-                    context.Response.Headers.Add(ResultHeader, ret.Result);
-                    context.Response.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
+                    AddHeaders(context.Response, ret.Result, GetTypeHint(ret.Data.GetType()));
                 }
                 else if (ex is ApiCodeException)
                 {
@@ -157,55 +160,51 @@ namespace EasyApiProxys.WebApis
                     if (e2.TraceId != null)
                         context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
                     
-                    context.Response.Headers.Add(ResultHeader, ret.Result);
-                    if (ret.Data != null)
-                        context.Response.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
-                }
-                else
-                {
-                    var ret = new DefaultApiResult
-                    {
-                        Result = RESULT_EX,
-                        Message = ex.Message
-                    };
-                    context.Response.Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater);
-                    if (mappedStatusCode.HasValue)
-                        context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
-                    else if (ExStatusCode > 0)
-                        context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
-
-                    context.Response.Headers.Add(ResultHeader, ret.Result);
-                }
+                AddHeaders(context.Response, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
             }
             // 執行正常
             else
             {
                 // 有內容
-                if (context.Response.Content is ObjectContent)
+                if (context.Response.Content is ObjectContent robj)
                 {
-                    var robj = context.Response.Content as ObjectContent;
-
                     // 有數值回傳
                     if (robj.Value != null)
                     {
-                        context.Response.Headers.Add(ResultHeader, RESULT_OK);
-                        context.Response.Headers.Add(DataTypeHeader, GetTypeHint(robj.Value.GetType()));
+                        AddHeaders(context.Response, RESULT_OK, GetTypeHint(robj.Value.GetType()));
                     }
                     // 沒有數值
                     else
                     {
-                        context.Response.Headers.Add(ResultHeader, RESULT_OK);
+                        AddHeaders(context.Response, RESULT_OK);
                         context.Response.Content = null;
                     }
                 }
                 // 沒有內容
                 else if (context.Response.Content == null)
                 {
-                    context.Response.Headers.Add(ResultHeader, RESULT_OK);
+                    AddHeaders(context.Response, RESULT_OK);
                 }
             }
 
             base.OnActionExecuted(context);
+        }
+
+        /// <summary>
+        /// 統一增加 Header
+        /// </summary>
+        private void AddHeaders(HttpResponseMessage response, string result, string dataType = null)
+        {
+            response.Headers.Add(DefaultApiExtension.HeaderName_Result, result);
+            if (dataType != null)
+                response.Headers.Add(DefaultApiExtension.HeaderName_DataType, dataType);
+
+            if (CompatibleLegacyHeader)
+            {
+                response.Headers.Add(DefaultApiExtension.HeaderName_Result_Legacy, result);
+                if (dataType != null)
+                    response.Headers.Add(DefaultApiExtension.HeaderName_DataType_Legacy, dataType);
+            }
         }
 
         /// <summary>

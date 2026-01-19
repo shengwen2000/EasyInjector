@@ -1,45 +1,9 @@
-﻿
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq;
+
 namespace EasyApiProxys
 {
-    /// <summary>
-    /// 指定 API 異常對應的 Http 狀態碼
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public class ApiStatusCodeAttribute : Attribute
-    {
-        /// <summary>
-        /// 指定 Http 狀態碼
-        /// </summary>
-        public int StatusCode { get; set; }
-
-        /// <summary>
-        /// 指定 API 異常對應的 Http 狀態碼
-        /// </summary>
-        /// <param name="statusCode">Http 狀態碼</param>
-        public ApiStatusCodeAttribute(int statusCode)
-        {
-            StatusCode = statusCode;
-        }
-    }
-
-    /// <summary>
-    /// 指定特定 Exception 類型對應的 Http 狀態碼
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class ExceptionStatusAttribute : Attribute
-    {
-        public Type ExceptionType { get; set; }
-        public int StatusCode { get; set; }
-        public ExceptionStatusAttribute(Type exceptionType, int statusCode)
-        {
-            ExceptionType = exceptionType;
-            StatusCode = statusCode;
-        }
-    }
-
     /// <summary>
     /// API 發生的異常
     /// </summary>
@@ -80,7 +44,7 @@ namespace EasyApiProxys
         /// </summary>
         public bool IsValidationError
         {
-            get { return string.Equals(Code, "IM", StringComparison.OrdinalIgnoreCase); }
+            get { return string.Equals(Code, DefaultApiConstants.Code_IM, StringComparison.OrdinalIgnoreCase); }
         }
 
         /// <summary>
@@ -88,7 +52,7 @@ namespace EasyApiProxys
         /// </summary>
         public bool IsSystemError
         {
-            get { return string.Equals(Code, "EX", StringComparison.OrdinalIgnoreCase); }
+            get { return string.Equals(Code, DefaultApiConstants.Code_EX, StringComparison.OrdinalIgnoreCase); }
         }
 
         /// <summary>

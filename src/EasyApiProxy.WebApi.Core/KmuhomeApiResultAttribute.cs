@@ -41,6 +41,9 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(ActionExecutedContext context)
         {
+            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
+                return;
+
             // 執行過程有異常 回傳格式處理
             if (context.Exception != null)
             {
@@ -156,6 +159,11 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
+            {
+                await next();
+                return;
+            }
             //取得執行結果
             var executedCtx = await next();
             OnActionExecuted(executedCtx);
@@ -166,6 +174,9 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public override void OnResultExecuting(ResultExecutingContext context)
         {
+            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
+                return;
+
             if (context.ModelState.IsValid == false)
             {
                 var errors = context.ModelState

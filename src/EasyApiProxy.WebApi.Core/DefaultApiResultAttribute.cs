@@ -10,15 +10,9 @@ namespace EasyApiProxys.WebApis
     /// </summary>
     public class DefaultApiResultAttribute : ActionFilterAttribute
     {
-        private const string ResultHeader = DefaultApiExtension.HeaderName_Result;
-
-        /// <summary>
-        /// 資料類型 {data}
-        /// </summary>
-        private const string DataTypeHeader = DefaultApiExtension.HeaderName_DataType;
-        private const string RESULT_OK = "OK";
-        private const string RESULT_EX = "EX";
-        private const string RESULT_IM = "IM";
+        private const string RESULT_OK = DefaultApiConstants.Code_OK;
+        private const string RESULT_EX = DefaultApiConstants.Code_EX;
+        private const string RESULT_IM = DefaultApiConstants.Code_IM;
 
         /// <summary>
         /// 預設發生系統異常(EX)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
@@ -31,6 +25,11 @@ namespace EasyApiProxys.WebApis
         public int ImStatusCode { get; set; }
 
         /// <summary>
+        /// 是否向後相容輸出舊版底線 Header (預設 false)
+        /// </summary>
+        public static bool CompatibleLegacyHeader { get; set; } = false;
+
+        /// <summary>
         /// 全域異常對應表 (方案 A)
         /// </summary>
         public static Dictionary<Type, int> ExceptionMap { get; } = new();
@@ -41,6 +40,9 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(ActionExecutedContext context)
         {
+            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
+                return;
+
             // 執行過程有異常 回傳格式處理
             if (context.Exception != null)
             {
@@ -71,8 +73,7 @@ namespace EasyApiProxys.WebApis
                         objResult.StatusCode = ImStatusCode;
 
                     context.Result = objResult;
-                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
-                    context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
+                    AddHeaders(context.HttpContext.Response.Headers, ret.Result, GetTypeHint(ret.Data.GetType()));
                 }
                 else if (ex is ApiCodeException e2)
                 {
@@ -99,9 +100,7 @@ namespace EasyApiProxys.WebApis
 
                     context.Result = objResult;
 
-                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
-                    if (ret.Data != null)
-                        context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
+                    AddHeaders(context.HttpContext.Response.Headers, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
                 }
                 else
                 {
@@ -116,8 +115,7 @@ namespace EasyApiProxys.WebApis
                     else if (ExStatusCode > 0)
                         objResult.StatusCode = ExStatusCode;
 
-                    context.Result = objResult;
-                    context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
+                    AddHeaders(context.HttpContext.Response.Headers, ret.Result);
                 }
             }
             // 執行正常
@@ -128,28 +126,44 @@ namespace EasyApiProxys.WebApis
                 {
                     // 有數值回傳
                     if (robj.Value != null) {
-                        // 字串轉為 JSON
+
+                         // 字串轉為 JSON
                         if (robj.DeclaredType == typeof(string))
                             context.Result = new JsonResult(robj.Value);
 
-                        context.HttpContext.Response.Headers[ResultHeader] = RESULT_OK;
-                        context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(robj.Value?.GetType());
+                        AddHeaders(context.HttpContext.Response.Headers, RESULT_OK, robj.Value != null ? GetTypeHint(robj.Value.GetType()) : null);
                     }
                     // 沒有數值
                     else {
-                        context.HttpContext.Response.Headers[ResultHeader] = RESULT_OK;
+                        AddHeaders(context.HttpContext.Response.Headers, RESULT_OK);
                         context.Result = new NoContentResult();
                     }
                 }
                 // 沒有內容
                 else if (context.Result is EmptyResult)
                 {
-                    context.HttpContext.Response.Headers[ResultHeader] = RESULT_OK;
+                    AddHeaders(context.HttpContext.Response.Headers, RESULT_OK);
                     context.Result = new NoContentResult();
                 }
             }
-
             base.OnActionExecuted(context);
+        }
+
+        /// <summary>
+        /// 統一增加 Header
+        /// </summary>
+        private static void AddHeaders(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string result, string? dataType = null)
+        {
+            headers[DefaultApiExtension.HeaderName_Result] = result;
+            if (dataType != null)
+                headers[DefaultApiExtension.HeaderName_DataType] = dataType;
+
+            if (CompatibleLegacyHeader)
+            {
+                headers[DefaultApiExtension.HeaderName_Result_Legacy] = result;
+                if (dataType != null)
+                    headers[DefaultApiExtension.HeaderName_DataType_Legacy] = dataType;
+            }
         }
 
         /// <summary>
@@ -157,6 +171,11 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
+            {
+                await next();
+                return;
+            }
             //取得執行結果
             var executedCtx = await next();
             OnActionExecuted(executedCtx);
@@ -167,6 +186,9 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public override void OnResultExecuting(ResultExecutingContext context)
         {
+            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
+                return;
+
             if (context.ModelState.IsValid == false)
             {
                 var errors = context.ModelState
@@ -196,9 +218,7 @@ namespace EasyApiProxys.WebApis
                 if (ImStatusCode > 0)
                     ((ObjectResult)context.Result).StatusCode = ImStatusCode;
 
-                context.HttpContext.Response.Headers[ResultHeader] = ret.Result;
-                if (ret.Data != null)
-                    context.HttpContext.Response.Headers[DataTypeHeader] = GetTypeHint(ret.Data.GetType());
+                AddHeaders(context.HttpContext.Response.Headers, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
             }
         }
 

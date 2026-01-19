@@ -3,26 +3,6 @@
 namespace EasyApiProxys
 {
     /// <summary>
-    /// 指定 API 異常對應的 Http 狀態碼
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public class ApiStatusCodeAttribute(int statusCode) : Attribute
-    {
-        public int StatusCode { get; } = statusCode;
-    }
-
-    /// <summary>
-    /// 指定特定 Exception 類型對應的 Http 狀態碼 (泛型版本，僅支援 .NET Core 6.0+)
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class ExceptionStatusAttribute<TException>(int statusCode) : Attribute
-        where TException : Exception
-    {
-        public Type ExceptionType => typeof(TException);
-        public int StatusCode { get; } = statusCode;
-    }
-
-    /// <summary>
     /// API 發生的異常
     /// </summary>
     public class ApiCodeException : Exception
@@ -60,12 +40,12 @@ namespace EasyApiProxys
         /// <summary>
         /// 是否為模型驗證錯誤 (IM)
         /// </summary>
-        public bool IsValidationError => Code?.Equals("IM", StringComparison.OrdinalIgnoreCase) ?? false;
+        public bool IsValidationError => Code?.Equals(DefaultApiConstants.Code_IM, StringComparison.OrdinalIgnoreCase) ?? false;
 
         /// <summary>
         /// 是否為系統異常 (EX)
         /// </summary>
-        public bool IsSystemError => Code?.Equals("EX", StringComparison.OrdinalIgnoreCase) ?? false;
+        public bool IsSystemError => Code?.Equals(DefaultApiConstants.Code_EX, StringComparison.OrdinalIgnoreCase) ?? false;
 
         /// <summary>
         /// API 發生異常

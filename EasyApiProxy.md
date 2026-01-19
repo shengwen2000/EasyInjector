@@ -1,429 +1,225 @@
 ﻿# EasyApiProxy
 
-* 簡單的 Web Api 代理類別產生
-* 支援Hawk驗證 與 BearerToken驗證
-* [Nuget Package Install](https://www.nuget.org/packages/EasyApiProxy/)
-* 提供 DefaultApi協定 實作支援 於套件 EasyApiProxy.WebApi
-* 提供 用戶端 Hawk驗證 於套件 EasyApiProxy.HawkAuth
+[![NuGet](https://img.shields.io/nuget/v/EasyApiProxy.svg)](https://www.nuget.org/packages/EasyApiProxy/)
+[![License](https://img.shields.io/github/license/shengwen2000/EasyInjector)](https://github.com/shengwen2000/EasyInjector/blob/master/LICENSE)
 
-## 呼叫範例
-``` C#
-    // 建立API 代理物件 Factory 必須重複使用 因為其實做包含一個專用的 HttpClient
-    // HttpClient 微軟官方明確的說必須公用 否則回有tcp/ip資源不足的問題
-    var factory = new ApiProxyBuilder()
-        // 套用 DefaultApi 通訊協議
-        .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
-        .Build<IDemoApi>();
+**EasyApiProxy** 是一個專為 .NET 開發者設計的輕量級遠端 API 代理框架。透過「介面導向」的開發模式，將 API 調用簡化，同時在跨平台相容性與診斷自動化上提供穩定的支持。
 
-	// 建立代理物件
-	using (var proxy = factory.Create()) {
+---
 
-        var api = proxy.Api;
+## 🚀 核心亮點 (Highlights)
 
-        // 呼叫Api
-        var ret1 = await api.Login(new Login { Account = "david", Password = "123" });
+| 特性 | 說明 | 開發者價值 |
+| :--- | :--- | :--- |
+| **介面導向開發** | 使用強型別 Interface 定義 API，無需撰寫具體的調用實作。 | 零樣板代碼，API 定義即文檔。 |
+| **一站式診斷上下文** | 異常發生時自動匯集 TraceId、URL、Method 與狀態碼。 | 診斷毫不費力，無需翻找日誌即可定位問題。 |
+| **宣告式狀態碼管理** | 透過 Attribute 在 Enum 或 Action 上優雅管理 HTTP 狀態。 | 業務邏輯與通訊層解耦，代碼更潔淨。 |
+| **跨時代混血架構** | 在 .NET Core 與 .NET Framework 之間提供完全一致的 API。 | 舊系統無痛升級，技能完美遷移。 |
+| **自動化模型驗證** | Filter 自動截獲 `ModelState` 錯誤並進行標準化封裝。 | 徹底擺脫重複的 `if(!ModelState.IsValid)`。 |
 
-        // 傳遞Bearer Token 後續呼叫會自動帶上
-        proxy.SetBearer(ret1.Token);
+---
 
-    }
+## 🛠 調用流程 (Workflow)
 
+```mermaid
+sequenceDiagram
+    participant Client as 用戶端 (Interface)
+    participant Proxy as EasyApiProxy
+    participant Server as 遠端 API (Controller)
 
+    Client->>Proxy: 調用介面方法
+    Proxy-->>Proxy: 封裝參數與驗證
+    Proxy->>Server: 發送 HTTP 請求
+    Server-->>Server: 執行業務邏輯 (自動驗證)
+    Server->>Proxy: 回傳標準化封裝 (Result + Data)
+    Proxy-->>Proxy: 解析結果 / 處理異常 (注入診斷資訊)
+    Proxy->>Client: 回傳結果物件 / 拋出強型別異常
 ```
 
-## 呼叫範例 整合 .net core
-``` C#
-   var services = new ServiceCollection();
-   services.AddApiProxy<IDemoApi>(
-        configApiAction: (sp, builder) =>
-        {
-            // 設定 ApiProxy 的預設協定
-            builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo",
-                defaltTimeoutSeconds: 30);
-            // 設定 Basic 驗證
-            builder.UseBasicAuthorize(new BasicCredential
-            {
-                Account = "admin",
-                PassCode = "admin1234"
-            });
-        });
+---
 
-    var provider = services.BuildServiceProvider();
-    using var scope = provider.CreateScope();
-    var proxy1 = scope.ServiceProvider.GetRequiredService<IApiProxy<IDemoApi>>();
-    var api1 = scope.ServiceProvider.GetRequiredService<IDemoApi>();
+## 📝 快速上手 (Getting Started)
+
+### 1. 定義 API 介面
+```csharp
+public interface IDemoApi
+{
+    [HttpPost]
+    Task<AccountInfo> Login(Login req);
+
+    [HttpGet]
+    Task<string> GetServerInfo();
+}
 ```
 
+### 2. 用戶端呼叫
+```csharp
+// 建立工廠 (建議 Singleton 重複使用以維護 HttpClient 效能)
+var factory = new ApiProxyBuilder()
+    .UseDefaultApiProtocol("http://api.myserver.com/api/Demo")
+    .Build<IDemoApi>();
 
-
-## Api 介面定義
-``` C#
-	// 展示Api 定義
-    // 注意 DefaultApi協定 輸入參數只能0或1個。
-    public interface IDemoApi
-    {
-        Task<AccountInfo> Login(Login req);
-
-        Task Logout(TokenInfo req);
-
-        Task<string> GetEmail(TokenInfo req);
-
-        string GetServerInfo();
-    }
+// 建立代理物件並呼叫
+using (var proxy = factory.Create()) 
+{
+    var result = await proxy.Api.Login(new Login { Account = "admin", Password = "..." });
+    Console.WriteLine($"Token: {result.Token}");
+}
 ```
 
-## 後台實作範例 Microsoft.AspNet.WebApi.Owin
-- 參考套件 EasyApiProxy.WebApi 提供 DefaultApiResult 實作
-``` C#
-    /// <summary>
-    /// 範例API
-    /// </summary>
-    [DefaultApiResult] // 套用DefaultApi 通訊封裝
-    public partial class DemoApiController : ApiController, IDemoApi
-    {
-        [HttpPost]
-        public async Task<AccountInfo> Login(Login req)
-        {
-            await Task.Delay(1000);
-            if (req.Account == "david" && req.Password == "123")
-            {
-                return new AccountInfo { Account = req.Account, Token = "123456789", Expired = DateTime.Now.AddHours(1) };
-            }
-            throw new NotImplementedException();
-        }
+---
 
-        [HttpPost]
-        public async Task Logout(TokenInfo req)
-        {
-            await Task.Delay(1000);
-            if (req.Token == "123456789")
-                return;
-            throw new ApplicationException("The Token Not exists");
-        }
+---
 
-        [HttpPost]
-        public async Task<string> GetEmail(TokenInfo req)
-        {
-            await Task.Delay(1000);
-            if (req.Token == "123456789")
-            {
-                return "david@gmail.com";
-            }
-            throw new ApplicationException("The Token Not exists");
-        }
+## 🛰️ DefaultApi 通訊協議規範
 
-        [HttpPost]
-        public string GetServerInfo()
-        {
-            return "Demo Server";
-        }
-    }
+`DefaultApi` 是一套標準化的 JSON 請求/回應協議，確保前端代理與後端服務之間的行為一致。
 
-    // Startup 啟動規劃WebApi
-    public class Startup
-    {
-        public void Configuration(IAppBuilder app) {
+### 1. 請求 (Request) 規範
+*   **傳輸格式**：固定使用 `POST` 方法與 `application/json`。
+*   **參數限制**：
+    *   介面方法定義 **「只能零參數或單一參數」**。
+    *   強烈建議將輸入參數包裝成一個 **「物件 (Class)」**，以利後續功能的擴充（如增減欄位）。
+*   **JSON 序列化**：
+    *   **命名慣例**：使用 `CamelCase` (小駝峰)。
+    *   **日期格式**：固定為 `yyyy-MM-ddTHH:mm:ss`。
+        *   ⚠️ **注意**：此格式不包含時區與毫秒。在跨時區部署或對時間精度要求極高的場景下，請確保伺服器與用戶端系統時區一致，或於業務邏輯層進行 UTC 轉換處理。
 
-            var apiConfig = new System.Web.Http.HttpConfiguration();
+### 2. 回應 (Response) 規範
+*   **標準封裝**：所有回應都會被封裝在一個包含 `Result`、`Message`、`Data` 的結構中。
+*   **特定 Header**：
+    *   `X-Api-Result`: 代表執行代號（如 `OK` 代表成功、`IM` 代表驗證失敗、`EX` 代表系統異常）。
+    *   `X-Api-DataType`: 代表 `Data` 欄位的資料型別。
 
-            // 啟用WebApi
-            {
-                // use attibute routes
-                config.MapHttpAttributeRoutes();
+---
 
-                config.Routes.MapHttpRoute(
-                   name: "DefaultApi",
-                   routeTemplate: "api/{controller}/{action}/{id}",
-                   defaults: new { id = RouteParameter.Optional }
-                );
+## 🖥️ 後端服務實作 (Server-side Implementation)
 
-                // 必須套用 DefaultApi Json 設定
-                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
-
-                //use webapi
-                app.UseWebApi(apiConfig);
-            }
-        }
-    }
-```
-
-## 用戶端啟用HAWK驗證
-- 參考套件 EasyApiProxy.HawkAuth
-``` C#
-    // hawk 證書
-    var credential = new HawkNet.HawkCredential();
-    credential.Id = "API";
-    credential.Key = "XXXXXXXX";
-    credential.Algorithm = "sha256";
-
-    // proxy factory
-    var factory = new ApiProxyBuilder()
-        // 套用 DefaultApi 通訊協議
-        .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
-        // 啟用Hawk驗證
-        .UseHawkAuthorize(credential)
-        .Build<IDemoApi>();
-
-	// 建立代理物件
-	var proxy = factory.Create();
-    var api = proxy.Api;
-
-    // 呼叫Api
-    var ret = await api.Login(new Login { Account = "david", Password = "123" });
-```
-
-## 後台API端啟用HAWK驗證 範例 Microsoft.AspNet.WebApi.Owin
-- 引用套件 HawkNet.Owin
-``` C#
-    // Startup 啟動規劃WebApi 與 Hawk驗證
-    public class Startup
-    {
-        public void Configuration(IAppBuilder app) {
-
-            var apiConfig = new System.Web.Http.HttpConfiguration();
-
-            // 啟用Hawk驗證
-            {
-                var credential = new HawkCredential();
-                credential.Id = "API";
-                credential.Key = "XXXXXXXX";
-                credential.User = "API";
-                credential.Algorithm = "sha256";
-
-                app.UseHawkAuthentication(new HawkAuthenticationOptions
-                {
-                    Credentials = (id) => Task.FromResult(credential),
-                    IncludeServerAuthorization = false,
-                    TimeskewInSeconds = 120
-                });
-            }
-            // 啟用WebApi
-            {
-                // use attibute routes
-                config.MapHttpAttributeRoutes();
-
-                config.Routes.MapHttpRoute(
-                   name: "DefaultApi",
-                   routeTemplate: "api/{controller}/{action}/{id}",
-                   defaults: new { id = RouteParameter.Optional }
-                );
-
-                // 必須套用 DefaultApi Json 設定
-                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
-
-                //use webapi
-                app.UseWebApi(apiConfig);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 範例API
-    /// </summary>
-    [DefaultApiResult] //套用DefaultApi 回傳格式
-    [Authorize(Users="API")] // 要求授權通過
-    public partial class DemoApiController : ApiController, IDemoApi {
-        ...
-    }
-
-```
-
-## 用戶端啟用Basic驗證
-- 內建支援
-``` C#
-    // basic 證書
-    var credential = new BasicCredential
-    {
-        Account = "API",
-        PassCode = "XXXXXXXX",
-    };
-
-    // proxy factory
-    var factory = new ApiProxyBuilder()
-        // 套用 DefaultApi 通訊協議
-        .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
-        // 啟用Basic驗證
-        .UseBasicAuthorize(credential)
-        .Build<IDemoApi>();
-
-	// 建立代理物件
-	var proxy = factory.Create();
-    var api = proxy.Api;
-
-    // 呼叫Api
-    var ret = await api.Login(new Login { Account = "david", Password = "123" });
-```
-
-## 用戶端啟用驗證(直接指定Http Authroization Header)
-- 內建支援
-``` C#   
-
-    // proxy factory
-    var factory = new ApiProxyBuilder()
-        // 套用 DefaultApi 通訊協議
-        .UseDefaultApiProtocol("http://localhost:8081/api/Demo")
-        // 直接指定Http Authroization Header(Basic驗證)
-        .UseAuthorizationHeader("Basic YWRtaW46YWRtaW4xMjM0")
-        .Build<IDemoApi>();
-```
-
-## 後台API端啟用Basic驗證 範例 Microsoft.AspNet.WebApi.Owin
-- 引用套件 Thinktecture.IdentityModel.Owin.BasicAuthentication
-``` C#
-    // Startup 啟動規劃WebApi 與 Hawk驗證
-    public class Startup
-    {
-        public void Configuration(IAppBuilder app) {
-
-            var apiConfig = new System.Web.Http.HttpConfiguration();
-
-            // 啟用Basic驗證
-            app.UseBasicAuthentication(new BasicAuthenticationOptions(
-                "DefaultApi",
-                async (user, secret) => await GetBasicUser(user, secret)));
-
-            // 啟用WebApi
-            {
-                // use attibute routes
-                config.MapHttpAttributeRoutes();
-
-                config.Routes.MapHttpRoute(
-                   name: "DefaultApi",
-                   routeTemplate: "api/{controller}/{action}/{id}",
-                   defaults: new { id = RouteParameter.Optional }
-                );
-
-                // 必須套用 DefaultApi Json 設定
-                config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
-
-                //use webapi
-                app.UseWebApi(apiConfig);
-            }
-        }
-
-        async Task<IEnumerable<Claim>> GetBasicUser(string account, string secret)
-        {
-            await Task.FromResult(0);
-            if (account == "API" && secret == "XXXXXXXX")
-            {
-                var c1 = new Claim(ClaimTypes.Name, account);
-                return new Claim[] { c1};
-            }
-            else
-                return null;
-        }
-    }
-
-    /// <summary>
-    /// 範例API
-    /// </summary>
-    [DefaultApiResult] //套用DefaultApi 回傳格式
-    [Authorize(Users="API")] // 要求授權通過
-    public partial class DemoApiController : ApiController, IDemoApi {
-        ...
-    }
-
-```
-
-## EasyInjector 整合
-``` C#
-    var injector = new EasyInjector();
-
-    // 建置整合到注入依賴
-    injector.AddApiProxy<IDemoApi>((sp, builder) =>
-        builder.UseDefaultApiProtocol("http://localhost:5249/api/Demo"));
-
-    using (var scope = injector.CreateScope()) {
-
-        // 取得Proxy
-        var proxy1 = scope.ServiceProvider.GetRequiredService<IApiProxy<IDemoApi>>();
-
-        // 取得Api = proxy1.Api
-        var api1 = scope.ServiceProvider.GetRequiredService<IDemoApi>();
-    }
-
-```
-
-
-## 服務遠端或本地 (依據選項)
-``` C#
-    var injector = new EasyInjector();
-
-    // 建置整合到注入依賴
-    injector.AddApiProxy<IDemoApi>((sp, builder) => {
-		var opt = sp.GetRequiredService<DemoOpt>();
-		// 選項沒有Url代表使用本地服務
-		if (opt.ApiUrl == null)
-			builder.UseLocalApi<IDemoApi>(sp => new DempApiLocal())
-		// 否則使用遠端服務
-		else
-			builder.UseDefaultApiProtocol(opt.ApiUrl);
-	});
-```
-
-## 異常處理與診斷 (Exception Handling & Diagnostics)
-
-### ApiCodeException 診斷資訊
-當遠端 API 回傳非成功邏輯時，用戶端會拋出 `ApiCodeException`，現在包含更豐富的診斷資訊：
-
-*   **`TargetUrl`**: 發生錯誤的實際 API 位址。
-*   **`HttpMethod`**: 調用的 HTTP 方法 (GET/POST...)。
-*   **`TraceId`**: 伺服器回傳的追蹤 ID (自動從 Header `X-Trace-Id`, `X-Request-Id` 等擷取)。
-*   **`StatusCode`**: 實際的 HTTP 狀態碼。
-*   **`IsValidationError`**: 是否為模型驗證錯誤 (`Code == "IM"`)。
-*   **`IsSystemError`**: 是否為系統異常 (`Code == "EX"`)。
-
-### 指定 Enum 錯誤的 Http 狀態碼
-您可以在定義錯誤代碼 Enum 時，使用 `[ApiStatusCode]` 指定特定的 Http 狀態碼：
+### 1. .NET Core / .NET 6+ 實作
+套用 `[DefaultApiResult]` 特性，自動處理物件封裝、模型驗證與例外轉碼。
 
 ```csharp
-public enum MyErrorCode {
-    [Description("查無資料")]
-    [ApiStatusCode(404)]
-    UserNotFound,
-    
-    [Description("權限不足")]
-    [ApiStatusCode(403)]
-    NoPermission
+[ApiController]
+[Route("api/[controller]/[action]")]
+[DefaultApiResult] 
+public class DemoController : ControllerBase
+{
+    [HttpPost]
+    public async Task<AccountInfo> Login(LoginRequest req)
+    {
+        // 直接回傳物件，Filter 會自動封裝成 { Result: "OK", Data: ... }
+        return new AccountInfo { Token = "..." };
+    }
+}
+```
+
+### 2. .NET 451 / OWIN 實作
+在 Legacy 環境下，寫法與 .NET Core 幾乎完全一致。
+
+```csharp
+[DefaultApiResult]
+public class DemoApiController : ApiController
+{
+    [HttpPost]
+    public async Task<AccountInfo> Login(LoginRequest req)
+    {
+        // 與 Core 一致，直接回傳強型別物件
+        return new AccountInfo { Token = "..." };
+    }
 }
 
-// 拋出時會自動帶出狀態碼 404
-throw new ApiCodeException(MyErrorCode.UserNotFound);
+// Startup 設定
+public void Configuration(IAppBuilder app)
+{
+    var config = new HttpConfiguration();
+    config.MapHttpAttributeRoutes();
+    // 必須套用 DefaultApi JSON 設定控製序列化
+    config.Formatters.JsonFormatter.SerializerSettings = DefaultApiExtension.DefaultJsonSerializerSettings;
+    app.UseWebApi(config);
+}
 ```
 
-### 後台 API 狀態碼對應 (A + C 方案)
-在後台 API 使用 `[DefaultApiResult]` 時，可以更精確地控制 Http 狀態碼：
+---
 
-#### 1. 預設分類狀態碼
-可以統一設定系統異常 (EX) 或驗證錯誤 (IM) 的預設狀態碼：
+## 🔗 用戶端整合與呼叫 (Client-side Integration)
+
+### 1. 定義 API 介面
+API 定義應作為共用專案（或讓 Client 參考），確保強型別一致。
 ```csharp
-// 設定驗證失敗回傳 400，系統錯誤回傳 500
-[DefaultApiResult(ImStatusCode = 400, ExStatusCode = 500)]
-public class MyApiController : ApiController { ... }
+public interface IDemoApi
+{
+    // 單一參數物件化是最佳實踐
+    Task<AccountInfo> Login(LoginRequest req);
+}
 ```
 
-#### 2. 全域異常對應表 (方案 A)
-在程式啟動時，針對特定系統異常類型進行全域對應：
+### 2. .NET Core 整合 (DI)
 ```csharp
-// 所有 UnauthorizedAccessException 都回傳 401
-DefaultApiResultAttribute.ExceptionMap[typeof(UnauthorizedAccessException)] = 401;
+services.AddApiProxy<IDemoApi>((sp, builder) =>
+{
+    builder.UseDefaultApiProtocol("http://api.myserver.com/api/Demo");
+});
 ```
 
-#### 3. 特定 Action 異常標註 (方案 C)
-針對特定 Action 上的異常進行轉碼，支援泛型 (.NET Core 6+)：
+### 3. .NET 451 / Legacy 整合 (EasyInjector)
 ```csharp
-// .NET Core 6+ 語法
-[ExceptionStatus<KeyNotFoundException>(404)]
-public Task<User> GetUser(long id) { ... }
+var injector = new EasyInjector();
+injector.AddApiProxy<IDemoApi>((sp, builder) =>
+    builder.UseDefaultApiProtocol("http://localhost:8081/api/Demo"));
 
-// 傳統 .NET 語法
-[ExceptionStatus(typeof(KeyNotFoundException), 404)]
-public Task<User> GetUser(long id) { ... }
+// 取得服務
+var api = injector.CreateScope().ServiceProvider.GetRequiredService<IDemoApi>();
 ```
 
-**優先順序：**
-1. 異常本身指定的 StatusCode (ApiCodeException)。
-2. Action/Controller 上的 `[ExceptionStatus]` 標註。
-3. `ExceptionMap` 全域對應表。
-4. 預設的 `ImStatusCode` / `ExStatusCode`。
-5. 原始的 200 OK。
+### 4. 動態服務切換 (本地 vs. 遠端)
+支援根據配置決定使用本地實作或遠端代理服務：
+
+```csharp
+injector.AddApiProxy<IDemoApi>((sp, builder) => 
+{
+    var opt = sp.GetRequiredService<AppOptions>();
+    
+    if (string.IsNullOrEmpty(opt.ApiUrl))
+    {
+        // 模式 A: 使用本地實作 (Local Implementation)
+        builder.UseLocalApi<IDemoApi>(sp => new DemoServiceLocal());
+    }
+    else
+    {
+        // 模式 B: 使用遠端代理 (Remote Proxy)
+        builder.UseDefaultApiProtocol(opt.ApiUrl);
+    }
+});
+```
+
+---
+
+## 🛡️ 驗證機制 (Authentication)
+
+### Bearer Token 驗證
+```csharp
+proxy.SetBearer("your_jwt_token_here");
+```
+
+### Basic 驗證
+```csharp
+builder.UseBasicAuthorize(new BasicCredential { Account = "...", PassCode = "..." });
+```
+
+---
+
+## 🔍 診斷與異常處理 (Diagnostics)
+
+當發生錯誤（如斷網、404 或 `X_Api_Result` 非 `OK`）時，系統會拋出 `ApiCodeException`，包含 `TraceId`、`TargetUrl` 等診斷上下文資訊。
+
+---
+
+
+## 忽略封裝處理
+若特定法方需回傳原始資料（如檔案流），可使用 `[IgnoreApiResult]` 標註。
+
+---
+
+## 📦 安裝方式
+*   **Core 核心**: `Install-Package EasyApiProxy`
+*   **Web 端支持**: `Install-Package EasyApiProxy.WebApi`

@@ -20,14 +20,24 @@ namespace EasyApiProxys
     public static class DefaultApiExtension
     {
         /// <summary>
-        /// Header Name 回應代號 X_Api_Result
+        /// Header Name 回應代號
         /// </summary>
-        public const string HeaderName_Result = "X_Api_Result";
+        public const string HeaderName_Result = DefaultApiConstants.Header_Result;
 
         /// <summary>
-        /// Header Name 資料型別 X_Api_DataType
+        /// Header Name 資料型別
         /// </summary>
-        public const string HeaderName_DataType = "X_Api_DataType";
+        public const string HeaderName_DataType = DefaultApiConstants.Header_DataType;
+
+        /// <summary>
+        /// 舊版 Header Name 回應代號
+        /// </summary>
+        public const string HeaderName_Result_Legacy = DefaultApiConstants.Header_Result_Legacy;
+
+        /// <summary>
+        /// 舊版 Header Name 資料型別
+        /// </summary>
+        public const string HeaderName_DataType_Legacy = DefaultApiConstants.Header_DataType_Legacy;
 
         /// <summary>
         /// Default Api 預設 Json Serializer
@@ -83,9 +93,9 @@ namespace EasyApiProxys
 
         internal class DefaultApiHandler
         {
-            private const string RESULT_OK = "OK";
-            private const string RESULT_IM = "IM";
-            private const string RESULT_NON_DEFAULT_API_RESULT = "NON_DEFAULT_API_RESULT";
+            private const string RESULT_OK = DefaultApiConstants.Code_OK;
+            private const string RESULT_IM = DefaultApiConstants.Code_IM;
+            private const string RESULT_NON_DEFAULT_API_RESULT = DefaultApiConstants.Code_NonDefault;
 
             Func<StepContext, Task> _step2;
             Func<StepContext, Task> _step3;
@@ -129,7 +139,7 @@ namespace EasyApiProxys
                 var _options = step.BuilderOptions;
 
                 // 如果沒有回應標頭 那應該是沒有授權或是404之類的錯誤
-                if (!resp.Headers.Contains(HeaderName_Result))
+                if (!resp.Headers.Contains(HeaderName_Result) && !resp.Headers.Contains(HeaderName_Result_Legacy))
                 {
                     // 有http錯誤碼 拋出 HttpRequestException
                     resp.EnsureSuccessStatusCode();
@@ -139,8 +149,13 @@ namespace EasyApiProxys
                     throw ex1;                
                 }
 
-                // 標題含有Result資訊 預先載入
-                var resultCode = resp.Headers.GetValues(HeaderName_Result).SingleOrDefault() ?? RESULT_OK;
+                // 標題含有Result資訊 預先載入 (優先讀取標準格式，若無則讀取舊版)
+                IEnumerable<string> values;
+                string resultCode = RESULT_OK;
+                if (resp.Headers.TryGetValues(HeaderName_Result, out values))
+                    resultCode = values.SingleOrDefault() ?? RESULT_OK;
+                else if (resp.Headers.TryGetValues(HeaderName_Result_Legacy, out values))
+                    resultCode = values.SingleOrDefault() ?? RESULT_OK;
 
                 // 取得回應內容
                 var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
