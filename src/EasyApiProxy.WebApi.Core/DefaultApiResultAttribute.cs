@@ -72,8 +72,8 @@ namespace EasyApiProxys.WebApis
                     else if (ImStatusCode > 0)
                         objResult.StatusCode = ImStatusCode;
 
-                    context.Result = objResult;
                     AddHeaders(context.HttpContext.Response.Headers, ret.Result, GetTypeHint(ret.Data.GetType()));
+                    context.Result = objResult;
                 }
                 else if (ex is ApiCodeException e2)
                 {
@@ -98,9 +98,8 @@ namespace EasyApiProxys.WebApis
                     if (e2.TraceId != null)
                         context.HttpContext.Response.Headers["X-Trace-Id"] = e2.TraceId;
 
-                    context.Result = objResult;
-
                     AddHeaders(context.HttpContext.Response.Headers, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
+                    context.Result = objResult;
                 }
                 else
                 {
@@ -116,6 +115,7 @@ namespace EasyApiProxys.WebApis
                         objResult.StatusCode = ExStatusCode;
 
                     AddHeaders(context.HttpContext.Response.Headers, ret.Result);
+                    context.Result = objResult;
                 }
             }
             // 執行正常
@@ -125,16 +125,18 @@ namespace EasyApiProxys.WebApis
                 if (context.Result is ObjectResult robj)
                 {
                     // 有數值回傳
-                    if (robj.Value != null) {
+                    if (robj.Value != null)
+                    {
 
-                         // 字串轉為 JSON
+                        // 字串轉為 JSON
                         if (robj.DeclaredType == typeof(string))
                             context.Result = new JsonResult(robj.Value);
 
                         AddHeaders(context.HttpContext.Response.Headers, RESULT_OK, robj.Value != null ? GetTypeHint(robj.Value.GetType()) : null);
                     }
                     // 沒有數值
-                    else {
+                    else
+                    {
                         AddHeaders(context.HttpContext.Response.Headers, RESULT_OK);
                         context.Result = new NoContentResult();
                     }
@@ -228,7 +230,7 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         static string? GetTypeHint(Type? type)
         {
-            if(type == null) return null;
+            if (type == null) return null;
 
             //匿名型別
             var isAnonymousType = type.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false)

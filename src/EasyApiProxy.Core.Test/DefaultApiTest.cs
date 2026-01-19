@@ -42,12 +42,17 @@ public class DefaultApiTest : BaseTest
         // no result
         await api1.NoResult2();
 
-        // api exception
-        var ex = Assert.Catch<ApiCodeException>(
-            () => api1.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult())
-            ?? throw new NullReferenceException();
-        Assert.That(ex.Code, Is.EqualTo("EX"));
-        Assert.That(ex.Message, Is.EqualTo("The Token Not exists"));
+        try
+        {
+            await api1.GetEmail(new TokenInfo { Token = "0" }).ConfigureAwait(false);
+            Assert.Fail("No Exception");
+        }
+        catch (Exception ex1)
+        {
+            var ex2 = ex1 as ApiCodeException ?? throw new NullReferenceException("Not ApiCodeException:" + ex1.ToString());
+            Assert.That(ex2.Code, Is.EqualTo("EX"));
+            Assert.That(ex2.Message, Is.EqualTo("The Token Not exists"));
+        }
     }
 
     /// <summary>
@@ -291,7 +296,7 @@ public class DefaultApiTest : BaseTest
         Assert.That(ex1.Code, Is.EqualTo(req1.Result));
         Assert.That(ex1.Message, Is.EqualTo(req1.Message));
         Assert.That(ex1.ErrorData, Is.Not.Null);
-        var data2 = (JsonObject) ex1!.ErrorData!;
+        var data2 = (JsonObject)ex1!.ErrorData!;
         // 這個因為使用不同的Json庫 所以有差異 .net framework 會得到匿名類別
         Assert.That(data2["a"]?.GetValue<int>() == data1.a, Is.True);
         Assert.That(data2["b"]?.GetValue<string>() == data1.b, Is.True);
@@ -379,7 +384,7 @@ public class DefaultApiTest : BaseTest
         var proxy1 = factory.Create(null!);
         var api1 = proxy1.Api;
 
-        var ex1 = Assert.CatchAsync<ApiCodeException>( () => api1.Login(new Login { Account = "david", Password = "pwd" }));
+        var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Login(new Login { Account = "david", Password = "pwd" }));
         Assert.That(ex1.Code, Is.EqualTo("InvalidAccount"));
         Assert.That(ex1.StatusCode, Is.EqualTo(401));
         Assert.That(ex1.TargetUrl, Is.EqualTo("http://localhost:5249/api/Demo2/Login"));
