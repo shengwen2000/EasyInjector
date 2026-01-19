@@ -16,140 +16,63 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
     [Route("api/[controller]/[action]")]
     // 使用Default API 封裝回應
     [DefaultApiResult]
-    public class Demo2Controller : ControllerBase, IDemoApi
+    [ExceptionStatus<ApplicationException>(503)]
+    [ExceptionStatus<NotSupportedException>(525)]
+    public class Demo2Controller : ControllerBase, IDemo2Api
     {
-        public Demo2Controller()
-        {
-        }
-
-        [HttpGet]
-        public string Ping()
-        {
-            return "Hello Ping";
-        }
-
         [HttpPost]
-        public async Task<AccountInfo> Login(Login req)
+        public Task Error1()
         {
-            await Task.Delay(1000);
-            if (req.Account == "david" && req.Password == "123")
-            {
-                return new AccountInfo
-                {
-                    Account = req.Account,
-                    Token = "123456789",
-                    Expired = DateTime.Now.AddHours(1),
-                    Roles = [Roles.AdminUser]
-                };
-            }
-            throw new ApiCodeException(ErrorCodes.InvalidAccount, "Invalid Account");
-        }
-
-        [HttpPost]
-        public async Task Logout(TokenInfo req)
-        {
-            await Task.Delay(1000);
-            if (req.Token == "123456789")
-                return;
             throw new ApiCodeException(ErrorCodes.InvalidToken, "The Token Not exists");
         }
 
+        [ExceptionStatus<InvalidOperationException>(409)]
         [HttpPost]
-        public async Task<string> GetEmail(TokenInfo req)
+        public Task Error2()
         {
-            await Task.Delay(1000);
-            if (req.Token == "123456789")
-            {
-                return "david@gmail.com";
-            }
-            throw new ApiCodeException(ErrorCodes.InvalidToken, "The Token Not exists");
+            throw new InvalidOperationException("This is an invalid operation exception");
         }
 
         [HttpPost]
-        public string GetServerInfo()
+        public Task Error2A()
         {
-            return "Demo Server";
+            throw new ApplicationException("This is an application exception");
         }
 
         [HttpPost]
-        public Task<string> RunProc(ProcInfo req)
+        public Task Error2B()
         {
-            return RunProc_001(req);
+            throw new NotImplementedException("This is a not implemented exception");
         }
 
         [HttpPost]
-        public async Task<string> RunProc_001(ProcInfo req)
+        public Task Error2C()
         {
-            if (req.ProcSeconds > 0)
-                await Task.Delay(TimeSpan.FromSeconds(req.ProcSeconds));
-            return string.Format("OK {0}", req.ProcSeconds);
+            throw new NotSupportedException("This is a not supported exception");
         }
 
         [HttpPost]
-        public Task RaiseValidateError()
+        [ExceptionStatus<InvalidOperationException>(535)]
+        public Task Error2D()
         {
-            var info = new AccountInfo();
-            throw GenPropError(info, o => o.Account, "帳號為必要");
+            throw new NotSupportedException("This is a not supported exception");
         }
 
         [HttpPost]
-        public void NoResult()
+        public Task Error3()
         {
+            throw new ValidationException("This is a validation exception");
         }
-
         [HttpPost]
-        public Task NoResult2()
+        public Task Error3A()
         {
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
-
-        [Authorize(AuthenticationSchemes = "Hawk", Roles = "Admins")]
         [HttpPost]
-        public async Task<string> HawkApi()
+        public Task Error3B()
         {
-            await Task.FromResult(0);
-            return "hawk api ok";
+            throw new NotImplementedException();
         }
-
-        [Authorize(AuthenticationSchemes = "Basic", Roles = "Admins")]
-        [HttpPost]
-        public async Task<string> BasicApi()
-        {
-            await Task.FromResult(0);
-            return "basic api ok";
-        }
-
-        [HttpPost]
-        public Task<string> GetBearerToken()
-        {
-            if(Request.Headers.Authorization.Any(x => x?.StartsWith("Bearer ") == true)) {
-                var token = Request.Headers.Authorization.First(x => x?.StartsWith("Bearer ") == true);
-                return Task.FromResult(token![7..]);
-            }
-            return Task.FromResult("");
-        }
-
-        [HttpPost]
-        public void ThrowApiException(DefaultApiResult req)
-        {
-            throw new ApiCodeException(req.Result, req.Message, req.Data);
-        }
-
-         /// <summary>
-        /// 產生屬性驗證錯誤
-        /// - thorw ValidationException
-        /// </summary>
-        static public ValidationException GenPropError<T>(T obj, Expression<Func<T, object?>> theProp, string? errorMessage) {
-
-            if(theProp.Body is MemberExpression mb1) {
-                var result = new ValidationResult(errorMessage, [mb1.Member.Name]);
-                return new ValidationException(result, null, obj);
-            }
-            else
-                throw new ApplicationException($"{nameof(theProp)} 必須選擇成員屬性");
-        }
-
-
     }
 
     public enum ErrorCodes

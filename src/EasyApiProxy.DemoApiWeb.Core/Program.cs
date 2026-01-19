@@ -1,3 +1,4 @@
+using EasyApiProxys.WebApis;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// 全域異常對應狀態碼設定
+DefaultApiResultAttribute.ExceptionMap[typeof(NotImplementedException)] = 504;
+DefaultApiResultAttribute.ExceptionMap[typeof(NotSupportedException)] = 515;
 
 // 授權服務註冊
 builder.Services.AddAuthentication()
