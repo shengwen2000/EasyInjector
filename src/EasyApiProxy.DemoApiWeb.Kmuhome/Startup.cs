@@ -40,6 +40,7 @@ namespace KmuApps
             // 全域異常對應狀態碼設定
             KmuhomeApiResultAttribute.ExceptionMap[typeof(NotImplementedException)] = 504;
             KmuhomeApiResultAttribute.ExceptionMap[typeof(NotSupportedException)] = 515;
+            KmuhomeApiResultAttribute.DefaultImStatusCode = 541;
 
             var logger = app.CreateLogger("WebApp");
 

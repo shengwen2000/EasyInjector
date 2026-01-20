@@ -26,7 +26,14 @@ namespace EasyApiProxys.WebApis
         public static bool CompatibleLegacyHeader { get; set; }
 
         /// <summary>
-        /// 預設發生系統異常(EX)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
+        /// 預設發生系統異常(EX)時的 Http 狀態碼
+        /// - 設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
+        /// </summary>
+        public int ExStatusCode { get; set; }
+
+        /// <summary>
+        /// 預設發生驗證錯誤(IM)時的 Http 狀態碼
+        /// - 設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
         /// </summary>
         public int ImStatusCode { get; set; }
 
@@ -205,8 +212,8 @@ namespace EasyApiProxys.WebApis
                         context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
                     else if (ExStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
-                    else if (DefaultImStatusCode > 0)
-                        context.Response.StatusCode = (HttpStatusCode)DefaultImStatusCode;
+                    else if (DefaultExStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)DefaultExStatusCode;
 
                     AddHeaders(context.Response, ret.Result);
                 }

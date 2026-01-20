@@ -39,13 +39,7 @@ namespace EasyApiProxys.DemoApis
         /// 方法優先於類別異常優先於全域指定回傳狀態碼
         /// - NotSupportedException -> 535
         /// </summary>
-        Task Error2D();
-
-        /// <summary>
-        /// IM 全域指定為 541
-        /// - ValidationException
-        /// </summary>
-        Task Error3();
+        Task Error2D();      
 
         /// <summary>
         /// IM 類別指定為 542

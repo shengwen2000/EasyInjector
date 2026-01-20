@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IDemo2Api.cs" />
+    <Compile Include="IDemo3Api.cs" />
     <Compile Include="IDemoApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -363,6 +363,48 @@ public class KmuhomeApiTest : BaseTest
     }
 
     [Test]
+    public async Task StatusCode_ErrorG1()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+            .Build<IDemo3Api>();
+        var proxy1 = factory.Create(null!);
+        var api1 = proxy1.Api;
+
+        var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.ErrorG1());
+        Assert.That(ex1.Code, Is.EqualTo(KmuhomeApiConstants.Code_IM));
+        Assert.That(ex1.StatusCode, Is.EqualTo(541));
+    }
+
+    [Test]
+    public async Task StatusCode_ErrorG2()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+            .Build<IDemo3Api>();
+        var proxy1 = factory.Create(null!);
+        var api1 = proxy1.Api;
+
+        var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.ErrorG2());
+        Assert.That(ex1.Code, Is.EqualTo(KmuhomeApiConstants.Code_EX));
+        Assert.That(ex1.StatusCode, Is.EqualTo(561));
+    }
+
+    [Test]
+    public async Task StatusCode_ErrorG3()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+            .Build<IDemo3Api>();
+        var proxy1 = factory.Create(null!);
+        var api1 = proxy1.Api;
+
+        var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.ErrorG3());
+        Assert.That(ex1.Code, Is.EqualTo(KmuhomeApiConstants.Code_EX));
+        Assert.That(ex1.StatusCode, Is.EqualTo(200));
+    }
+
+    [Test]
     public void AddApiTest()
     {
         var services = new ServiceCollection();

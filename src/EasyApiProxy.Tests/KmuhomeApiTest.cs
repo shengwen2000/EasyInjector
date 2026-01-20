@@ -54,7 +54,7 @@ namespace Tests
 
             // api exception
             var ex = Assert.Catch<ApiCodeException>(() => api1.GetEmail(new TokenInfo { Token = "0" }).GetAwaiter().GetResult());
-            Assert.AreEqual("ex", ex.Code);
+            Assert.AreEqual(KmuhomeApiConstants.Code_EX, ex.Code);
 
             Assert.AreEqual(ex.Message, "The Token Not exists");
 
@@ -211,7 +211,7 @@ namespace Tests
             // 觸發 IM Exception
             var ex = Assert.Catch<ApiCodeException>(() => api1.Login(new Login { Account = "A12345678910", Password = "123" })
                 .GetAwaiter().GetResult());
-            Assert.That(ex.Code, Is.EqualTo("im"));
+            Assert.That(ex.Code, Is.EqualTo(KmuhomeApiConstants.Code_IM));
             Assert.That(ex.ErrorData, Is.Not.Null);
 
             var errs = ex.ErrorData as JArray;
@@ -232,7 +232,7 @@ namespace Tests
 
             var ex = Assert.Catch<ApiCodeException>(() => api1.RaiseValidateError()
                 .GetAwaiter().GetResult());
-            Assert.That(ex.Code, Is.EqualTo("im"));
+            Assert.That(ex.Code, Is.EqualTo(KmuhomeApiConstants.Code_IM));
             Assert.That(ex.ErrorData is JArray, Is.True);
             var errs = ex.ErrorData as JArray;
             var e1 = errs.First() as JObject;
@@ -390,6 +390,48 @@ namespace Tests
             var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error3B().GetAwaiter().GetResult());
             Assert.That(ex1.Code, Is.EqualTo(KmuhomeApiConstants.Code_IM));
             Assert.That(ex1.StatusCode, Is.EqualTo(543));
+        }
+
+        [Test]
+        public void StatusCode_ErrorG1()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+                .Build<IDemo3Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.ErrorG1().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo(KmuhomeApiConstants.Code_IM));
+            Assert.That(ex1.StatusCode, Is.EqualTo(541));
+        }
+
+        [Test]
+        public void StatusCode_ErrorG2()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+                .Build<IDemo3Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.ErrorG2().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo(KmuhomeApiConstants.Code_EX));
+            Assert.That(ex1.StatusCode, Is.EqualTo(561));
+        }
+
+        [Test]
+        public void StatusCode_ErrorG3()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+                .Build<IDemo3Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.ErrorG3().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo(KmuhomeApiConstants.Code_EX));
+            Assert.That(ex1.StatusCode, Is.EqualTo(200));
         }
     }
 }
