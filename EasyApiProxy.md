@@ -210,7 +210,7 @@ builder.UseBasicAuthorize(new BasicCredential { Account = "...", PassCode = "...
 
 ## 🔍 診斷與異常處理 (Diagnostics)
 
-當發生錯誤（如斷網、404 或 `X_Api_Result` 非 `OK`）時，系統會拋出 `ApiCodeException`，包含 `TraceId`、`TargetUrl` 等診斷上下文資訊。
+當發生錯誤（如斷網、404 或 `X-Api-Result` 非 `OK`）時，系統會拋出 `ApiCodeException`，包含 `TraceId`、`TargetUrl` 等診斷上下文資訊。
 
 ---
 
