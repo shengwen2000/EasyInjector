@@ -180,10 +180,10 @@ namespace Tests
         [Test]
         public async void DefaultApiTest002_AuthHeader()
         {
-            await Task.FromResult(0);           
+            await Task.FromResult(0);
 
             {
-                var factory = new ApiProxyBuilder()                                     
+                var factory = new ApiProxyBuilder()
                     .UseDefaultApiProtocol("http://localhost:5249/api/Demo")
                     // Server 直接使用 Basic驗證 Header admin:admin1234
                     .UseAuthorizationHeader("Basic YWRtaW46YWRtaW4xMjM0")
@@ -195,7 +195,7 @@ namespace Tests
                 var ret1 = await api1.BasicApi();
                 Assert.AreEqual(ret1, "basic api ok");
             }
-        }      
+        }
 
         /// <summary>
         /// 指定 Mehtod 與 Timeout
@@ -298,7 +298,7 @@ namespace Tests
 
                 Assert.That(before1, Is.True);
                 Assert.That(after1, Is.True);
-            }            
+            }
         }
 
         [Test]
@@ -310,7 +310,8 @@ namespace Tests
             var proxy1 = factory.Create(null);
             var api1 = proxy1.Api;
             var data1 = new { a = 123, b = "abc" };
-            var req1 = new DefaultApiResult { 
+            var req1 = new DefaultApiResult
+            {
                 Result = "DEMO1",
                 Message = "DEMO1MSG",
                 Data = data1
@@ -325,6 +326,122 @@ namespace Tests
             Assert.That(a.a == data1.a, Is.True);
             Assert.That(a.b == data1.b, Is.True);
 
+        }
+
+        [Test]
+        public void StatusCode_Error1()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error1().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("InvalidAccount"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(401));
+            Assert.That(ex1.TargetUrl, Is.EqualTo("http://localhost:5249/api/Demo2/Error1"));
+            Assert.That(ex1.HttpMethod, Is.EqualTo("POST"));
+            Assert.That(ex1.ErrorData, Is.Null);
+            Console.WriteLine(ex1.ToString());
+        }
+
+        [Test]
+        public void StatusCode_Error2()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error2().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("EX"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(409));
+        }
+
+        [Test]
+        public void StatusCode_Error2A()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error2A().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("EX"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(503));
+        }
+
+        [Test]
+        public void StatusCode_Error2B()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error2B().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("EX"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(504));
+        }
+
+        [Test]
+        public void StatusCode_Error2C()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error2C().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("EX"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(525));
+        }
+
+        [Test]
+        public void StatusCode_Error2D()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error2D().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("EX"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(535));
+        }
+
+        [Test]
+        public void StatusCode_Error3A()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error3A().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("IM"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(542));
+        }
+
+        [Test]
+        public void StatusCode_Error3B()
+        {
+            var factory = new ApiProxyBuilder()
+                .UseDefaultApiProtocol("http://localhost:5249/api/Demo2", 20)
+                .Build<IDemo2Api>();
+            var proxy1 = factory.Create(null);
+            var api1 = proxy1.Api;
+
+            var ex1 = Assert.Catch<ApiCodeException>(() => api1.Error3B().GetAwaiter().GetResult());
+            Assert.That(ex1.Code, Is.EqualTo("IM"));
+            Assert.That(ex1.StatusCode, Is.EqualTo(543));
         }
 
     }

@@ -48,6 +48,11 @@ namespace EasyApiProxys.WebApis
 
         public override void OnActionExecuting(HttpActionContext context)
         {
+            // 類別或方法都有標記的話 只能執行一次(就是方法上的)
+            if (context.ActionDescriptor.GetCustomAttributes<DefaultApiResultAttribute>().Last() != this)
+                return;
+
+            // 有 Ignore 標記的話 不處理
             if (context.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
                 return;
 
@@ -104,6 +109,11 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            // 類別或方法都有標記的話 只能執行一次(就是方法上的)
+            if (context.ActionContext.ActionDescriptor.GetCustomAttributes<DefaultApiResultAttribute>().Last() != this)
+                return;
+
+            // 有 Ignore 標記的話 不處理
             if (context.ActionContext.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
                 return;
 
@@ -166,14 +176,17 @@ namespace EasyApiProxys.WebApis
                     if (e2.TraceId != null)
                         context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
 
-                AddHeaders(context.Response, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
+                    AddHeaders(context.Response, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
+                }
             }
             // 執行正常
             else
             {
                 // 有內容
-                if (context.Response.Content is ObjectContent robj)
+                if (context.Response.Content is ObjectContent)
                 {
+                    var robj = context.Response.Content as ObjectContent;
+
                     // 有數值回傳
                     if (robj.Value != null)
                     {
@@ -276,8 +289,10 @@ namespace EasyApiProxys.WebApis
                 .FirstOrDefault(a => a.ExceptionType == exType);
             if (controllerAttr != null) return controllerAttr.StatusCode;
 
+            int statusCode;
+
             // 2. 從全域對應表查找 (方案 A)
-            if (ExceptionMap.TryGetValue(exType, out int statusCode))
+            if (ExceptionMap.TryGetValue(exType, out statusCode))
                 return statusCode;
 
             return null;

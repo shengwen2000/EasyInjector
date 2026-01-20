@@ -104,6 +104,11 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            // 類別或方法都有標記的話 只能執行一次(就是方法上的)
+            if (context.ActionContext.ActionDescriptor.GetCustomAttributes<KmuhomeApiResultAttribute>().Last() != this)
+                return;
+
+            // 有 Ignore 標記的話 不處理
             if (context.ActionContext.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
                 return;
 
@@ -295,7 +300,8 @@ namespace EasyApiProxys.WebApis
             if (controllerAttr != null) return controllerAttr.StatusCode;
 
             // 2. 從全域對應表查找 (方案 A)
-            if (ExceptionMap.TryGetValue(exType, out int statusCode))
+            int statusCode;
+            if (ExceptionMap.TryGetValue(exType, out statusCode))
                 return statusCode;
 
             return null;
