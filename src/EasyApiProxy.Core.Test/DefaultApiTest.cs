@@ -49,7 +49,7 @@ public class DefaultApiTest : BaseTest
         catch (Exception ex1)
         {
             var ex2 = ex1 as ApiCodeException ?? throw new NullReferenceException("Not ApiCodeException:" + ex1.ToString());
-            Assert.That(ex2.Code, Is.EqualTo("EX"));
+            Assert.That(ex2.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
             Assert.That(ex2.Message, Is.EqualTo("The Token Not exists"));
         }
     }
@@ -488,6 +488,48 @@ public class DefaultApiTest : BaseTest
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error3B());
         Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_IM));
         Assert.That(ex1.StatusCode, Is.EqualTo(543));
+    }
+
+    [Test]
+    public async Task StatusCode_ErrorG1()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+            .Build<IDemo3Api>();
+        var proxy1 = factory.Create(null!);
+        var api1 = proxy1.Api;
+
+        var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.ErrorG1());
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_IM));
+        Assert.That(ex1.StatusCode, Is.EqualTo(541));
+    }
+
+    [Test]
+    public async Task StatusCode_ErrorG2()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+            .Build<IDemo3Api>();
+        var proxy1 = factory.Create(null!);
+        var api1 = proxy1.Api;
+
+        var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.ErrorG2());
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
+        Assert.That(ex1.StatusCode, Is.EqualTo(561));
+    }
+
+    [Test]
+    public async Task StatusCode_ErrorG3()
+    {
+        var factory = new ApiProxyBuilder()
+            .UseDefaultApiProtocol("http://localhost:5249/api/Demo3", 20)
+            .Build<IDemo3Api>();
+        var proxy1 = factory.Create(null!);
+        var api1 = proxy1.Api;
+
+        var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.ErrorG3());
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
+        Assert.That(ex1.StatusCode, Is.EqualTo(200));
     }
 
 }

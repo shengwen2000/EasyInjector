@@ -23,12 +23,17 @@ namespace EasyApiProxys.WebApis
         /// <summary>
         /// 預設發生系統異常(EX)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
         /// </summary>
-        public int ExStatusCode { get; set; }
+        public int ImStatusCode { get; set; }
 
         /// <summary>
-        /// 預設發生驗證錯誤(IM)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
+        /// 全域預設發生系統異常(EX)時的 Http 狀態碼
         /// </summary>
-        public int ImStatusCode { get; set; }
+        public static int DefaultExStatusCode { get; set; }
+
+        /// <summary>
+        /// 全域預設發生驗證錯誤(IM)時的 Http 狀態碼
+        /// </summary>
+        public static int DefaultImStatusCode { get; set; }
 
         /// <summary>
         /// 是否向後相容輸出舊版底線 Header (預設 false)
@@ -95,7 +100,7 @@ namespace EasyApiProxys.WebApis
 
                 var jsonMediaTypeFormater = context.ControllerContext.Configuration.Formatters.OfType<JsonMediaTypeFormatter>().First();
 
-                var statusCode = ImStatusCode > 0 ? (HttpStatusCode)ImStatusCode : HttpStatusCode.OK;
+                var statusCode = ImStatusCode > 0 ? (HttpStatusCode)ImStatusCode : (DefaultImStatusCode > 0 ? (HttpStatusCode)DefaultImStatusCode : HttpStatusCode.OK);
                 var response1 = new HttpResponseMessage(statusCode)
                 {
                     Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater)
@@ -158,6 +163,8 @@ namespace EasyApiProxys.WebApis
                         context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
                     else if (ImStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ImStatusCode;
+                    else if (DefaultImStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)DefaultImStatusCode;
 
                     AddHeaders(context.Response, ret.Result, GetTypeHint(ret.Data.GetType()));
                 }
@@ -176,10 +183,10 @@ namespace EasyApiProxys.WebApis
                         context.Response.StatusCode = (HttpStatusCode)e2.StatusCode.Value;
                     else if (mappedStatusCode.HasValue)
                         context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
-                    else if (e2.IsSystemError && ExStatusCode > 0)
-                        context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
-                    else if (e2.IsValidationError && ImStatusCode > 0)
-                        context.Response.StatusCode = (HttpStatusCode)ImStatusCode;
+                    else if (e2.IsSystemError && (ExStatusCode > 0 || DefaultExStatusCode > 0))
+                        context.Response.StatusCode = (HttpStatusCode)(ExStatusCode > 0 ? ExStatusCode : DefaultExStatusCode);
+                    else if (e2.IsValidationError && (ImStatusCode > 0 || DefaultImStatusCode > 0))
+                        context.Response.StatusCode = (HttpStatusCode)(ImStatusCode > 0 ? ImStatusCode : DefaultImStatusCode);
                     // 2.設定 Trace ID
                     if (e2.TraceId != null)
                         context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
@@ -198,6 +205,8 @@ namespace EasyApiProxys.WebApis
                         context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
                     else if (ExStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
+                    else if (DefaultExStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)DefaultExStatusCode;
 
                     AddHeaders(context.Response, ret.Result);
                 }

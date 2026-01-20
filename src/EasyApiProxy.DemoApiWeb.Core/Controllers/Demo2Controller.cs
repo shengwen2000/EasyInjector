@@ -56,11 +56,11 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             throw new NotSupportedException("This is a not supported exception");
         }
 
-        // [HttpPost]
-        // public Task Error3()
-        // {
-        //     throw new ValidationException("This is a validation exception");
-        // }
+        [HttpPost]
+        public Task Error3()
+        {
+            throw new ValidationException("This is a validation exception");
+        }
 
         [HttpPost]
         public Task Error3A()

@@ -41,12 +41,6 @@ namespace EasyApiProxys.DemoApis
         Task Error2D();
 
         /// <summary>
-        /// IM 全域指定為 541
-        /// - ValidationException
-        /// </summary>
-        //Task Error3();
-
-        /// <summary>
         /// IM 類別指定為 542
         /// </summary>
         Task Error3A();
