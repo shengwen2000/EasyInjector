@@ -13,7 +13,7 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
     [ApiController]
     [Route("api/[controller]/[action]")]
     // 使用Default API 封裝回應
-    [DefaultApiResult(ImStatusCode = 542)]
+    [KmuhomeApiResult(ImStatusCode = 542)]
     [ExceptionStatus<ApplicationException>(503)]
     [ExceptionStatus<NotSupportedException>(525)]
     public class Demo2Controller : ControllerBase, IDemo2Api
@@ -68,7 +68,7 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             throw new ValidationException("This is a validation exception");
         }
 
-        [DefaultApiResult(ImStatusCode = 543)]
+        [KmuhomeApiResult(ImStatusCode = 543)]
         [HttpPost]
         public Task Error3B()
         {

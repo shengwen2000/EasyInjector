@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using EasyApiProxys;
 using EasyApiProxys.BasicAuth;
@@ -403,7 +402,7 @@ public class DefaultApiTest : BaseTest
         var api1 = proxy1.Api;
 
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error2());
-        Assert.That(ex1.Code, Is.EqualTo("EX"));
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
         Assert.That(ex1.StatusCode, Is.EqualTo(409));
     }
 
@@ -417,7 +416,7 @@ public class DefaultApiTest : BaseTest
         var api1 = proxy1.Api;
 
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error2A());
-        Assert.That(ex1.Code, Is.EqualTo("EX"));
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
         Assert.That(ex1.StatusCode, Is.EqualTo(503));
     }
 
@@ -431,7 +430,7 @@ public class DefaultApiTest : BaseTest
         var api1 = proxy1.Api;
 
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error2B());
-        Assert.That(ex1.Code, Is.EqualTo("EX"));
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
         Assert.That(ex1.StatusCode, Is.EqualTo(504));
     }
 
@@ -445,7 +444,7 @@ public class DefaultApiTest : BaseTest
         var api1 = proxy1.Api;
 
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error2C());
-        Assert.That(ex1.Code, Is.EqualTo("EX"));
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
         Assert.That(ex1.StatusCode, Is.EqualTo(525));
     }
 
@@ -459,7 +458,7 @@ public class DefaultApiTest : BaseTest
         var api1 = proxy1.Api;
 
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error2D());
-        Assert.That(ex1.Code, Is.EqualTo("EX"));
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_EX));
         Assert.That(ex1.StatusCode, Is.EqualTo(535));
     }
 
@@ -473,7 +472,7 @@ public class DefaultApiTest : BaseTest
         var api1 = proxy1.Api;
 
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error3A());
-        Assert.That(ex1.Code, Is.EqualTo("IM"));
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_IM));
         Assert.That(ex1.StatusCode, Is.EqualTo(542));
     }
 
@@ -487,7 +486,7 @@ public class DefaultApiTest : BaseTest
         var api1 = proxy1.Api;
 
         var ex1 = Assert.CatchAsync<ApiCodeException>(() => api1.Error3B());
-        Assert.That(ex1.Code, Is.EqualTo("IM"));
+        Assert.That(ex1.Code, Is.EqualTo(DefaultApiConstants.Code_IM));
         Assert.That(ex1.StatusCode, Is.EqualTo(543));
     }
 

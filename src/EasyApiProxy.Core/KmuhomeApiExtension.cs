@@ -4,7 +4,7 @@ using System.Text;
 using System.Net;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using static EasyApiProxys.DefaultApiExtension;
+using System.Globalization;
 
 namespace EasyApiProxys
 {
@@ -16,12 +16,22 @@ namespace EasyApiProxys
         /// <summary>
         /// Header Name 回應代號 X_Api_Result
         /// </summary>
-        public const string HeaderName_Result = "X_Api_Result";
+        public const string HeaderName_Result = KmuhomeApiConstants.Header_Result;
 
         /// <summary>
         /// Header Name 資料型別 X_Api_DataType
         /// </summary>
-        public const string HeaderName_DataType = "X_Api_DataType";
+        public const string HeaderName_DataType = KmuhomeApiConstants.Header_DataType;
+
+        /// <summary>
+        /// 舊版 Header Name 回應代號
+        /// </summary>
+        public const string HeaderName_Result_Legacy = KmuhomeApiConstants.Header_Result_Legacy;
+
+        /// <summary>
+        /// 舊版 Header Name 資料型別
+        /// </summary>
+        public const string HeaderName_DataType_Legacy = KmuhomeApiConstants.Header_DataType_Legacy;
 
         /// <summary>
         /// Kmuhome Api 預設 JsonSerializer Options
@@ -64,9 +74,9 @@ namespace EasyApiProxys
             Func<StepContext, Task>? step2,
             Func<StepContext, Task>? step3)
         {
-            private const string RESULT_OK = "ok";
-            private const string RESULT_IM = "im";
-            private const string RESULT_NON_DEFAULT_API_RESULT = "non_default_api_result";
+            private const string RESULT_OK = KmuhomeApiConstants.Code_OK;
+            private const string RESULT_IM = KmuhomeApiConstants.Code_IM;
+            private const string RESULT_NON_DEFAULT_API_RESULT = KmuhomeApiConstants.Code_NonDefault;
 
             public async Task Step2(StepContext step)
             {
@@ -96,23 +106,25 @@ namespace EasyApiProxys
                 var _options = step.BuilderOptions;
 
                 // 如果沒有回應標頭 那應該是沒有授權或是404之類的錯誤
-                if (!resp.Headers.Contains(HeaderName_Result))
+                if (!resp.Headers.Contains(HeaderName_Result) && !resp.Headers.Contains(HeaderName_Result_Legacy))
                 {
                     // 有http錯誤碼 拋出 HttpRequestException
                     resp.EnsureSuccessStatusCode();
                     // 沒有http錯誤碼 但沒有標頭 拋出無法解析錯誤
-                    var ex1 = new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非協議格式無法解析");
-                    SetDebugInfo(ex1, resp);
-                    throw ex1;
+                    throw new ApiCodeException(RESULT_NON_DEFAULT_API_RESULT, "回應內容非協議格式無法解析");
                 }
 
-                // 標題含有Result資訊 預先載入
-                var resultCode = resp.Headers.GetValues(HeaderName_Result).First();
+                // 標題含有Result資訊 預先載入 (優先讀取標準格式，若無則讀取舊版)
+                string resultCode = RESULT_OK;
+                if (resp.Headers.TryGetValues(HeaderName_Result, out var values))
+                    resultCode = values.First();
+                else if (resp.Headers.TryGetValues(HeaderName_Result_Legacy, out values))
+                    resultCode = values.First();
 
                 // 取得回應內容
                 using var s1 = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-                // 方法沒有回傳值(void | task)
+                // 方法已經確定回傳值(void | task)
                 if (invocation.Method.ReturnType == typeof(void) || invocation.Method.ReturnType == typeof(Task))
                 {
                     // ok
@@ -201,6 +213,28 @@ namespace EasyApiProxys
                 retEx.HttpMethod = resp.RequestMessage?.Method.Method;
                 retEx.TargetUrl = resp.RequestMessage?.RequestUri?.ToString();
                 retEx.TraceId = traceId;
+            }
+        }
+
+        /// <summary>
+        /// JSON日期格式
+        /// </summary>
+        public class DateTimeConverter : JsonConverter<DateTime>
+        {
+            /// <summary>
+            /// 讀取
+            /// </summary>
+            public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                return DateTime.Parse(reader.GetString()!, CultureInfo.InvariantCulture);
+            }
+
+            /// <summary>
+            /// 寫入
+            /// </summary>
+            public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture));
             }
         }
 
