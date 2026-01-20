@@ -22,5 +22,11 @@ namespace EasyApiProxys.DemoApis
         /// - 未指定例外 ArgumentException
         /// </summary>
         Task ErrorG3();
+
+        /// <summary>
+        /// 忽略此方法，不進行 API 封裝
+        /// - 回傳 571 Ignore It
+        /// </summary>
+        string IgnoreIt();
     }
 }

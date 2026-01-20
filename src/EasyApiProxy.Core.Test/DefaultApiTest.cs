@@ -532,4 +532,51 @@ public class DefaultApiTest : BaseTest
         Assert.That(ex1.StatusCode, Is.EqualTo(200));
     }
 
+    [Test]
+    public async Task StatusCode_IgnoreIt()
+    {
+        var http = new HttpClient
+        {
+            BaseAddress = new Uri("http://localhost:5249/api/Demo3/")
+        };
+        var response = await http.PostAsync("IgnoreIt", null);
+
+        Assert.That(response.StatusCode, Is.EqualTo((System.Net.HttpStatusCode)571));
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.That(content, Is.EqualTo("\"Ignore It\""));
+    }
+
+    [Test]
+    public async Task LegacyHeaderEnabled()
+    {
+        var http = new HttpClient
+        {
+            BaseAddress = new Uri("http://localhost:5249/api/Demo3/")
+        };
+        var response = await http.PostAsync("LegacyHeaderEnabled", null);
+
+        Assert.That(response.Headers.Contains("X_Api_Result"), Is.True);
+        Assert.That(response.Headers.Contains("X_Api_DataType"), Is.True);
+
+        Assert.That(response.Headers.Contains("X-Api-Result"), Is.True);
+        Assert.That(response.Headers.Contains("X-Api-DataType"), Is.True);
+
+    }
+
+    [Test]
+    public async Task LegacyHeaderDisabled()
+    {
+        var http = new HttpClient
+        {
+            BaseAddress = new Uri("http://localhost:5249/api/Demo3/")
+        };
+        var response = await http.PostAsync("LegacyHeaderDisabled", null);
+
+        Assert.That(response.Headers.Contains("X_Api_Result"), Is.False);
+        Assert.That(response.Headers.Contains("X_Api_DataType"), Is.False);
+
+        Assert.That(response.Headers.Contains("X-Api-Result"), Is.True);
+        Assert.That(response.Headers.Contains("X-Api-DataType"), Is.True);
+    }
+
 }

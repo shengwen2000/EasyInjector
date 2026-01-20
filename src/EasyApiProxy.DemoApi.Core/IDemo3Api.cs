@@ -21,5 +21,11 @@ namespace EasyApiProxys.DemoApis
         /// - 未指定例外 ArgumentException
         /// </summary>
         Task ErrorG3();
+
+        /// 測試 舊版 Header 啟用
+        int LegacyHeaderEnabled();
+
+        /// 測試 舊版 Header 停用
+        int LegacyHeaderDisabled();
     }
 }

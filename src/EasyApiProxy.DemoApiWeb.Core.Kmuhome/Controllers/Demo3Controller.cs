@@ -35,5 +35,26 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             KmuhomeApiResultAttribute.DefaultExStatusCode = 0;
             throw new ArgumentException("This is an argument exception");
         }
+
+        [HttpPost]
+        public string IgnoreIt()
+        {
+            Response.StatusCode = 571;
+            return "Ignore It";
+        }
+
+        [HttpPost]
+        public int LegacyHeaderEnabled()
+        {
+            KmuhomeApiResultAttribute.CompatibleLegacyHeader = true;
+            return 2;
+        }
+
+        [HttpPost]
+        public int LegacyHeaderDisabled()
+        {
+            KmuhomeApiResultAttribute.CompatibleLegacyHeader = false;
+            return 1;
+        }
     }
 }
