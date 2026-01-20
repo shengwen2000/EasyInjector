@@ -33,12 +33,18 @@ namespace EasyApiProxys.WebApis
         /// <summary>
         /// 是否向後相容輸出舊版底線 Header (預設 false)
         /// </summary>
-        public static bool CompatibleLegacyHeader { get; set; } = false;
+        public static bool CompatibleLegacyHeader { get; set; }
 
         /// <summary>
         /// 全域異常對應表 (方案 A)
         /// </summary>
-        public static System.Collections.Generic.Dictionary<Type, int> ExceptionMap { get; } = new System.Collections.Generic.Dictionary<Type, int>();
+        public static System.Collections.Generic.Dictionary<Type, int> ExceptionMap { get; private set; }
+
+        static DefaultApiResultAttribute()
+        {
+            CompatibleLegacyHeader = false;
+            ExceptionMap = new System.Collections.Generic.Dictionary<Type, int>();
+        }
 
         public override void OnActionExecuting(HttpActionContext context)
         {
@@ -86,7 +92,7 @@ namespace EasyApiProxys.WebApis
                     Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater)
                 };
                 AddHeaders(response1, ret.Result, GetTypeHint(ret.Data.GetType()));
-                context.Response = response1;     
+                context.Response = response1;
             }
             else
                 base.OnActionExecuting(context);
@@ -159,7 +165,7 @@ namespace EasyApiProxys.WebApis
                     // 2.設定 Trace ID
                     if (e2.TraceId != null)
                         context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
-                    
+
                 AddHeaders(context.Response, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
             }
             // 執行正常
@@ -230,7 +236,7 @@ namespace EasyApiProxys.WebApis
                     sw.Write(type.Name.Substring(0, pos));
                     sw.Write("<");
 
-                    var targs = type.GenericTypeArguments;
+                    var targs = type.GetGenericArguments();
                     var index = 0;
                     foreach (var targ in targs)
                     {

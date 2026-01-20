@@ -16,15 +16,14 @@ namespace EasyApiProxys.WebApis
     /// </summary>
     public class KmuhomeApiResultAttribute : ActionFilterAttribute
     {
-        private const string ResultHeader = DefaultApiExtension.HeaderName_Result;
+        private const string RESULT_OK = KmuhomeApiConstants.Code_OK;
+        private const string RESULT_EX = KmuhomeApiConstants.Code_EX;
+        private const string RESULT_IM = KmuhomeApiConstants.Code_IM;
 
         /// <summary>
-        /// 資料類型 {data}
+        /// 是否向後相容輸出舊版底線 Header (預設 false)
         /// </summary>
-        private const string DataTypeHeader = DefaultApiExtension.HeaderName_DataType;
-        private const string RESULT_OK = "ok";
-        private const string RESULT_EX = "ex";
-        private const string RESULT_IM = "im";
+        public static bool CompatibleLegacyHeader { get; set; }
 
         /// <summary>
         /// 預設發生系統異常(EX)時的 Http 狀態碼，設定為 0 (預設值) 表示不特別指定，維持原本狀態碼。
@@ -39,7 +38,13 @@ namespace EasyApiProxys.WebApis
         /// <summary>
         /// 全域異常對應表 (方案 A)
         /// </summary>
-        public static System.Collections.Generic.Dictionary<Type, int> ExceptionMap { get; } = new System.Collections.Generic.Dictionary<Type, int>();
+        public static System.Collections.Generic.Dictionary<Type, int> ExceptionMap { get; private set; }
+
+        static KmuhomeApiResultAttribute()
+        {
+            CompatibleLegacyHeader = false;
+            ExceptionMap = new System.Collections.Generic.Dictionary<Type, int>();
+        }
 
         public override void OnActionExecuting(HttpActionContext context)
         {
@@ -86,8 +91,7 @@ namespace EasyApiProxys.WebApis
                 {
                     Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater)
                 };
-                response1.Headers.Add(ResultHeader, ret.Result);
-                response1.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
+                AddHeaders(response1, ret.Result, GetTypeHint(ret.Data.GetType()));
                 context.Response = response1;     
             }
             else
@@ -137,8 +141,7 @@ namespace EasyApiProxys.WebApis
                     else if (ImStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ImStatusCode;
 
-                    context.Response.Headers.Add(ResultHeader, ret.Result);
-                    context.Response.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
+                    AddHeaders(context.Response, ret.Result, GetTypeHint(ret.Data.GetType()));
                 }
                 else if (ex is ApiCodeException)
                 {
@@ -163,9 +166,7 @@ namespace EasyApiProxys.WebApis
                     if (e2.TraceId != null)
                         context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
 
-                    context.Response.Headers.Add(ResultHeader, ret.Result);
-                    if (ret.Data != null)
-                        context.Response.Headers.Add(DataTypeHeader, GetTypeHint(ret.Data.GetType()));
+                    AddHeaders(context.Response, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
                 }
                 else
                 {
@@ -180,7 +181,7 @@ namespace EasyApiProxys.WebApis
                     else if (ExStatusCode > 0)
                         context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
 
-                    context.Response.Headers.Add(ResultHeader, ret.Result);
+                    AddHeaders(context.Response, ret.Result);
                 }
             }
             // 執行正常
@@ -194,24 +195,40 @@ namespace EasyApiProxys.WebApis
                     // 有數值回傳
                     if (robj.Value != null)
                     {
-                        context.Response.Headers.Add(ResultHeader, RESULT_OK);
-                        context.Response.Headers.Add(DataTypeHeader, GetTypeHint(robj.Value.GetType()));
+                        AddHeaders(context.Response, RESULT_OK, GetTypeHint(robj.Value.GetType()));
                     }
                     // 沒有數值
                     else
                     {
-                        context.Response.Headers.Add(ResultHeader, RESULT_OK);
+                        AddHeaders(context.Response, RESULT_OK);
                         context.Response.Content = null;
                     }
                 }
                 // 沒有內容
                 else if (context.Response.Content == null)
                 {
-                    context.Response.Headers.Add(ResultHeader, RESULT_OK);
+                    AddHeaders(context.Response, RESULT_OK);
                 }
             }
 
             base.OnActionExecuted(context);
+        }
+
+        /// <summary>
+        /// 統一增加 Header
+        /// </summary>
+        private static void AddHeaders(HttpResponseMessage response, string result, string dataType = null)
+        {
+            response.Headers.Add(DefaultApiExtension.HeaderName_Result, result);
+            if (dataType != null)
+                response.Headers.Add(DefaultApiExtension.HeaderName_DataType, dataType);
+
+            if (CompatibleLegacyHeader)
+            {
+                response.Headers.Add(DefaultApiExtension.HeaderName_Result_Legacy, result);
+                if (dataType != null)
+                    response.Headers.Add(DefaultApiExtension.HeaderName_DataType_Legacy, dataType);
+            }
         }
 
         /// <summary>
@@ -237,7 +254,7 @@ namespace EasyApiProxys.WebApis
                     sw.Write(type.Name.Substring(0, pos));
                     sw.Write("<");
 
-                    var targs = type.GenericTypeArguments;
+                    var targs = type.GetGenericArguments();
                     var index = 0;
                     foreach (var targ in targs)
                     {

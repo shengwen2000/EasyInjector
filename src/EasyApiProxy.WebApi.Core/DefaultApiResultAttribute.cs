@@ -8,6 +8,7 @@ namespace EasyApiProxys.WebApis
     /// <summary>
     /// 預設的API回應封裝
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class DefaultApiResultAttribute : ActionFilterAttribute
     {
         private const string RESULT_OK = DefaultApiConstants.Code_OK;
@@ -32,7 +33,7 @@ namespace EasyApiProxys.WebApis
         /// <summary>
         /// 全域異常對應表 (方案 A)
         /// </summary>
-        public static Dictionary<Type, int> ExceptionMap { get; } = new();
+        public static Dictionary<Type, int> ExceptionMap { get; } = [];
 
         /// <summary>
         /// Action執行完成 封裝格式
@@ -40,9 +41,6 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
-                return;
-
             // 執行過程有異常 回傳格式處理
             if (context.Exception != null)
             {
@@ -173,7 +171,11 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
+            // 類別或方法都有標記的話 只能執行一次
+            // 有 Ignore 標記的話 不處理
+            if (
+                context.ActionDescriptor.EndpointMetadata.OfType<DefaultApiResultAttribute>().Last() != this ||
+                context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
             {
                 await next();
                 return;
@@ -188,6 +190,11 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public override void OnResultExecuting(ResultExecutingContext context)
         {
+            // 類別或方法都有標記的話 只能執行一次(就是方法上的)
+            if (context.ActionDescriptor.EndpointMetadata.OfType<DefaultApiResultAttribute>().Last() != this)
+                return;
+
+            // 有 Ignore 標記的話 不處理
             if (context.ActionDescriptor.EndpointMetadata.Any(x => x is IgnoreApiResultAttribute))
                 return;
 
@@ -268,7 +275,7 @@ namespace EasyApiProxys.WebApis
         /// <summary>
         /// 取得對應的 Http 狀態碼 (方案 A + C)
         /// </summary>
-        private int? GetMappedStatusCode(ActionExecutedContext context)
+        private static int? GetMappedStatusCode(ActionExecutedContext context)
         {
             var ex = context.Exception;
             if (ex == null) return null;
@@ -278,12 +285,12 @@ namespace EasyApiProxys.WebApis
             // 1. 優先從 Action/Controller 特性查找 (方案 C)
             // 由於泛型特性在執行期需要反射處理
             var attr = context.ActionDescriptor.EndpointMetadata
-                .FirstOrDefault(m =>
+                .LastOrDefault(m =>
                 {
                     var t = m.GetType();
                     if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ExceptionStatusAttribute<>))
                     {
-                        var targetExType = t.GetProperty("ExceptionType")?.GetValue(m) as Type;
+                        var targetExType = t.GetProperty(nameof(ExceptionStatusAttribute<Exception>.ExceptionType))?.GetValue(m) as Type;
                         return targetExType == exType;
                     }
                     return false;
@@ -291,7 +298,7 @@ namespace EasyApiProxys.WebApis
 
             if (attr != null)
             {
-                return (int?)attr.GetType().GetProperty("StatusCode")?.GetValue(attr);
+                return (int?)attr.GetType().GetProperty(nameof(ExceptionStatusAttribute<Exception>.StatusCode))?.GetValue(attr);
             }
 
             // 2. 從全域對應表查找 (方案 A)

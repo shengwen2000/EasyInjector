@@ -44,17 +44,16 @@ namespace EasyApiProxys.DemoApis
         /// IM 全域指定為 541
         /// - ValidationException
         /// </summary>
-        Task Error3();
+        //Task Error3();
 
         /// <summary>
         /// IM 類別指定為 542
-        /// - 優先於全域
         /// </summary>
         Task Error3A();
 
          /// <summary>
         /// IM 方法指定為 543
-        /// - 優先於類別與全域
+        /// - 優先於類別
         /// </summary>
         Task Error3B();
     }

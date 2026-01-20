@@ -15,7 +15,7 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
     [ApiController]
     [Route("api/[controller]/[action]")]
     // 使用Default API 封裝回應
-    [DefaultApiResult]
+    [DefaultApiResult(ImStatusCode = 542)]
     [ExceptionStatus<ApplicationException>(503)]
     [ExceptionStatus<NotSupportedException>(525)]
     public class Demo2Controller : ControllerBase, IDemo2Api
@@ -23,7 +23,7 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
         [HttpPost]
         public Task Error1()
         {
-            throw new ApiCodeException(ErrorCodes.InvalidToken, "The Token Not exists");
+            throw new ApiCodeException(ErrorCodes.InvalidAccount, "The Token Not exists");
         }
 
         [ExceptionStatus<InvalidOperationException>(409)]
@@ -52,26 +52,29 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
         }
 
         [HttpPost]
-        [ExceptionStatus<InvalidOperationException>(535)]
+        [ExceptionStatus<NotSupportedException>(535)]
         public Task Error2D()
         {
             throw new NotSupportedException("This is a not supported exception");
         }
 
-        [HttpPost]
-        public Task Error3()
-        {
-            throw new ValidationException("This is a validation exception");
-        }
+        // [HttpPost]
+        // public Task Error3()
+        // {
+        //     throw new ValidationException("This is a validation exception");
+        // }
+
         [HttpPost]
         public Task Error3A()
         {
-            throw new NotImplementedException();
+            throw new ValidationException("This is a validation exception");
         }
+
+        [DefaultApiResult(ImStatusCode = 543)]
         [HttpPost]
         public Task Error3B()
         {
-            throw new NotImplementedException();
+            throw new ValidationException("This is a validation exception");
         }
     }
 

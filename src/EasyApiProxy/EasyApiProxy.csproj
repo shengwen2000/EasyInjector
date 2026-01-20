@@ -47,13 +47,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiMethodAttribute.cs" />
+    <Compile Include="ApiStatusCodeAttribute.cs" />
     <Compile Include="BasicAuth\BasicAuthExtension.cs" />
     <Compile Include="BasicAuth\BasicClientMessageHandler.cs" />
     <Compile Include="BasicAuth\BasicCredential.cs" />
+    <Compile Include="DefaultApiConstants.cs" />
+    <Compile Include="ExceptionStatusAttribute.cs" />
     <Compile Include="IApiProxy.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="IgnoreApiResultAttribute.cs" />
     <Compile Include="InstanceCallExtension.cs" />
+    <Compile Include="KmuhomeApiConstants.cs" />
     <Compile Include="KmuhomeApiExtension.cs" />
     <Compile Include="IApiProxyFactory.cs" />
     <Compile Include="DefaultApiExtension.cs" />
