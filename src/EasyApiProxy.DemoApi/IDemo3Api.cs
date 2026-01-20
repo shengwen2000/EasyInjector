@@ -23,10 +23,10 @@ namespace EasyApiProxys.DemoApis
         /// </summary>
         Task ErrorG3();
 
-        /// <summary>
-        /// 忽略此方法，不進行 API 封裝
-        /// - 回傳 571 Ignore It
-        /// </summary>
-        string IgnoreIt();
+       /// 測試 舊版 Header 啟用
+        int LegacyHeaderEnabled();
+
+        /// 測試 舊版 Header 停用
+        int LegacyHeaderDisabled();
     }
 }
