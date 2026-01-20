@@ -1,5 +1,6 @@
 ﻿using EasyApiProxys;
 using EasyApiProxys.DemoApis;
+using EasyApiProxys.WebApis;
 using EasyInjectors;
 using HawkNet;
 using HawkNet.Owin;
@@ -7,6 +8,7 @@ using KmuApps.Services;
 using Microsoft.Owin.Cors;
 using Microsoft.Owin.Logging;
 using Owin;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -35,6 +37,11 @@ namespace KmuApps
         /// <param name="app"></param>
         public void Configuration(IAppBuilder app)
         {
+            // 全域異常對應狀態碼設定
+            DefaultApiResultAttribute.ExceptionMap[typeof(NotImplementedException)] = 504;
+            DefaultApiResultAttribute.ExceptionMap[typeof(NotSupportedException)] = 515;
+
+
             var logger = app.CreateLogger("WebApp");
 
             // add http logging

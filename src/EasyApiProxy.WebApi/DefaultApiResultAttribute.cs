@@ -48,8 +48,12 @@ namespace EasyApiProxys.WebApis
 
         public override void OnActionExecuting(HttpActionContext context)
         {
+            var attr = context.ActionDescriptor.GetCustomAttributes<DefaultApiResultAttribute>()
+                .Union(context.ControllerContext.ControllerDescriptor.GetCustomAttributes<DefaultApiResultAttribute>())
+                .FirstOrDefault();            
+
             // 類別或方法都有標記的話 只能執行一次(就是方法上的)
-            if (context.ActionDescriptor.GetCustomAttributes<DefaultApiResultAttribute>().Last() != this)
+            if (attr != this)
                 return;
 
             // 有 Ignore 標記的話 不處理
@@ -109,8 +113,12 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            var attr = context.ActionContext.ActionDescriptor.GetCustomAttributes<DefaultApiResultAttribute>()
+               .Union(context.ActionContext.ControllerContext.ControllerDescriptor.GetCustomAttributes<DefaultApiResultAttribute>())
+               .FirstOrDefault();         
+
             // 類別或方法都有標記的話 只能執行一次(就是方法上的)
-            if (context.ActionContext.ActionDescriptor.GetCustomAttributes<DefaultApiResultAttribute>().Last() != this)
+            if (attr != this)
                 return;
 
             // 有 Ignore 標記的話 不處理
@@ -177,6 +185,21 @@ namespace EasyApiProxys.WebApis
                         context.Response.Headers.Add("X-Trace-Id", e2.TraceId);
 
                     AddHeaders(context.Response, ret.Result, ret.Data != null ? GetTypeHint(ret.Data.GetType()) : null);
+                }
+                else
+                {
+                    var ret = new DefaultApiResult
+                    {
+                        Result = RESULT_EX,
+                        Message = ex.Message
+                    };
+                    context.Response.Content = new ObjectContent<DefaultApiResult>(ret, jsonMediaTypeFormater);
+                    if (mappedStatusCode.HasValue)
+                        context.Response.StatusCode = (HttpStatusCode)mappedStatusCode.Value;
+                    else if (ExStatusCode > 0)
+                        context.Response.StatusCode = (HttpStatusCode)ExStatusCode;
+
+                    AddHeaders(context.Response, ret.Result);
                 }
             }
             // 執行正常

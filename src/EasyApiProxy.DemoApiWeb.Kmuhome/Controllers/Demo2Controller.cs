@@ -7,14 +7,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using System.Web.Http;
 
-namespace EasyApiProxy.DemoApiWeb.Controllers
+namespace KmuApps.Controllers
 {
     /// <summary>
     /// Demo Api
     /// </summary>
- 
-    // 使用Default API 封裝回應
-    [DefaultApiResult(ImStatusCode = 542)]
+
+    // 使用Kmuhome API 封裝回應
+    [KmuhomeApiResult(ImStatusCode = 542)]
     [ExceptionStatus(typeof(ApplicationException), 503)]
     [ExceptionStatus(typeof(NotSupportedException),525)]
     public class Demo2Controller : ApiController, IDemo2Api
@@ -69,7 +69,7 @@ namespace EasyApiProxy.DemoApiWeb.Controllers
             throw new ValidationException("This is a validation exception");
         }
 
-        [DefaultApiResult(ImStatusCode = 543)]
+        [KmuhomeApiResult(ImStatusCode = 543)]
         [HttpPost]
         public Task Error3B()
         {

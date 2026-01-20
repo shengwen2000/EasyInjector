@@ -48,6 +48,15 @@ namespace EasyApiProxys.WebApis
 
         public override void OnActionExecuting(HttpActionContext context)
         {
+            var attr = context.ActionDescriptor.GetCustomAttributes<KmuhomeApiResultAttribute>()
+                .Union(context.ControllerContext.ControllerDescriptor.GetCustomAttributes<KmuhomeApiResultAttribute>())
+                .FirstOrDefault();
+
+            // 類別或方法都有標記的話 只能執行一次(就是方法上的)
+            if (attr != this)
+                return;
+
+            // 有 Ignore 標記的話 不處理
             if (context.ActionDescriptor.GetCustomAttributes<IgnoreApiResultAttribute>().Any())
                 return;
 
@@ -104,8 +113,12 @@ namespace EasyApiProxys.WebApis
         /// <param name="context"></param>
         public override void OnActionExecuted(HttpActionExecutedContext context)
         {
+            var attr = context.ActionContext.ActionDescriptor.GetCustomAttributes<KmuhomeApiResultAttribute>()
+               .Union(context.ActionContext.ControllerContext.ControllerDescriptor.GetCustomAttributes<KmuhomeApiResultAttribute>())
+               .FirstOrDefault();
+
             // 類別或方法都有標記的話 只能執行一次(就是方法上的)
-            if (context.ActionContext.ActionDescriptor.GetCustomAttributes<KmuhomeApiResultAttribute>().Last() != this)
+            if (attr != this)
                 return;
 
             // 有 Ignore 標記的話 不處理
