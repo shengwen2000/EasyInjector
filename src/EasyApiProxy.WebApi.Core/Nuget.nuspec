@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>EasyApiProxy.WebApi.Core</id>
-    <version>4.6.0</version>
+    <version>4.6.1</version>
     <title>EasyApiProxy.WebApi.Core</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

@@ -7,7 +7,7 @@
   </ItemGroup>
   <PropertyGroup>
     <AssemblyTitle>EasyApiProxy.WebApi.Core</AssemblyTitle>
-    <AssemblyVersion>4.6.0</AssemblyVersion>
+    <AssemblyVersion>4.6.1</AssemblyVersion>
     <Company>shengwen2000</Company>
     <Description>支援 asp.net core 8 </Description>
     <RootNamespace>EasyApiProxys.WebApis</RootNamespace>

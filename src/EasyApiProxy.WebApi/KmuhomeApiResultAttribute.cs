@@ -257,12 +257,19 @@ namespace EasyApiProxys.WebApis
             if (dataType != null)
                 response.Headers.Add(DefaultApiExtension.HeaderName_DataType, dataType);
 
+            // 增加 CORS 暴露標頭，讓前端 (如 React) 可以讀取自定義 Header
+            var exposedHeaders = DefaultApiExtension.HeaderName_Result;
+
             if (CompatibleLegacyHeader)
             {
                 response.Headers.Add(DefaultApiExtension.HeaderName_Result_Legacy, result);
                 if (dataType != null)
                     response.Headers.Add(DefaultApiExtension.HeaderName_DataType_Legacy, dataType);
+
+                exposedHeaders += ", " + DefaultApiExtension.HeaderName_Result_Legacy;
             }
+
+            response.Headers.Add("Access-Control-Expose-Headers", exposedHeaders);
         }
 
         /// <summary>

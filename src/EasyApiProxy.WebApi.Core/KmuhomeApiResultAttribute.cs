@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Text.Json.Nodes;
 
 namespace EasyApiProxys.WebApis
 {
@@ -170,12 +170,19 @@ namespace EasyApiProxys.WebApis
             if (dataType != null)
                 headers[DefaultApiExtension.HeaderName_DataType] = dataType;
 
+            // 增加 CORS 暴露標頭，讓前端 (如 React) 可以讀取自定義 Header
+            var exposedHeaders = $"{DefaultApiExtension.HeaderName_Result}";
+
             if (CompatibleLegacyHeader)
             {
                 headers[DefaultApiExtension.HeaderName_Result_Legacy] = result;
                 if (dataType != null)
                     headers[DefaultApiExtension.HeaderName_DataType_Legacy] = dataType;
+
+                exposedHeaders += $", {DefaultApiExtension.HeaderName_Result_Legacy}";
             }
+
+            headers.AccessControlExposeHeaders = exposedHeaders;
         }
 
         /// <summary>
@@ -202,7 +209,7 @@ namespace EasyApiProxys.WebApis
         /// </summary>
         public override void OnResultExecuting(ResultExecutingContext context)
         {
-             // 類別或方法都有標記的話 只能執行一次(就是方法上的)
+            // 類別或方法都有標記的話 只能執行一次(就是方法上的)
             if (context.ActionDescriptor.EndpointMetadata.OfType<KmuhomeApiResultAttribute>().Last() != this)
                 return;
 
