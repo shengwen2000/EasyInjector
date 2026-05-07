@@ -2,14 +2,14 @@
 <package>
   <metadata>
     <id>EasyInjector.DependencyInjection</id>
-    <version>1.6.5.0</version>
+    <version>1.6.6.0</version>
     <title>EasyInjector.DependencyInjection</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <!-- <icon>icon.png</icon> -->
     <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
-    <description>簡單的模仿 .net core 注入依賴庫 適用於舊專案.net4.0的場合</description>
+    <description>使用微軟的 DI 來實作一些常用的功能</description>
     <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>copyright</copyright>
     <readme>docs\EasyInjector.DependencyInjection.md</readme>

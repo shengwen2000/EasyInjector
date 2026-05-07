@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using EasyInjectors.Dev;
 using Tests.Overrides;
 using System.Reflection;
@@ -33,6 +33,9 @@ namespace Tests
 
             var ret4 = api.GetName();
             Assert.That(ret4, Is.EqualTo("David"));
+
+            var retAccount = api.Account;
+            Assert.That(retAccount, Is.EqualTo("kevin"));
         }
 
         [Test, Apartment(ApartmentState.STA)]
@@ -80,7 +83,7 @@ namespace Tests
             var scope = provider.CreateScope();
             var srv1 = scope.ServiceProvider.GetRequiredService<ILoginService>();
             var srv2 = scope.ServiceProvider.CreateOverrideInstance<ILoginService, LoginServiceDev>(srv1);
-            Assert.That(srv2.Account, Is.EqualTo("david"));
+            Assert.That(srv2.Account, Is.EqualTo("kevin"));
             var ret2 = srv2.Hello();
             Assert.That(ret2, Is.EqualTo("World World Dev"));
 
@@ -247,6 +250,7 @@ namespace Tests
 
         public class LoginServiceDev(ILoginService basesrv) : ILoginService
         {
+            [Override]
             public string Account { get => "kevin"; }
 
             [Override]

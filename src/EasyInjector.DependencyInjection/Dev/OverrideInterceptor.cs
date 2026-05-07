@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 namespace EasyInjectors.Dev
 {
@@ -57,12 +57,32 @@ namespace EasyInjectors.Dev
                 var parametersTypes = targetMethod.GetParameters().Select(y => y.ParameterType).ToArray();
                 var m1 = OverrideInstance.GetType().GetMethod(targetMethod.Name, parametersTypes);
 
-                if (m1 != null && m1.GetCustomAttributes(typeof(OverrideAttribute), true).Any())
-                    return m1.Invoke(OverrideInstance, args);
+                bool isOverride = false;
+                if (m1 != null)
+                {
+                    // 判定方法是否有標示 OverrideAttribute
+                    if (m1.GetCustomAttributes(typeof(OverrideAttribute), true).Length > 0)
+                    {
+                        isOverride = true;
+                    }
+                    // 判定屬性是否有標示 OverrideAttribute
+                    else if (m1.IsSpecialName && m1.Name.Length > 4 && (m1.Name.StartsWith("get_") || m1.Name.StartsWith("set_")))
+                    {
+                        var propName = m1.Name[4..];
+                        var prop = OverrideInstance.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        if (prop != null && prop.GetCustomAttributes(typeof(OverrideAttribute), true).Length > 0)
+                        {
+                            isOverride = true;
+                        }
+                    }
+                }
+
+                if (isOverride)
+                    return m1!.Invoke(OverrideInstance, args);
                 else
                 {
                     var m2 = BaseInstance.GetType().GetMethod(targetMethod.Name, parametersTypes)
-                        ?? throw new ApplicationException($"找不到方法 {targetMethod.Name}");
+                        ?? throw new ApplicationException($"找不到方法/屬性 {targetMethod.Name}");
                     return m2.Invoke(BaseInstance, args);
                 }
             }

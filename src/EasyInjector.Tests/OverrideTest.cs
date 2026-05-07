@@ -1,4 +1,4 @@
-﻿using EasyInjectors;
+using EasyInjectors;
 using EasyInjectors.Dev;
 using NUnit.Framework;
 using System;
@@ -38,6 +38,9 @@ namespace Tests
 
                 var ret2 = await api.Login2(new Login { Account = "david", Password = "123456" });
                 Assert.True(ret2 == "OK");
+
+                var retAccount = api.Account;
+                Assert.True(retAccount == "kevin");
             }
         }        
     }
@@ -49,10 +52,14 @@ namespace Tests
             string Login(Login req);
 
             Task<string> Login2(Login req);
+
+            string Account { get; }
         }
 
         public class LoginService : ILoginService
         {
+            public string Account { get { return "david"; } }
+
             public LoginService()
             {
             }
@@ -78,6 +85,9 @@ namespace Tests
         public class LoginServiceDev : ILoginService
         {
             private ILoginService _basesrv;
+
+            [Override]
+            public string Account { get { return "kevin"; } }
 
             public LoginServiceDev(ILoginService basesrv)
             {

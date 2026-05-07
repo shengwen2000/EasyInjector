@@ -1,4 +1,4 @@
-﻿using Castle.DynamicProxy;
+using Castle.DynamicProxy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,7 +68,25 @@ namespace EasyInjectors.Dev
             {
                 var parametersTypes = invocation.Method.GetParameters().Select(y => y.ParameterType).ToArray();
                 var m1 = _overrideInstance.GetType().GetMethod(invocation.Method.Name, parametersTypes);
-                var hasOverride = m1.GetCustomAttributes(typeof(OverrideAttribute), false).Any();
+                
+                bool hasOverride = false;
+                if (m1 != null)
+                {
+                    if (m1.GetCustomAttributes(typeof(OverrideAttribute), false).Any())
+                    {
+                        hasOverride = true;
+                    }
+                    else if (m1.IsSpecialName && m1.Name.Length > 4 && (m1.Name.StartsWith("get_") || m1.Name.StartsWith("set_")))
+                    {
+                        var propName = m1.Name.Substring(4);
+                        var prop = _overrideInstance.GetType().GetProperty(propName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (prop != null && prop.GetCustomAttributes(typeof(OverrideAttribute), false).Any())
+                        {
+                            hasOverride = true;
+                        }
+                    }
+                }
+
                 if (hasOverride)
                     invocation.ReturnValue = m1.Invoke(_overrideInstance, invocation.Arguments);
                 else
