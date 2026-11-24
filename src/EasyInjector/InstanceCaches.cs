@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,12 +16,14 @@ namespace EasyInjectors
         /// <summary>
         /// 一般實例存放處
         /// </summary>
-        Dictionary<ServiceRegister, object> _instances = new Dictionary<ServiceRegister, object>();
+        private readonly ConcurrentDictionary<ServiceRegister, object> _instances = new ConcurrentDictionary<ServiceRegister, object>();
 
         /// <summary>
         /// 泛型實例存放處
         /// </summary>
-        Dictionary<ServiceRegister, Dictionary<Type, object>> _instances_generic = new Dictionary<ServiceRegister, Dictionary<Type, object>>();
+        private readonly ConcurrentDictionary<ServiceRegister, ConcurrentDictionary<Type, object>> _instances_generic = new ConcurrentDictionary<ServiceRegister, ConcurrentDictionary<Type, object>>();
+
+        private readonly object _lock = new object();
 
         private bool disposed = false;
 
@@ -37,33 +40,44 @@ namespace EasyInjectors
             if (register.IsGeneric == false)
             {
                 object instance;
-                if (_instances.TryGetValue(register, out instance) == false)
+                if (_instances.TryGetValue(register, out instance))
                 {
-                    instance = register.CreateFunc(provider);
-                    _instances.Add(register, instance);
+                    return instance;
                 }
-                return instance;
+
+                lock (_lock)
+                {
+                    if (_instances.TryGetValue(register, out instance) == false)
+                    {
+                        instance = register.CreateFunc(provider);
+                        _instances[register] = instance;
+                    }
+                    return instance;
+                }
             }
             // 泛型服務(每個泛型服務都有自己專屬(sericetype, instance)
             else
             {
-                //找出自己專屬的Instancss
-                Dictionary<Type, object> instances;
+                //找出自己專屬的Instances
+                var instances = _instances_generic.GetOrAdd(register, _ => new ConcurrentDictionary<Type, object>());
+
                 object instance;
-                if (_instances_generic.TryGetValue(register, out instances) == false)
+                if (instances.TryGetValue(serviceType, out instance))
                 {
-                    instances = new Dictionary<Type, object>();
-                    _instances_generic.Add(register, instances);
+                    return instance;
                 }
 
-                // 不存在就新增一個
-                if (instances.TryGetValue(serviceType, out instance) == false)
+                lock (_lock)
                 {
-                    var genericArgs = serviceType.GetGenericArguments();
-                    instance = register.CreateGenericFunc(provider, genericArgs);
-                    instances.Add(serviceType, instance);
+                    // 不存在就新增一個
+                    if (instances.TryGetValue(serviceType, out instance) == false)
+                    {
+                        var genericArgs = serviceType.GetGenericArguments();
+                        instance = register.CreateGenericFunc(provider, genericArgs);
+                        instances[serviceType] = instance;
+                    }
+                    return instance;
                 }
-                return instance;
             }
         }
 

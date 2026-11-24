@@ -86,6 +86,9 @@ namespace EasyApiProxys
             //正常Dispose，所有子項目一併施放
             if (disposing)
             {
+                try { _http.Dispose(); }
+                catch { }
+
                 if (_options.Handlers != null)
                 {
                     foreach (var handler1 in _options.Handlers)

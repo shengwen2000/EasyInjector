@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Concurrent;
 
 namespace EasyInjectors
 {
@@ -33,7 +30,7 @@ namespace EasyInjectors
         Func<IServiceProvider, string, TService> createFunc) : INamed<TService>, IDisposable where TService : class
     {
 
-        readonly Dictionary<string, TService> _ctxs = [];
+        readonly ConcurrentDictionary<string, TService> _ctxs = new();
 
         private bool disposed = false;
         readonly object _lock_all = new();
@@ -60,7 +57,7 @@ namespace EasyInjectors
                         return ctx;
                     }
                     ctx = createFunc(provider, name);
-                    _ctxs.Add(name, ctx);
+                    _ctxs[name] = ctx;
                     return ctx;
                 }
             }

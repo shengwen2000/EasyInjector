@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,7 +29,7 @@ namespace EasyInjectors
     [Obsolete("請改用NamedServiceV2 或改用 AddNamedSignleton 等")]
     public class NamedService<TService> : INamed<TService>, IDisposable where TService : class
     {
-        Dictionary<string, TService> _ctxs = new Dictionary<string, TService>();
+        ConcurrentDictionary<string, TService> _ctxs = new ConcurrentDictionary<string, TService>();
 
         private bool disposed = false;
         private Func<string, TService> _createFunc;
@@ -65,7 +66,7 @@ namespace EasyInjectors
                         return ctx;
                     }
                     ctx = _createFunc(name);
-                    _ctxs.Add(name, ctx);
+                    _ctxs[name] = ctx;
                     return ctx;
                 }
             }
@@ -112,7 +113,7 @@ namespace EasyInjectors
     /// </summary>    
     public class NamedServiceV2<TService> : INamed<TService>, IDisposable where TService : class
     {
-        Dictionary<string, TService> _ctxs = new Dictionary<string, TService>();
+        ConcurrentDictionary<string, TService> _ctxs = new ConcurrentDictionary<string, TService>();
 
         private bool disposed = false;
         private readonly Func<IServiceProvider, string, TService> _createFunc;
@@ -152,7 +153,7 @@ namespace EasyInjectors
                         return ctx;
                     }
                     ctx = _createFunc(_provider, name);
-                    _ctxs.Add(name, ctx);
+                    _ctxs[name] = ctx;
                     return ctx;
                 }
             }

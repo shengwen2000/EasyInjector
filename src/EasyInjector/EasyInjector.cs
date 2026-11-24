@@ -495,51 +495,52 @@ namespace EasyInjectors
             if (serviceType == typeof(IServiceScope))
                 return scope;
 
+            // 僅在查詢註冊表時鎖定，避免建構 Scoped/Transient/Singleton 服務時鎖住整個容器
+            ServiceRegister register;
             lock (_serviceRegisters_lock)
             {
-                // 找出服務註冊項目
-                var register = FindRegister(serviceType);
-                if (register == null) return null;      
+                register = FindRegister(serviceType);
+            }
+            if (register == null) return null;
 
-                // 取得服務 singleton
-                if (register.Lifetimes == SimpleLifetimes.Singleton)
-                {
-                    var instance = _caches.GetOrCreateInstance(this, register, serviceType);
-                    return instance;
-                }
-                // 取得服務 Scope 如果是Scope類型，必須有Scope傳入否則無法建立
-                else if (register.Lifetimes == SimpleLifetimes.Scoped)
+            // 取得服務 singleton
+            if (register.Lifetimes == SimpleLifetimes.Singleton)
+            {
+                var instance = _caches.GetOrCreateInstance(this, register, serviceType);
+                return instance;
+            }
+            // 取得服務 Scope 如果是Scope類型，必須有Scope傳入否則無法建立
+            else if (register.Lifetimes == SimpleLifetimes.Scoped)
+            {
+                if (scope == null)
+                    throw new ApplicationException(string.Format("Service {0} is Scoped, you need create a scope first. please inject IServiceScopeFactory then use CreateScope().", serviceType.FullName));
+
+                var instance = scope._caches.GetOrCreateInstance(scope, register, serviceType);
+                return instance;
+            }
+            // 取得服務  Transient
+            else if (register.Lifetimes == SimpleLifetimes.Transient)
+            {
+                // 一般服務
+                if (register.IsGeneric == false)
                 {
                     if (scope == null)
-                        throw new ApplicationException(string.Format("Service {0} is Scoped, you need create a scope first. please inject IServiceScopeFactory then use CreateScope().", serviceType.FullName));
-
-                    var instance = scope._caches.GetOrCreateInstance(scope, register, serviceType);
-                    return instance;
-                }
-                // 取得服務  Transient 
-                else if (register.Lifetimes == SimpleLifetimes.Transient)
-                {
-                    // 一般服務
-                    if (register.IsGeneric == false)
-                    {
-                        if (scope == null)
-                            return register.CreateFunc(this);
-                        else
-                            return register.CreateFunc(scope);
-                    }
-                    // 泛型服務
+                        return register.CreateFunc(this);
                     else
-                    {
-                        var genericArgs = serviceType.GetGenericArguments();
-                        if (scope == null)
-                            return register.CreateGenericFunc(this, genericArgs);
-                        else
-                            return register.CreateGenericFunc(scope, genericArgs);
-                    }
+                        return register.CreateFunc(scope);
                 }
-
-                return null;
+                // 泛型服務
+                else
+                {
+                    var genericArgs = serviceType.GetGenericArguments();
+                    if (scope == null)
+                        return register.CreateGenericFunc(this, genericArgs);
+                    else
+                        return register.CreateGenericFunc(scope, genericArgs);
+                }
             }
+
+            return null;
         }
 
         /// <summary>

@@ -20,7 +20,7 @@ namespace EasyApiProxys
         public string BaseUrl { get; set; } = string.Empty;
 
         /// <summary>
-        /// 取得Message Handler (default HttpClientHandler)
+        /// 取得Message Handler (default SocketsHttpHandler with PooledConnectionLifetime = 2 min)
         /// </summary>
         public Func<HttpMessageHandler> GetHttpMessageHandler { get; set; }
 
@@ -61,7 +61,10 @@ namespace EasyApiProxys
         /// </summary>
         public ApiProxyBuilderOptions()
         {
-            GetHttpMessageHandler = () => new HttpClientHandler();
+            GetHttpMessageHandler = () => new SocketsHttpHandler
+            {
+                PooledConnectionLifetime = TimeSpan.FromMinutes(2)
+            };
         }
     }
 

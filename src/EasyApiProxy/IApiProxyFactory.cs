@@ -1,9 +1,17 @@
 ﻿using Castle.DynamicProxy;
 using System;
+using System.Net;
 using System.Net.Http;
 
 namespace EasyApiProxys
 {
+    /// <summary>
+    /// 共用單一 ProxyGenerator 實例，避免每次 Create 建立動態組件造成記憶體洩漏
+    /// </summary>
+    internal static class ProxyGeneratorHolder
+    {
+        internal static readonly ProxyGenerator Instance = new ProxyGenerator();
+    }
     /// <summary>
     /// 建立Proxy實例
     /// </summary>
@@ -46,6 +54,13 @@ namespace EasyApiProxys
         {
             _options = options;
 
+            // 針對 Singleton HttpClient 設定連線租期，避免 DNS 異動後永久卡在舊 IP
+            Uri baseUri;
+            if (!string.IsNullOrEmpty(options.BaseUrl) && Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out baseUri))
+            {
+                ServicePointManager.FindServicePoint(baseUri).ConnectionLeaseTimeout = (int)TimeSpan.FromMinutes(2).TotalMilliseconds;
+            }
+
             var handler = options.GetHttpMessageHandler();
             if (handler != null)
                 _http = new HttpClient(handler);
@@ -59,9 +74,8 @@ namespace EasyApiProxys
         /// </summary>
         public IApiProxy<TAPI> Create(IServiceProvider sp)
         {
-            var generator = new ProxyGenerator();
             var inteceptor1 = new ApiProxyInterceptor<TAPI>(_http, _options);
-            var api = generator.CreateInterfaceProxyWithoutTarget<TAPI>(inteceptor1);
+            var api = ProxyGeneratorHolder.Instance.CreateInterfaceProxyWithoutTarget<TAPI>(inteceptor1);
 
             var proxy = new ApiProxy<TAPI>(inteceptor1, api, this);
             return proxy;
@@ -90,6 +104,9 @@ namespace EasyApiProxys
             //正常Dispose，所有子項目一併施放
             if (disposing)
             {
+                try { _http.Dispose(); }
+                catch { }
+
                 if (_options.Handlers != null)
                 {
                     foreach (var handler1 in _options.Handlers)
