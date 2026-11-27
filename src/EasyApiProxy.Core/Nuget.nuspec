@@ -2,38 +2,35 @@
 <package>
   <metadata>
     <id>EasyApiProxy.Core</id>
-    <version>4.6.1</version>
+    <version>4.6.2</version>
     <title>EasyApiProxy.Core</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
-    <!-- <icon>icon.png</icon> -->
     <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
-    <description>WebApi 的快速代理類別</description>
-    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <description>WebApi 的快速代理類別 (支援 .NET 8 與 .NET Framework 4.7.2)</description>
     <copyright>copyright</copyright>
     <readme>docs\EasyApiProxy.md</readme>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.0" />
-        <dependency id="EasyInjector.DependencyInjection" version="1.6.7.0" />
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.1" />
+        <dependency id="EasyInjector.DependencyInjection" version="1.6.8" />
+      </group>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.1" />
+        <dependency id="EasyInjector.DependencyInjection" version="1.6.8" />
+        <dependency id="System.Reflection.DispatchProxy" version="4.7.1" />
+        <dependency id="System.Text.Json" version="8.0.5" />
       </group>
     </dependencies>
-    <frameworkReferences>
-      <group targetFramework="net8.0">
-        <frameworkReference name="Microsoft.NETCore.App" />
-      </group>
-    </frameworkReferences>
-
     <tags>WebAPI Proxy</tags>
-
-    <!--<tags>Tag1 Tag2</tags>-->
   </metadata>
 
   <files>
     <file src="..\..\EasyApiProxy.md" target="docs\" />
-    <file src="bin\Release\net8.0\publish\EasyApiProxy.Core.dll" target="lib\net8.0\EasyApiProxy.Core.dll" />
-    <file src="bin\Release\net8.0\publish\EasyApiProxy.Core.xml" target="lib\net8.0\EasyApiProxy.Core.xml" />
-    <!--<file src="icon.png" target="" />-->
+    <file src="bin\Release\net8.0\EasyApiProxy.Core.dll" target="lib\net8.0\EasyApiProxy.Core.dll" />
+    <file src="bin\Release\net8.0\EasyApiProxy.Core.xml" target="lib\net8.0\EasyApiProxy.Core.xml" />
+    <file src="bin\Release\net472\EasyApiProxy.Core.dll" target="lib\net472\EasyApiProxy.Core.dll" />
+    <file src="bin\Release\net472\EasyApiProxy.Core.xml" target="lib\net472\EasyApiProxy.Core.xml" />
   </files>
 </package>

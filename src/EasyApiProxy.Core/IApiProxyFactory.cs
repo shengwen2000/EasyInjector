@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using System.Net;
+using System.Reflection;
 
 namespace EasyApiProxys
 {
@@ -39,6 +40,13 @@ namespace EasyApiProxys
         public ApiProxyFactory(ApiProxyBuilderOptions options)
         {
             _options = options;
+
+#if NETFRAMEWORK
+            if (!string.IsNullOrEmpty(options.BaseUrl) && Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var baseUri))
+            {
+                ServicePointManager.FindServicePoint(baseUri).ConnectionLeaseTimeout = (int)TimeSpan.FromMinutes(2).TotalMilliseconds;
+            }
+#endif
 
             var handler = options.GetHttpMessageHandler();
             if (handler != null)

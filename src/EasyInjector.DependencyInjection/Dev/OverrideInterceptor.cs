@@ -68,7 +68,7 @@ namespace EasyInjectors.Dev
                     // 判定屬性是否有標示 OverrideAttribute
                     else if (m1.IsSpecialName && m1.Name.Length > 4 && (m1.Name.StartsWith("get_") || m1.Name.StartsWith("set_")))
                     {
-                        var propName = m1.Name[4..];
+                        var propName = m1.Name.Substring(4);
                         var prop = OverrideInstance.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                         if (prop != null && prop.GetCustomAttributes(typeof(OverrideAttribute), true).Length > 0)
                         {

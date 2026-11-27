@@ -2,26 +2,24 @@
 <package>
   <metadata>
     <id>EasyInjector.DependencyInjection</id>
-    <version>1.6.7.0</version>
+    <version>1.6.8</version>
     <title>EasyInjector.DependencyInjection</title>
     <authors>Shengwen2000</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
-    <!-- <icon>icon.png</icon> -->
     <projectUrl>https://github.com/shengwen2000/EasyInjector</projectUrl>
-    <description>使用微軟的 DI 來實作一些常用的功能</description>
-    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <description>使用微軟的 DI 來實作一些常用的功能 (支援 .NET 8 與 .NET Framework 4.7.2)</description>
     <copyright>copyright</copyright>
     <readme>docs\EasyInjector.DependencyInjection.md</readme>
     <dependencies>
-      <group targetFramework="net8.0" >
+      <group targetFramework="net8.0">
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.1" />
+      </group>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.1" />
+        <dependency id="System.Reflection.DispatchProxy" version="4.7.1" />
       </group>
     </dependencies>
-    <frameworkReferences>
-      <group targetFramework="net8.0">
-        <frameworkReference name="Microsoft.AspNetCore.App" />
-      </group>
-    </frameworkReferences>
     <tags>Dependency Injection EasyInjector</tags>
   </metadata>
 
@@ -31,6 +29,7 @@
     <file src="bin\Release\net8.0\EasyInjector.DependencyInjection.dll" target="lib\net8.0\EasyInjector.DependencyInjection.dll" />
     <file src="bin\Release\net8.0\EasyInjector.DependencyInjection.xml" target="lib\net8.0\EasyInjector.DependencyInjection.xml" />
 
-    <!--<file src="icon.png" target="" />-->
+    <file src="bin\Release\net472\EasyInjector.DependencyInjection.dll" target="lib\net472\EasyInjector.DependencyInjection.dll" />
+    <file src="bin\Release\net472\EasyInjector.DependencyInjection.xml" target="lib\net472\EasyInjector.DependencyInjection.xml" />
   </files>
 </package>

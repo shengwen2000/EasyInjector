@@ -1,5 +1,35 @@
 {
     "dotrush.roslyn.projectOrSolutionFiles": [
         "d:\\projects\\EasyInjector\\src\\EasyProjectsCore.sln"
-    ]
+    ],
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#4bcf5b",
+        "activityBar.activeBorder": "#15202b",
+        "activityBar.background": "#4bcf5b",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#7568d7",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "activityBarTop.activeBackground": "#4bcf5b",
+        "activityBarTop.activeBorder": "#15202b",
+        "activityBarTop.background": "#4bcf5b",
+        "activityBarTop.foreground": "#15202b",
+        "activityBarTop.inactiveForeground": "#15202b99",
+        "commandCenter.border": "#15202b99",
+        "commandCenter.foreground": "#15202b",
+        "sash.hoverBorder": "#4bcf5b",
+        "statusBar.background": "#31b641",
+        "statusBar.debuggingBackground": "#31b641",
+        "statusBar.debuggingForeground": "#15202b",
+        "statusBar.foreground": "#15202b",
+        "statusBar.inactiveBackground": "#31b641",
+        "statusBarItem.hoverBackground": "#268e33",
+        "statusBarItem.remoteBackground": "#e8e6f8",
+        "statusBarItem.remoteForeground": "#15202b",
+        "titleBar.activeBackground": "#31b641",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#31b64199",
+        "titleBar.inactiveForeground": "#15202b99"
+    },
+    "peacock.color": "#31b641"
 }

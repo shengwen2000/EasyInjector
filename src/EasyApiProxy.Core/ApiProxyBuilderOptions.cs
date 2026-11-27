@@ -1,4 +1,4 @@
-﻿using EasyApiProxys.Options;
+using EasyApiProxys.Options;
 using System.Text.Json;
 using System.Collections;
 
@@ -61,10 +61,14 @@ namespace EasyApiProxys
         /// </summary>
         public ApiProxyBuilderOptions()
         {
+#if NET8_0_OR_GREATER
             GetHttpMessageHandler = () => new SocketsHttpHandler
             {
                 PooledConnectionLifetime = TimeSpan.FromMinutes(2)
             };
+#else
+            GetHttpMessageHandler = () => new HttpClientHandler();
+#endif
         }
     }
 
